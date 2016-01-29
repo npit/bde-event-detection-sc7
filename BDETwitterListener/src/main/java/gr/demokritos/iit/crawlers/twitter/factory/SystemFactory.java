@@ -30,6 +30,7 @@ import gr.demokritos.iit.crawlers.twitter.repository.IRepository;
 import gr.demokritos.iit.crawlers.twitter.repository.MongoRepository;
 import gr.demokritos.iit.crawlers.twitter.repository.MySQLRepository;
 import gr.demokritos.iit.crawlers.twitter.stream.IStreamConsumer;
+import gr.demokritos.iit.crawlers.twitter.stream.user.UserStatusListener;
 import gr.demokritos.iit.crawlers.twitter.url.DefaultURLUnshortener;
 import gr.demokritos.iit.crawlers.twitter.url.IURLUnshortener;
 import java.beans.PropertyVetoException;
@@ -51,12 +52,12 @@ public class SystemFactory {
 
     public static final Logger LOGGER = Logger.getLogger(ITwitterRestConsumer.class.getName());
 
-    private final Configuration conf;
+    private final IConf conf;
 
     private Cluster cluster = null;
     private AbstractComboPooledDataSource cpds = null;
 
-    public SystemFactory(Configuration conf) {
+    public SystemFactory(IConf conf) {
         this.conf = conf;
     }
 
@@ -171,6 +172,12 @@ public class SystemFactory {
         return crawler;
     }
 
+    /**
+     * get an implementation class of {@link IURLUnshortener}. The URL expander
+     * is utilized when we want to expand URLs from links of tweets
+     *
+     * @return
+     */
     public IURLUnshortener getDefaultURLUnshortener() {
         IURLUnshortener unshort = new DefaultURLUnshortener(
                 conf.getConnectionTimeOut(),
@@ -200,6 +207,20 @@ public class SystemFactory {
                 conf.getCacheSize());
     }
 
+    /**
+     * get an implementation class of {@link IRepository}. Supported
+     * repositories are Cassandra, MySQL.
+     *
+     * @return
+     * @throws PropertyVetoException
+     * @throws UndeclaredRepositoryException
+     * @throws ClassNotFoundException
+     * @throws NoSuchMethodException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws IllegalArgumentException
+     * @throws InvocationTargetException
+     */
     public IRepository getRepository() throws PropertyVetoException, UndeclaredRepositoryException, ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         IRepository repository;
         String backend = conf.getRepositoryImpl().trim();
@@ -251,6 +272,20 @@ public class SystemFactory {
         return repository;
     }
 
+    /**
+     * get an implementation class of {@link IStreamConsumer}. Currently, the
+     * only meaningful implementation is {@link UserStatusListener}
+     *
+     * @return
+     * @throws PropertyVetoException
+     * @throws ClassNotFoundException
+     * @throws NoSuchMethodException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws IllegalArgumentException
+     * @throws UndeclaredRepositoryException
+     * @throws InvocationTargetException
+     */
     public IStreamConsumer getStreamImpl() throws PropertyVetoException, ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, IllegalArgumentException, UndeclaredRepositoryException, InvocationTargetException {
         ConfigurationBuilder cb = new ConfigurationBuilder();
         cb.setDebugEnabled(true)
@@ -282,6 +317,9 @@ public class SystemFactory {
         return cpds;
     }
 
+    /**
+     * release underlying DB connection pools
+     */
     public void releaseResources() {
         if (cluster != null) {
             cluster.close();
@@ -309,6 +347,9 @@ public class SystemFactory {
 //        Constructor class_constructor = sourceClass.getConstructor(String.class);
 //        return (IGeonamesClient) class_constructor.newInstance(base_name);
 //    }
+    /**
+     * strict repository declarations
+     */
     public enum Repository {
 
         MYSQL(MySQLRepository.class.getName()), CASSANDRA(CassandraRepository.class.getName()), MONGO(MongoRepository.class.getName());

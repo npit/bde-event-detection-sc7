@@ -19,6 +19,7 @@ import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.sql.SQLException;
 import gr.demokritos.iit.crawlers.twitter.factory.Configuration;
+import gr.demokritos.iit.crawlers.twitter.factory.IConf;
 import gr.demokritos.iit.crawlers.twitter.factory.SystemFactory;
 import static gr.demokritos.iit.crawlers.twitter.factory.SystemFactory.LOGGER;
 import gr.demokritos.iit.crawlers.twitter.repository.IRepository.CrawlEngine;
@@ -65,7 +66,7 @@ public class CrawlScript {
     public static void monitor() {
 
         // load properties
-        Configuration config = new Configuration(properties);
+        IConf config = new Configuration(properties);
         // init crawl factory
         SystemFactory factory = new SystemFactory(config);
         ITwitterRestConsumer crawler;
@@ -84,7 +85,7 @@ public class CrawlScript {
     public static void search() throws IOException, SQLException, PropertyVetoException {
 
         // load properties
-        Configuration config = new Configuration(properties);
+        IConf config = new Configuration(properties);
 
         SystemFactory factory = new SystemFactory(config);
 
@@ -104,7 +105,7 @@ public class CrawlScript {
     public static void getStream() {
 
         // load properties
-        Configuration config = new Configuration(properties);
+        IConf config = new Configuration(properties);
 
         SystemFactory factory = new SystemFactory(config);
 
@@ -115,7 +116,7 @@ public class CrawlScript {
             stream.getStream();
         } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | PropertyVetoException ex) {
             LOGGER.severe(ex.toString());
-        } 
+        }
 //        finally {
 //
 //            factory.releaseResources();

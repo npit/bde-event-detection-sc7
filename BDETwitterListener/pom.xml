@@ -8,13 +8,11 @@
     <packaging>jar</packaging>
     
     <name>BDETwitterListener</name>
-    <!--<url>http://maven.apache.org</url>-->
     
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.target>1.7</maven.compiler.target>
         <maven.compiler.source>1.7</maven.compiler.source>
-        <!--<basedir>./</basedir>-->
     </properties>
 
     <build>
@@ -40,9 +38,9 @@
                             <directory>${basedir}/res/</directory>
 <!--                            <filtering>true</filtering>
                             <includes>
-                                <include>${basedir}/twitter.properties</include>
-                                <include>${basedir}/twitter.queries</include>
-                                <include>${basedir}/db/*</include>
+                                <include>${basedir}/res/twitter.properties</include>
+                                <include>${basedir}/res/twitter.queries</include>
+                                <include>${basedir}/res/db/*</include>
                             </includes>-->
                         </resource>
                     </resources>           
