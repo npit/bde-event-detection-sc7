@@ -30,4 +30,4 @@ target/
 
 #project specific
 /BDETwitterListener/creds.properties
-nbactions*.xml
+nb*.xml
