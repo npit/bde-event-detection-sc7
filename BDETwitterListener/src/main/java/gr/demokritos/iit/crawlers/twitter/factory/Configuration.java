@@ -18,7 +18,6 @@ import gr.demokritos.iit.crawlers.twitter.impl.BaseTwitterRestConsumer;
 import gr.demokritos.iit.crawlers.twitter.policy.DefensiveCrawlPolicy;
 import gr.demokritos.iit.crawlers.twitter.policy.InfluentialCrawlPolicy;
 import gr.demokritos.iit.crawlers.twitter.url.DefaultURLUnshortener;
-import gr.demokritos.iit.geonames.client.DefaultGeonamesClient;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -181,10 +180,6 @@ public class Configuration {
 
     public String getURLUnshortenerImpl() {
         return properties.getProperty("unshorthener_impl", DefaultURLUnshortener.class.getName());
-    }
-
-    public String getGeoNamesClientImpl() {
-        return properties.getProperty("geonames_impl", DefaultGeonamesClient.class.getName());
     }
 
     public String getGeoNamesClientUserName() {

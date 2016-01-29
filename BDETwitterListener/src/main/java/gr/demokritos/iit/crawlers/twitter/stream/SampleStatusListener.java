@@ -15,6 +15,7 @@
 package gr.demokritos.iit.crawlers.twitter.stream;
 
 import gr.demokritos.iit.crawlers.twitter.repository.IRepository;
+import java.util.Locale;
 import twitter4j.StallWarning;
 import twitter4j.Status;
 import twitter4j.StatusDeletionNotice;
@@ -27,18 +28,30 @@ import twitter4j.TwitterStream;
  */
 public class SampleStatusListener extends AbstractStatusListener implements StatusListener, IStreamConsumer {
 
-    public SampleStatusListener(TwitterStream twitterStream, IRepository repos) {
+    /**
+     * will fetch sample stream in the lang specified. default is 'en'
+     */
+    private String iso_code;
+
+    public SampleStatusListener(TwitterStream twitterStream, IRepository repos, String iso_code) {
         super(twitterStream, repos);
+        this.iso_code = iso_code;
     }
 
-    public SampleStatusListener(IRepository repos) {
+    public SampleStatusListener(TwitterStream twitterStream, IRepository repos) {
+        super(twitterStream, repos);
+        this.iso_code = Locale.ENGLISH.getLanguage();
+    }
+
+    public SampleStatusListener(IRepository repos, String iso_code) {
         super(repos);
+        this.iso_code = iso_code;
     }
 
     @Override
     public void getStream() {
         this.twitterStream.addListener(this);
-        twitterStream.sample("en"); // get tweets in english
+        twitterStream.sample(iso_code);
     }
 
     @Override

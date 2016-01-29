@@ -33,7 +33,6 @@ public abstract class AbstractStatusListener {
     }
 
     public AbstractStatusListener(IRepository repos) {
-
         this.twitterStream = new TwitterStreamFactory().getInstance();
         this.repository = repos;
     }

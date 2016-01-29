@@ -19,18 +19,12 @@ import static gr.demokritos.iit.crawlers.twitter.factory.SystemFactory.LOGGER;
 import gr.demokritos.iit.crawlers.twitter.policy.DefensiveCrawlPolicy;
 import gr.demokritos.iit.crawlers.twitter.policy.ICrawlPolicy;
 import gr.demokritos.iit.crawlers.twitter.repository.IRepository;
-import gr.demokritos.iit.crawlers.twitter.structures.TGeoLoc;
-import gr.demokritos.iit.crawlers.twitter.structures.TPlace;
-import gr.demokritos.iit.geonames.client.DefaultGeonamesClient;
-import gr.demokritos.iit.geonames.client.IGeonamesClient;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import org.geonames.Toponym;
-import org.geonames.ToponymSearchResult;
 import twitter4j.RateLimitStatus;
 import twitter4j.Status;
 import twitter4j.Twitter;
@@ -61,7 +55,6 @@ public abstract class AbstractTwitterRestConsumer {
     // cloned from https://github.com/twitter/twitter-text-java.git
     protected Twitter twitter;
     protected ICrawlPolicy policy;
-    protected IGeonamesClient geonames_client;
 
     /**
      * Main constructor. Accepts a configuration class that has already read
@@ -78,7 +71,6 @@ public abstract class AbstractTwitterRestConsumer {
         this.twitterAccessTokkenSecret = config.getTwitterAccessTokkenSecret();
         this.repository = repository;
         this.policy = new DefensiveCrawlPolicy(repository);
-        this.geonames_client = new DefaultGeonamesClient(config.getGeoNamesClientUserName());
         //connect
         ConfigurationBuilder cb = new ConfigurationBuilder();
         cb.setDebugEnabled(true)
@@ -107,38 +99,6 @@ public abstract class AbstractTwitterRestConsumer {
         this.twitterAccessTokkenSecret = config.getTwitterAccessTokkenSecret();
         this.repository = repository;
         this.policy = policy;
-        this.geonames_client = new DefaultGeonamesClient(config.getGeoNamesClientUserName());
-        //connect
-        ConfigurationBuilder cb = new ConfigurationBuilder();
-        cb.setDebugEnabled(true)
-                .setOAuthConsumerKey(twitterConsumerKey)
-                .setOAuthConsumerSecret(twitterConsumerKeySecret)
-                .setOAuthAccessToken(twitterAccessTokken)
-                .setOAuthAccessTokenSecret(twitterAccessTokkenSecret);
-        TwitterFactory tf = new TwitterFactory(cb.build());
-        // get active instance
-        this.twitter = tf.getInstance();
-    }
-
-    /**
-     * Alternate constructor. Accepts a configuration class that has already
-     * read resources. A policy implementation, and a geonames client
-     * implementation
-     *
-     * @param config the configuration class
-     * @param repository
-     * @param policy
-     * @param geo_client
-     */
-    public AbstractTwitterRestConsumer(Configuration config, IRepository repository, ICrawlPolicy policy, IGeonamesClient geo_client) {
-        // init credentials
-        this.twitterConsumerKey = config.getTwitterConsumerKey();
-        this.twitterConsumerKeySecret = config.getTwitterConsumerKeySecret();
-        this.twitterAccessTokken = config.getTwitterAccessTokken();
-        this.twitterAccessTokkenSecret = config.getTwitterAccessTokkenSecret();
-        this.repository = repository;
-        this.policy = policy;
-        this.geonames_client = geo_client;
         //connect
         ConfigurationBuilder cb = new ConfigurationBuilder();
         cb.setDebugEnabled(true)
@@ -238,67 +198,66 @@ public abstract class AbstractTwitterRestConsumer {
         return reset;
     }
 
-    /**
-     * try to find coordinates of the place called
-     *
-     * @param place_literal
-     * @return
-     */
-    protected TGeoLoc extractGeolocationFromPlace(String place_literal) {
-        TGeoLoc gl = new TGeoLoc(0.0, 0.0);
-        if (geonames_client != null) {
-            try {
-                ToponymSearchResult coordinates = geonames_client.getCoordinates(place_literal);
-                if (coordinates.getTotalResultsCount() > 1) {
-                    List<Toponym> toponyms = coordinates.getToponyms();
-                    Toponym first = toponyms.get(0);
-                    gl.setLatitude(first.getLatitude());
-                    gl.setLongitude(first.getLongitude());
-                }
-            } catch (Exception ex) {
-                LOGGER.warning(ex.getMessage());
-            }
-        }
-        return gl;
-    }
-
-    /**
-     * find nearby places from the place
-     *
-     * @param latitude
-     * @param longitude
-     * @return
-     */
-    protected TPlace extractNearbyPlace(double latitude, double longitude) {
-        TPlace place = new TPlace();
-        if (geonames_client != null) {
-            try {
-                List<Toponym> findNearby = geonames_client.findNearby(latitude, longitude);
-                if (findNearby.size() > 1) {
-                    Toponym t = findNearby.get(0);
-                    if (t.getBoundingBox() != null) {
-                        place.setBoundingBoxType(t.getBoundingBox().toString());
-                    }
-                    if (t.getCountryName() != null) {
-                        place.setCountry(t.getCountryName());
-                    }
-                    if (t.getCountryCode() != null) {
-                        place.setCountryCode(t.getCountryCode());
-                    }
-                    if (t.getName() != null) {
-                        place.setName(t.getName());
-                    }
-                    if (t.getGeoNameId() != 0) {
-                        place.setId(String.valueOf(t.getGeoNameId()));
-                    }
-                }
-            } catch (Exception ex) {
-                LOGGER.warning(ex.getMessage());
-            }
-        }
-        return place;
-    }
-
+//    /**
+//     * try to find coordinates of the place called
+//     *
+//     * @param place_literal
+//     * @return
+//     */
+//    protected TGeoLoc extractGeolocationFromPlace(String place_literal) {
+//        TGeoLoc gl = new TGeoLoc(0.0, 0.0);
+//        if (geonames_client != null) {
+//            try {
+//                ToponymSearchResult coordinates = geonames_client.getCoordinates(place_literal);
+//                if (coordinates.getTotalResultsCount() > 1) {
+//                    List<Toponym> toponyms = coordinates.getToponyms();
+//                    Toponym first = toponyms.get(0);
+//                    gl.setLatitude(first.getLatitude());
+//                    gl.setLongitude(first.getLongitude());
+//                }
+//            } catch (Exception ex) {
+//                LOGGER.warning(ex.getMessage());
+//            }
+//        }
+//        return gl;
+//    }
+//
+//    /**
+//     * find nearby places from the place
+//     *
+//     * @param latitude
+//     * @param longitude
+//     * @return
+//     */
+//    protected TPlace extractNearbyPlace(double latitude, double longitude) {
+//        TPlace place = new TPlace();
+//        if (geonames_client != null) {
+//            try {
+//                List<Toponym> findNearby = geonames_client.findNearby(latitude, longitude);
+//                if (findNearby.size() > 1) {
+//                    Toponym t = findNearby.get(0);
+//                    if (t.getBoundingBox() != null) {
+//                        place.setBoundingBoxType(t.getBoundingBox().toString());
+//                    }
+//                    if (t.getCountryName() != null) {
+//                        place.setCountry(t.getCountryName());
+//                    }
+//                    if (t.getCountryCode() != null) {
+//                        place.setCountryCode(t.getCountryCode());
+//                    }
+//                    if (t.getName() != null) {
+//                        place.setName(t.getName());
+//                    }
+//                    if (t.getGeoNameId() != 0) {
+//                        place.setId(String.valueOf(t.getGeoNameId()));
+//                    }
+//                }
+//            } catch (Exception ex) {
+//                LOGGER.warning(ex.getMessage());
+//            }
+//        }
+//        return place;
+//    }
     protected static final String API_RATE_LIMIT = "limit";
     protected static final String API_REMAINING_CALLS = "remaining_calls";
     protected static final String API_SECONDS_UNTIL_RESET = "seconds_until_reset";

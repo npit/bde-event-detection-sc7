@@ -44,6 +44,8 @@ public abstract class AbstractUserListener {
         // proceed with storing in twitter repository
         long postID = status.getId();
         User user = status.getUser();
+        // FIXME: check for possible issues when calling API for geolocation, 
+        // on possible locks
         synchronized (AbstractUserListener.class) {
             // check for existance of post in DB
             boolean exists = repository.existsPost(postID);

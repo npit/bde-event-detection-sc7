@@ -32,7 +32,6 @@ import gr.demokritos.iit.crawlers.twitter.repository.MySQLRepository;
 import gr.demokritos.iit.crawlers.twitter.stream.IStreamConsumer;
 import gr.demokritos.iit.crawlers.twitter.url.DefaultURLUnshortener;
 import gr.demokritos.iit.crawlers.twitter.url.IURLUnshortener;
-import gr.demokritos.iit.geonames.client.IGeonamesClient;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -109,42 +108,10 @@ public class SystemFactory {
     }
 
     /**
-     * instantiate implementations and load
-     *
-     * @param repository
-     * @param policy
-     * @param geonames_client
-     * @return
-     * @throws ClassNotFoundException
-     * @throws NoSuchMethodException
-     * @throws InstantiationException
-     * @throws IllegalAccessException
-     * @throws IllegalArgumentException
-     * @throws InvocationTargetException
-     * @throws PropertyVetoException
-     */
-    public ITwitterRestConsumer getTwitterListener(IRepository repository, ICrawlPolicy policy, IGeonamesClient geonames_client)
-            throws
-            ClassNotFoundException,
-            NoSuchMethodException,
-            InstantiationException,
-            IllegalAccessException,
-            IllegalArgumentException,
-            InvocationTargetException,
-            PropertyVetoException {
-        ITwitterRestConsumer crawler;
-        String crawl_decl = conf.getCrawlerImpl();
-        Class sourceClass = Class.forName(crawl_decl);
-        Constructor class_constructor = sourceClass.getConstructor(Configuration.class, IRepository.class, ICrawlPolicy.class, IGeonamesClient.class);
-        crawler = (ITwitterRestConsumer) class_constructor.newInstance(conf, repository, policy, geonames_client);
-        return crawler;
-    }
-
-    /**
      * load twitter listener (the implementation provided at
      * 'twitter.properties'), loads all declared implementations of:
-     * {@link IRepository}, {@link ICrawlPolicy}, {@link IGeonamesClient} along
-     * with the {@link Configuration}
+     * {@link IRepository}, {@link ICrawlPolicy} along with the
+     * {@link Configuration}
      *
      * @return
      * @throws ClassNotFoundException
@@ -167,11 +134,10 @@ public class SystemFactory {
         ITwitterRestConsumer crawler;
         String crawl_decl = conf.getCrawlerImpl();
         Class sourceClass = Class.forName(crawl_decl);
-        Constructor class_constructor = sourceClass.getConstructor(Configuration.class, IRepository.class, ICrawlPolicy.class, IGeonamesClient.class);
+        Constructor class_constructor = sourceClass.getConstructor(Configuration.class, IRepository.class, ICrawlPolicy.class);
         IRepository repository = getRepository();
         ICrawlPolicy policy = getCrawlPolicy(repository);
-        IGeonamesClient geonames_client = getGeoNamesClient();
-        crawler = (ITwitterRestConsumer) class_constructor.newInstance(conf, repository, policy, geonames_client);
+        crawler = (ITwitterRestConsumer) class_constructor.newInstance(conf, repository, policy);
         return crawler;
     }
 
@@ -335,15 +301,14 @@ public class SystemFactory {
         throw new UndeclaredRepositoryException();
     }
 
-    public IGeonamesClient getGeoNamesClient() throws NoSuchMethodException, ClassNotFoundException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        IGeonamesClient client;
-        String impl = conf.getGeoNamesClientImpl();
-        String base_name = conf.getGeoNamesClientUserName();
-        Class sourceClass = Class.forName(impl);
-        Constructor class_constructor = sourceClass.getConstructor(String.class);
-        return (IGeonamesClient) class_constructor.newInstance(base_name);
-    }
-
+//    public IGeonamesClient getGeoNamesClient() throws NoSuchMethodException, ClassNotFoundException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+//        IGeonamesClient client;
+//        String impl = conf.getGeoNamesClientImpl();
+//        String base_name = conf.getGeoNamesClientUserName();
+//        Class sourceClass = Class.forName(impl);
+//        Constructor class_constructor = sourceClass.getConstructor(String.class);
+//        return (IGeonamesClient) class_constructor.newInstance(base_name);
+//    }
     public enum Repository {
 
         MYSQL(MySQLRepository.class.getName()), CASSANDRA(CassandraRepository.class.getName()), MONGO(MongoRepository.class.getName());

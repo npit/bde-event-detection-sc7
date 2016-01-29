@@ -17,6 +17,7 @@ package gr.demokritos.iit.crawlers.twitter.stream.user;
 import static gr.demokritos.iit.crawlers.twitter.factory.SystemFactory.LOGGER;
 import gr.demokritos.iit.crawlers.twitter.repository.IRepository;
 import gr.demokritos.iit.crawlers.twitter.stream.IStreamConsumer;
+import java.util.concurrent.atomic.AtomicInteger;
 import twitter4j.DirectMessage;
 import twitter4j.StallWarning;
 import twitter4j.Status;
@@ -34,8 +35,11 @@ import twitter4j.UserStreamListener;
  */
 public class UserStatusListener extends AbstractUserListener implements UserStreamListener, IStreamConsumer {
 
+    private final AtomicInteger cnt;
+
     public UserStatusListener(TwitterStream twitterStream, IRepository repos) {
         super(twitterStream, repos);
+        this.cnt = new AtomicInteger();
     }
 
     @Override
@@ -46,7 +50,7 @@ public class UserStatusListener extends AbstractUserListener implements UserStre
 
     @Override
     public void onStatus(Status status) {
-        LOGGER.info(String.format("{user: %s, post_id: %d}: %s", status.getUser().getScreenName(), status.getId(), status.getText()));
+        LOGGER.info(String.format("{cnt: %d, user: %s, post_id: %d}: %s", cnt.incrementAndGet(), status.getUser().getScreenName(), status.getId(), status.getText()));
         processStatus(status);
     }
 

@@ -16,6 +16,7 @@ import gr.demokritos.iit.crawlers.twitter.structures.TGeoLoc;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.Locale;
 import twitter4j.Status;
 
 /**

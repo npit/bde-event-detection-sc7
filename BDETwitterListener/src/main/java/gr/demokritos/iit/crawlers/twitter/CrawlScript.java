@@ -166,13 +166,13 @@ public class CrawlScript {
         if (cmd.hasOption("queries")) {
             queries_file = cmd.getOptionValue("queries");
         } else {
-            queries_file = "./twitter.queries";
+            queries_file = "./res/twitter.queries";
         }
         // load properties
         if (cmd.hasOption("properties")) {
             properties = cmd.getOptionValue("properties");
         } else {
-            properties = "./twitter.properties";
+            properties = "./res/twitter.properties";
         }
         File fProperties = new File(properties);
         // read values

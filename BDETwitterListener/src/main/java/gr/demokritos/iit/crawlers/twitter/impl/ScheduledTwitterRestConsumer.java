@@ -21,7 +21,6 @@ import gr.demokritos.iit.crawlers.twitter.policy.ICrawlPolicy;
 import gr.demokritos.iit.crawlers.twitter.repository.IRepository;
 import gr.demokritos.iit.crawlers.twitter.structures.SearchQuery;
 import gr.demokritos.iit.crawlers.twitter.structures.SourceAccount;
-import gr.demokritos.iit.geonames.client.IGeonamesClient;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -53,17 +52,6 @@ public class ScheduledTwitterRestConsumer extends AbstractTwitterRestConsumer im
 
     public ScheduledTwitterRestConsumer(Configuration config, IRepository repository, ICrawlPolicy policy) {
         super(config, repository, policy);
-        this.executorService = Executors.newSingleThreadScheduledExecutor();
-        this.delay_between_crawls = config.getDelayBetweenCrawls();
-        this.initial_delay = config.getCrawlInitialDelay();
-        this.timeunit = TimeUnit.MINUTES;
-        this.counter = new AtomicInteger(0);
-        LOGGER.info(String.format("initializing scheduled monitor execution service with initial delay: %d, delay_between_crawls: %d (%s)",
-                initial_delay, delay_between_crawls, timeunit.toString().toLowerCase()));
-    }
-
-    public ScheduledTwitterRestConsumer(Configuration config, IRepository repository, ICrawlPolicy policy, IGeonamesClient geo_client) {
-        super(config, repository, policy, geo_client);
         this.executorService = Executors.newSingleThreadScheduledExecutor();
         this.delay_between_crawls = config.getDelayBetweenCrawls();
         this.initial_delay = config.getCrawlInitialDelay();
