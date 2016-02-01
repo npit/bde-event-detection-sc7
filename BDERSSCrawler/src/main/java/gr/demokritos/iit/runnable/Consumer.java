@@ -14,11 +14,11 @@
 */
 package gr.demokritos.iit.runnable;
 
-import gr.demokritos.iit.crawler.event.EventSink;
-import gr.demokritos.iit.crawler.load.LoadRegistry;
+import gr.demokritos.iit.crawlers.event.EventSink;
+import gr.demokritos.iit.crawlers.load.LoadRegistry;
 import gr.demokritos.iit.model.Item;
 import gr.demokritos.iit.model.CrawlId;
-import gr.demokritos.iit.crawler.schedule.CrawlExecutor;
+import gr.demokritos.iit.crawlers.schedule.CrawlExecutor;
 import gr.demokritos.iit.repository.IRepository;
 import java.util.concurrent.BlockingQueue;
 

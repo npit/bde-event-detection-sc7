@@ -19,7 +19,7 @@ import com.google.common.collect.Maps;
 import com.sun.syndication.feed.synd.SyndEntry;
 import de.l3s.boilerpipe.BoilerpipeExtractor;
 import de.l3s.boilerpipe.BoilerpipeProcessingException;
-import gr.demokritos.iit.crawler.SimpleExtractor;
+import gr.demokritos.iit.crawlers.SimpleExtractor;
 import gr.demokritos.iit.model.Content;
 import gr.demokritos.iit.model.CrawlId;
 import gr.demokritos.iit.model.Item;

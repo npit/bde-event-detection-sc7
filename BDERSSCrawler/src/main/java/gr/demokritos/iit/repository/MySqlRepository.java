@@ -20,7 +20,7 @@ import de.l3s.boilerpipe.BoilerpipeExtractor;
 import de.l3s.boilerpipe.BoilerpipeProcessingException;
 import gr.demokritos.iit.model.Content;
 import gr.demokritos.iit.model.CrawlId;
-import gr.demokritos.iit.crawler.schedule.CrawlerStrategy;
+import gr.demokritos.iit.crawlers.schedule.CrawlerStrategy;
 import gr.demokritos.iit.model.Item;
 import gr.demokritos.iit.model.UrlMetaData;
 

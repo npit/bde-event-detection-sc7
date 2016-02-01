@@ -1,4 +1,3 @@
-
 /* Copyright 2016 NCSR Demokritos
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,27 +12,30 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package gr.demokritos.iit.runnable;
+package gr.demokritos.iit.crawlers;
 
-import gr.demokritos.iit.crawlers.event.EventSink;
+import gr.demokritos.iit.crawlers.load.LoadRegistry;
+import gr.demokritos.iit.model.Item;
 
-public class LoggingRunnableDecorator implements Runnable {
+public class LoadTrackingDecorator implements Runnable {
 
-    private final DescribableRunnable runnable;
-    private final EventSink eventSink;
+    private final Item item;
+    private final LoadRegistry loadRegistry;
+    private final Runnable runnable;
 
-    public LoggingRunnableDecorator(DescribableRunnable runnable, EventSink eventSink) {
+    public LoadTrackingDecorator(Item item, LoadRegistry loadRegistry, Runnable runnable) {
+        this.item = item;
+        this.loadRegistry = loadRegistry;
         this.runnable = runnable;
-        this.eventSink = eventSink;
     }
 
     @Override
     public void run() {
         try {
+            loadRegistry.started(item);
             runnable.run();
-        } catch (Exception e) {
-            String message = "Runnable " + runnable.description() + " just failed";
-            eventSink.error(message, e);
+        } finally {
+            loadRegistry.finished(item);
         }
     }
 }
