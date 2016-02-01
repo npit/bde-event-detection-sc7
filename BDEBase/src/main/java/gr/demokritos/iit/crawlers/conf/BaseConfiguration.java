@@ -12,9 +12,8 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package gr.demokritos.iit.crawlers.twitter.factory;
+package gr.demokritos.iit.crawlers.conf;
 
-import gr.demokritos.iit.crawlers.twitter.policy.InfluentialCrawlPolicy;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -24,11 +23,11 @@ import java.util.Properties;
  *
  * @author George K. <gkiom@iit.demokritos.gr>
  */
-public class Configuration implements IConf {
+public class BaseConfiguration implements IBaseConf {
 
-    private final Properties properties;
+    protected final Properties properties;
 
-    public Configuration(String configurationFileName) {
+    public BaseConfiguration(String configurationFileName) {
         File file = new File(configurationFileName);
         this.properties = new Properties();
         try {
@@ -38,7 +37,7 @@ public class Configuration implements IConf {
         }
     }
 
-    private Configuration() {
+    public BaseConfiguration() {
         this.properties = new Properties();
     }
 
@@ -115,53 +114,6 @@ public class Configuration implements IConf {
         return Integer.parseInt(properties.getProperty("cache_size"));
     }
 
-    /**
-     *
-     * @return the directory where all files are stored and read from
-     */
-    @Override
-    public String getWorkingDir() {
-        String sWorkingDir = properties.getProperty("workingDir");
-
-        if (!sWorkingDir.endsWith(FILE_SEPARATOR)) {
-            return sWorkingDir + FILE_SEPARATOR;
-        } else {
-            return sWorkingDir;
-        }
-
-    }
-
-    /**
-     * Manually sets 'working directory'
-     *
-     * @param sWorkingDir the path to set
-     * @see {@link #getWorkingDir() }
-     */
-    @Override
-    public void setWorkingDir(String sWorkingDir) {
-        properties.put("workingDir", sWorkingDir);
-    }
-
-    @Override
-    public String getTwitterConsumerKey() {
-        return properties.getProperty("twitterConsumerKey");
-    }
-
-    @Override
-    public String getTwitterConsumerKeySecret() {
-        return properties.getProperty("twitterConsumerKeySecret");
-    }
-
-    @Override
-    public String getTwitterAccessTokken() {
-        return properties.getProperty("twitterAccessTokken");
-    }
-
-    @Override
-    public String getTwitterAccessTokkenSecret() {
-        return properties.getProperty("twitterAccessTokkenSecret");
-    }
-
     @Override
     public int getDataSourceMinPoolSize() {
         return Integer.parseInt(properties.getProperty("min_pool_size", "5"));
@@ -181,60 +133,4 @@ public class Configuration implements IConf {
     public int getDataSourceMaxStatements() {
         return Integer.parseInt(properties.getProperty("max_statements", "180"));
     }
-
-    @Override
-    public String getCrawlPolicy() {
-        return properties.getProperty("crawl_policy");
-    }
-
-    @Override
-    public String getCrawlerImpl() {
-        return properties.getProperty("crawl_impl");
-    }
-
-    @Override
-    public String getURLUnshortenerImpl() {
-        return properties.getProperty("unshorthener_impl");
-    }
-
-    @Override
-    public String getGeoNamesClientUserName() {
-        return properties.getProperty("geonames_client_name");
-    }
-
-    /**
-     * in minutes
-     *
-     * @return
-     */
-    @Override
-    public int getDelayBetweenCrawls() {
-        return Integer.parseInt(properties.getProperty("delay_between_crawls", "1"));
-    }
-
-    /**
-     * in minutes
-     *
-     * @return
-     */
-    @Override
-    public int getCrawlInitialDelay() {
-        return Integer.parseInt(properties.getProperty("initial_delay", "1"));
-    }
-
-    /**
-     *
-     * @return the required followers a user must have in order to be crawled,
-     * if {@link InfluentialCrawlPolicy} implementation is used, else ignored
-     */
-    @Override
-    public int getFollowersCutOff() {
-        return Integer.parseInt(properties.getProperty("followers_count_cutoff", "100"));
-    }
-
-    @Override
-    public String getStreamImpl() {
-        return properties.getProperty("stream_impl");
-    }
-
 }

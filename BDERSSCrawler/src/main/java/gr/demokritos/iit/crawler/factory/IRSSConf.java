@@ -12,24 +12,29 @@
 *  See the License for the specific language governing permissions and
 *  limitations under the License.
 */
-package gr.demokritos.iit.crawlers.twitter.exceptions;
+package gr.demokritos.iit.crawler.factory;
 
-import gr.demokritos.iit.crawlers.twitter.repository.CassandraRepository;
+import gr.demokritos.iit.crawlers.conf.IBaseConf;
 
 /**
  *
  * @author George K. <gkiom@iit.demokritos.gr>
  */
-public class UndeclaredRepositoryException extends IllegalArgumentException {
+public interface IRSSConf extends IBaseConf {
 
-    private static String ERROR_MSG = String.format("Classname provided does for Repository implementation "
-            + "not match anyone found in package '%s'", CassandraRepository.class.getPackage());
+    public int getMaxHttpConnections();
 
-    public UndeclaredRepositoryException() {
-        super(ERROR_MSG);
-    }
+    public int getMaxQueueSize();
 
-    public UndeclaredRepositoryException(String s) {
-        super(s);
-    }
+    public int getMaxNumberOfCrawlingThreads();
+
+    public String getUrlsFileName();
+
+    public int getDatabaseConnectionPoolSize();
+
+    public long getDelayBetweenCrawls();
+
+    public int getHttpTimeoutInSeconds();
+
+    public boolean runForever();
 }

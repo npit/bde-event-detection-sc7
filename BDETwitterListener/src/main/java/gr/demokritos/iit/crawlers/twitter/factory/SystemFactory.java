@@ -20,8 +20,8 @@ import com.datastax.driver.core.policies.DefaultRetryPolicy;
 import com.datastax.driver.core.policies.Policies;
 import com.mchange.v2.c3p0.AbstractComboPooledDataSource;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
+import gr.demokritos.iit.crawlers.exceptions.UndeclaredRepositoryException;
 import gr.demokritos.iit.crawlers.twitter.impl.ITwitterRestConsumer;
-import gr.demokritos.iit.crawlers.twitter.exceptions.UndeclaredRepositoryException;
 import gr.demokritos.iit.crawlers.twitter.impl.BaseTwitterRestConsumer;
 import gr.demokritos.iit.crawlers.twitter.policy.ICrawlPolicy;
 import gr.demokritos.iit.crawlers.twitter.policy.InfluentialCrawlPolicy;
@@ -50,14 +50,14 @@ import twitter4j.conf.ConfigurationBuilder;
  */
 public class SystemFactory {
 
-    public static final Logger LOGGER = Logger.getLogger(ITwitterRestConsumer.class.getName());
+    public static final Logger LOGGER = Logger.getLogger(SystemFactory.class.getName());
 
-    private final IConf conf;
+    private final ITwitterConf conf;
 
     private Cluster cluster = null;
     private AbstractComboPooledDataSource cpds = null;
 
-    public SystemFactory(IConf conf) {
+    public SystemFactory(ITwitterConf conf) {
         this.conf = conf;
     }
 
@@ -102,7 +102,7 @@ public class SystemFactory {
         ITwitterRestConsumer crawler;
         String crawl_decl = conf.getCrawlerImpl();
         Class sourceClass = Class.forName(crawl_decl);
-        Constructor class_constructor = sourceClass.getConstructor(Configuration.class, IRepository.class, ICrawlPolicy.class);
+        Constructor class_constructor = sourceClass.getConstructor(TConfig.class, IRepository.class, ICrawlPolicy.class);
         ICrawlPolicy policy = getCrawlPolicy(repository);
         crawler = (ITwitterRestConsumer) class_constructor.newInstance(conf, repository, policy);
         return crawler;
@@ -111,8 +111,7 @@ public class SystemFactory {
     /**
      * load twitter listener (the implementation provided at
      * 'twitter.properties'), loads all declared implementations of:
-     * {@link IRepository}, {@link ICrawlPolicy} along with the
-     * {@link Configuration}
+     * {@link IRepository}, {@link ICrawlPolicy} along with the {@link TConfig}
      *
      * @return
      * @throws ClassNotFoundException
@@ -135,7 +134,7 @@ public class SystemFactory {
         ITwitterRestConsumer crawler;
         String crawl_decl = conf.getCrawlerImpl();
         Class sourceClass = Class.forName(crawl_decl);
-        Constructor class_constructor = sourceClass.getConstructor(Configuration.class, IRepository.class, ICrawlPolicy.class);
+        Constructor class_constructor = sourceClass.getConstructor(TConfig.class, IRepository.class, ICrawlPolicy.class);
         IRepository repository = getRepository();
         ICrawlPolicy policy = getCrawlPolicy(repository);
         crawler = (ITwitterRestConsumer) class_constructor.newInstance(conf, repository, policy);
@@ -165,7 +164,7 @@ public class SystemFactory {
             PropertyVetoException {
         ITwitterRestConsumer crawler;
         Class sourceClass = Class.forName(BaseTwitterRestConsumer.class.getName());
-        Constructor class_constructor = sourceClass.getConstructor(Configuration.class, IRepository.class, ICrawlPolicy.class);
+        Constructor class_constructor = sourceClass.getConstructor(TConfig.class, IRepository.class, ICrawlPolicy.class);
         IRepository repository = getRepository();
         ICrawlPolicy policy = getCrawlPolicy(repository);
         crawler = (ITwitterRestConsumer) class_constructor.newInstance(conf, repository, policy);

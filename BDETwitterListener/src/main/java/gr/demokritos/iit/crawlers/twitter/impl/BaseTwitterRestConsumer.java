@@ -17,7 +17,7 @@ package gr.demokritos.iit.crawlers.twitter.impl;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import gr.demokritos.iit.crawlers.twitter.factory.Configuration;
+import gr.demokritos.iit.crawlers.twitter.factory.TConfig;
 import static gr.demokritos.iit.crawlers.twitter.factory.SystemFactory.LOGGER;
 import static gr.demokritos.iit.crawlers.twitter.impl.AbstractTwitterRestConsumer.TWITTER_API_CALL_USER_TIMELINE;
 import gr.demokritos.iit.crawlers.twitter.policy.ICrawlPolicy;
@@ -36,11 +36,11 @@ import twitter4j.TwitterException;
 
 public class BaseTwitterRestConsumer extends AbstractTwitterRestConsumer implements ITwitterRestConsumer {
 
-    public BaseTwitterRestConsumer(Configuration config, IRepository repository) {
+    public BaseTwitterRestConsumer(TConfig config, IRepository repository) {
         super(config, repository);
     }
 
-    public BaseTwitterRestConsumer(Configuration config, IRepository repository, ICrawlPolicy policy) {
+    public BaseTwitterRestConsumer(TConfig config, IRepository repository, ICrawlPolicy policy) {
         super(config, repository, policy);
     }
 

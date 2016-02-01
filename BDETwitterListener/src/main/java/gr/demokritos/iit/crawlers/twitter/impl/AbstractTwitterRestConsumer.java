@@ -14,7 +14,7 @@
  */
 package gr.demokritos.iit.crawlers.twitter.impl;
 
-import gr.demokritos.iit.crawlers.twitter.factory.Configuration;
+import gr.demokritos.iit.crawlers.twitter.factory.ITwitterConf;
 import static gr.demokritos.iit.crawlers.twitter.factory.SystemFactory.LOGGER;
 import gr.demokritos.iit.crawlers.twitter.policy.DefensiveCrawlPolicy;
 import gr.demokritos.iit.crawlers.twitter.policy.ICrawlPolicy;
@@ -63,7 +63,7 @@ public abstract class AbstractTwitterRestConsumer {
      * @param config the configuration class
      * @param repository
      */
-    public AbstractTwitterRestConsumer(Configuration config, IRepository repository) {
+    public AbstractTwitterRestConsumer(ITwitterConf config, IRepository repository) {
         // init credentials
         this.twitterConsumerKey = config.getTwitterConsumerKey();
         this.twitterConsumerKeySecret = config.getTwitterConsumerKeySecret();
@@ -91,7 +91,7 @@ public abstract class AbstractTwitterRestConsumer {
      * @param repository
      * @param policy
      */
-    public AbstractTwitterRestConsumer(Configuration config, IRepository repository, ICrawlPolicy policy) {
+    public AbstractTwitterRestConsumer(ITwitterConf config, IRepository repository, ICrawlPolicy policy) {
         // init credentials
         this.twitterConsumerKey = config.getTwitterConsumerKey();
         this.twitterConsumerKeySecret = config.getTwitterConsumerKeySecret();

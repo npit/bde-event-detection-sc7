@@ -1,0 +1,1 @@
+CREATE KEYSPACE bde_rss WITH replication = {'class' : 'SimpleStrategy', 'replication_factor' : 1};

@@ -14,7 +14,7 @@
  */
 package gr.demokritos.iit.crawlers.twitter.impl;
 
-import gr.demokritos.iit.crawlers.twitter.factory.Configuration;
+import gr.demokritos.iit.crawlers.twitter.factory.ITwitterConf;
 import static gr.demokritos.iit.crawlers.twitter.factory.SystemFactory.LOGGER;
 import static gr.demokritos.iit.crawlers.twitter.impl.AbstractTwitterRestConsumer.TWITTER_API_CALL_USER_TIMELINE;
 import gr.demokritos.iit.crawlers.twitter.policy.ICrawlPolicy;
@@ -50,7 +50,7 @@ public class ScheduledTwitterRestConsumer extends AbstractTwitterRestConsumer im
     private volatile AtomicInteger counter;
     private long engine_id;
 
-    public ScheduledTwitterRestConsumer(Configuration config, IRepository repository, ICrawlPolicy policy) {
+    public ScheduledTwitterRestConsumer(ITwitterConf config, IRepository repository, ICrawlPolicy policy) {
         super(config, repository, policy);
         this.executorService = Executors.newSingleThreadScheduledExecutor();
         this.delay_between_crawls = config.getDelayBetweenCrawls();
@@ -136,6 +136,6 @@ public class ScheduledTwitterRestConsumer extends AbstractTwitterRestConsumer im
             }
         }
         LOGGER.info(String.format("finalized scheduled monitor_forever [%d:%d] at %s, next schedule in %d %s",
-                engine_id, counter.get(), new Date().toString(), delay_between_crawls, timeunit.toString()));
+                engine_id, counter.get(), new Date().toString(), delay_between_crawls, timeunit.toString().toLowerCase()));
     }
 }
