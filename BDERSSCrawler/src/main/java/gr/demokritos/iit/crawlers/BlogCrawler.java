@@ -14,14 +14,16 @@
  */
 package gr.demokritos.iit.crawlers;
 
-import gr.demokritos.iit.crawlers.factory.SystemFactory;
-import gr.demokritos.iit.crawlers.factory.RSSConf;
+import gr.demokritos.iit.factory.IRSSConf;
+import gr.demokritos.iit.factory.SystemFactory;
+import gr.demokritos.iit.factory.RSSConf;
+import static gr.demokritos.iit.factory.SystemFactory.log;
 import gr.demokritos.iit.repository.IRepository;
 import java.beans.PropertyVetoException;
 
 public class BlogCrawler extends AbstractCrawler {
 
-    public BlogCrawler(SystemFactory factory, RSSConf configuration) throws Exception {
+    public BlogCrawler(SystemFactory factory, IRSSConf configuration) throws Exception {
         super(factory, configuration, false);
     }
 
@@ -37,7 +39,7 @@ public class BlogCrawler extends AbstractCrawler {
     }
 
     public static void main(String[] args) {
-        RSSConf configuration = new RSSConf("blogcrawler_configuration.txt");
+        IRSSConf configuration = new RSSConf(DEFAULT_BLOG_CONFIGURATION);
         SystemFactory systemFactory = new SystemFactory(configuration);
         try {
             BlogCrawler crawler = new BlogCrawler(systemFactory, configuration);

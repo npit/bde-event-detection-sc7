@@ -1,22 +1,24 @@
 /* Copyright 2016 NCSR Demokritos
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
-*/
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package gr.demokritos.iit.repository;
 
 import com.datastax.driver.core.Session;
 import com.sun.syndication.feed.synd.SyndEntry;
+import de.l3s.boilerpipe.BoilerpipeExtractor;
 import de.l3s.boilerpipe.BoilerpipeProcessingException;
+import gr.demokritos.iit.crawlers.schedule.CrawlStrategy;
 import gr.demokritos.iit.model.Content;
 import gr.demokritos.iit.model.CrawlId;
 import gr.demokritos.iit.model.Item;
@@ -33,9 +35,21 @@ import java.util.List;
 public class CassandraRepository implements IRepository {
 
     private final Session session;
+    private final CrawlStrategy crawlerStrategy;
+    private final BoilerpipeExtractor extractor;
 
-    public CassandraRepository(Session session) {
+    public static IRepository createBlogRepository(Session session) {
+        return new CassandraRepository(session, CrawlStrategy.BLOG, CrawlStrategy.BLOG.extractor());
+    }
+
+    public static IRepository createNewsRepository(Session session) {
+        return new CassandraRepository(session, CrawlStrategy.NEWS, CrawlStrategy.NEWS.extractor());
+    }
+
+    private CassandraRepository(Session session, CrawlStrategy strategy, BoilerpipeExtractor extractor) {
         this.session = session;
+        this.crawlerStrategy = strategy;
+        this.extractor = extractor;
     }
 
     @Override

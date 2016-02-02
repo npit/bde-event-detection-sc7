@@ -25,7 +25,7 @@ import twitter4j.Place;
  *
  * @author George K. <gkiom@iit.demokritos.gr>
  */
-@UDT(name = "twitter_place", keyspace = "bde_twitter")
+@UDT(name = "twitter_place", keyspace = "bde")
 public class TPlace {
 
     @Field(name = "id")

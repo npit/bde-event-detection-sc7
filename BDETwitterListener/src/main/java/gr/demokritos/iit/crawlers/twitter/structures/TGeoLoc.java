@@ -23,7 +23,7 @@ import twitter4j.GeoLocation;
  *
  * @author George K. <gkiom@iit.demokritos.gr>
  */
-@UDT(name = "twitter_geolocation", keyspace = "bde_twitter")
+@UDT(name = "geolocation", keyspace = "bde")
 public class TGeoLoc {
 
     @Field()

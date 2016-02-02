@@ -1,17 +1,17 @@
 /* Copyright 2016 NCSR Demokritos
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
-*/
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package gr.demokritos.iit.repository;
 
 import com.google.common.collect.Lists;
@@ -20,7 +20,7 @@ import de.l3s.boilerpipe.BoilerpipeExtractor;
 import de.l3s.boilerpipe.BoilerpipeProcessingException;
 import gr.demokritos.iit.model.Content;
 import gr.demokritos.iit.model.CrawlId;
-import gr.demokritos.iit.crawlers.schedule.CrawlerStrategy;
+import gr.demokritos.iit.crawlers.schedule.CrawlStrategy;
 import gr.demokritos.iit.model.Item;
 import gr.demokritos.iit.model.UrlMetaData;
 
@@ -36,19 +36,19 @@ import javax.sql.DataSource;
 public class MySqlRepository implements IRepository {
 
     private final DataSource connectionPool;
-    private final CrawlerStrategy crawlerStrategy;
+    private final CrawlStrategy crawlerStrategy;
     private final String databaseName;
     private final BoilerpipeExtractor extractor;
 
     public static IRepository createBlogRepository(DataSource connectionPool, String databaseName) {
-        return new MySqlRepository(connectionPool, databaseName, CrawlerStrategy.BLOG, CrawlerStrategy.BLOG.extractor());
+        return new MySqlRepository(connectionPool, databaseName, CrawlStrategy.BLOG, CrawlStrategy.BLOG.extractor());
     }
 
     public static IRepository createNewsRepository(DataSource connectionPool, String databaseName) {
-        return new MySqlRepository(connectionPool, databaseName, CrawlerStrategy.NEWS, CrawlerStrategy.NEWS.extractor());
+        return new MySqlRepository(connectionPool, databaseName, CrawlStrategy.NEWS, CrawlStrategy.NEWS.extractor());
     }
 
-    public MySqlRepository(DataSource connectionPool, String databaseName, CrawlerStrategy crawlerStrategy,
+    private MySqlRepository(DataSource connectionPool, String databaseName, CrawlStrategy crawlerStrategy,
             BoilerpipeExtractor extractor) {
         this.connectionPool = connectionPool;
         this.crawlerStrategy = crawlerStrategy;

@@ -26,23 +26,22 @@ import gr.demokritos.iit.crawlers.schedule.CrawlExecutor;
 import gr.demokritos.iit.crawlers.schedule.DefaultScheduleLoader;
 import gr.demokritos.iit.crawlers.schedule.DefaultCrawlExecutor;
 import gr.demokritos.iit.crawlers.schedule.DefaultCrawlIdGenerator;
-import gr.demokritos.iit.crawlers.factory.SystemFactory;
-import gr.demokritos.iit.crawlers.factory.RSSConf;
+import gr.demokritos.iit.factory.SystemFactory;
+import gr.demokritos.iit.factory.RSSConf;
 import gr.demokritos.iit.crawlers.schedule.DomainExtractor;
 import gr.demokritos.iit.crawlers.schedule.DefaultCrawlSchedule;
 import gr.demokritos.iit.crawlers.schedule.CrawlSchedule;
+import gr.demokritos.iit.factory.IRSSConf;
 import gr.demokritos.iit.repository.IRepository;
 import org.apache.http.client.HttpClient;
 
 import java.util.concurrent.*;
-import java.util.logging.Logger;
 
 /**
  *
  */
 public abstract class AbstractCrawler {
 
-    public static final Logger log = Logger.getLogger(AbstractCrawler.class.getName());
 
     private final Consumer consumer;
     protected ScheduledExecutorService producerExecutorService;
@@ -56,7 +55,7 @@ public abstract class AbstractCrawler {
     // run forever or for a single time 
     protected boolean bRunForever;
 
-    public AbstractCrawler(SystemFactory factory, RSSConf configuration,
+    public AbstractCrawler(SystemFactory factory, IRSSConf configuration,
             boolean shouldApplyRobotsExclusionRules) throws Exception {
         eventSink = factory.createEventSink();
         queue = factory.createBlockingQueue();

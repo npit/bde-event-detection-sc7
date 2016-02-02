@@ -17,9 +17,10 @@ package gr.demokritos.iit.crawlers.schedule;
 import gr.demokritos.iit.crawlers.event.EventSink;
 import gr.demokritos.iit.model.CrawlId;
 import gr.demokritos.iit.model.Item;
+import gr.demokritos.iit.runnable.DescribableRunnable;
 import java.util.concurrent.BlockingQueue;
 
-public class CrawlSchedulerTask implements Runnable {
+public class CrawlSchedulerTask implements DescribableRunnable {
 
     private final CrawlSchedule crawlSchedule;
     private final BlockingQueue<Item> queue;
@@ -45,14 +46,14 @@ public class CrawlSchedulerTask implements Runnable {
     private void doCrawl() {
         CrawlId currentCrawlId = generator.createNewCrawlId();
         eventSink.schedulingCrawl(currentCrawlId);
-        enqueue(new Item("START_SENTINEL", currentCrawlId));
+        enqueue(new Item(START_SENTINEL, currentCrawlId));
         String url;
         while (null != (url = crawlSchedule.nextUrl())) {
             Item item = new Item(url, currentCrawlId);
             enqueue(item);
         }
         //Add the end sentinel
-        enqueue(new Item("END_SENTINEL", currentCrawlId));
+        enqueue(new Item(END_SENTINEL, currentCrawlId));
     }
 
     private void enqueue(Item item) {
@@ -61,6 +62,11 @@ public class CrawlSchedulerTask implements Runnable {
         } catch (InterruptedException e) {
             eventSink.threadInterruptedError(e);
         }
+    }
+
+    @Override
+    public String description() {
+        return getClass().getSimpleName();
     }
 
 }

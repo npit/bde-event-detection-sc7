@@ -1,18 +1,18 @@
 /* Copyright 2016 NCSR Demokritos
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
-*/
-package gr.demokritos.iit.crawlers.factory;
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+package gr.demokritos.iit.factory;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
@@ -20,6 +20,7 @@ import com.datastax.driver.core.policies.DefaultRetryPolicy;
 import com.datastax.driver.core.policies.Policies;
 import com.mchange.v2.c3p0.AbstractComboPooledDataSource;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
+import gr.demokritos.iit.crawlers.AbstractCrawler;
 import gr.demokritos.iit.crawlers.schedule.DefaultScheduleLoader;
 import gr.demokritos.iit.crawlers.event.EventSink;
 import gr.demokritos.iit.crawlers.Fetcher;
@@ -29,6 +30,7 @@ import gr.demokritos.iit.crawlers.exceptions.UndeclaredRepositoryException;
 import gr.demokritos.iit.repository.CassandraRepository;
 import gr.demokritos.iit.repository.MySqlRepository;
 import gr.demokritos.iit.repository.IRepository;
+import gr.demokritos.iit.repository.InMemoryRepository;
 import java.beans.PropertyVetoException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.conn.ClientConnectionManager;
@@ -47,6 +49,7 @@ import java.io.File;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.concurrent.*;
+import java.util.logging.Logger;
 import javax.sql.DataSource;
 
 /**
@@ -59,6 +62,8 @@ import javax.sql.DataSource;
  */
 public class SystemFactory {
 
+    public static final Logger log = Logger.getLogger(AbstractCrawler.class.getName());
+    
     private final int maxHttpConnections;
     private final int maxQueueSize;
     private final int maxNumberOfCrawlingThreads;
@@ -153,8 +158,8 @@ public class SystemFactory {
                             .build();
                 }
                 Session session = cluster.connect(conf.getCassandraKeyspace());
-                System.out.println(session.getState().getConnectedHosts().toString());
-                repository = new CassandraRepository(session);
+                System.out.println("connected to: " + session.getState().getConnectedHosts().toString());
+                repository = CassandraRepository.createBlogRepository(session);
                 break;
             case MYSQL:
                 dataSource = initializeSQLDataSource();
@@ -192,12 +197,16 @@ public class SystemFactory {
                             .build();
                 }
                 Session session = cluster.connect(conf.getCassandraKeyspace());
-                System.out.println(session.getState().getConnectedHosts().toString());
-                repository = new CassandraRepository(session);
+                System.out.println("connected to: " + session.getState().getConnectedHosts().toString());
+                repository = CassandraRepository.createNewsRepository(session);
                 break;
             case MYSQL:
                 dataSource = initializeSQLDataSource();
                 repository = MySqlRepository.createNewsRepository(dataSource, conf.getDatabaseName());
+                break;
+            case INRAM:
+//                dataSource = initializeSQLDataSource();
+                repository = new InMemoryRepository();
                 break;
         }
         return repository;
@@ -218,7 +227,7 @@ public class SystemFactory {
      */
     public enum Repository {
 
-        MYSQL(MySqlRepository.class.getName()), CASSANDRA(CassandraRepository.class.getName());
+        MYSQL(MySqlRepository.class.getName()), CASSANDRA(CassandraRepository.class.getName()), INRAM(InMemoryRepository.class.getName());
 
         private final String impl_class_decl;
 
@@ -231,6 +240,7 @@ public class SystemFactory {
         static {
             REPOSITORY_DECLARATIONS.put(MYSQL, MySqlRepository.class.getName());
             REPOSITORY_DECLARATIONS.put(CASSANDRA, CassandraRepository.class.getName());
+            REPOSITORY_DECLARATIONS.put(INRAM, InMemoryRepository.class.getName());
         }
     }
 

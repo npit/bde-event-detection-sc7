@@ -18,9 +18,9 @@ import de.l3s.boilerpipe.BoilerpipeExtractor;
 import de.l3s.boilerpipe.extractors.ArticleExtractor;
 import gr.demokritos.iit.crawlers.SimpleExtractor;
 
-public interface CrawlerStrategy {
+public interface CrawlStrategy {
 
-    public CrawlerStrategy BLOG = new CrawlerStrategy() {
+    public CrawlStrategy BLOG = new CrawlStrategy() {
 
         @Override
         public String crawlerType() {
@@ -33,7 +33,7 @@ public interface CrawlerStrategy {
         }
     };
 
-    public CrawlerStrategy NEWS = new CrawlerStrategy() {
+    public CrawlStrategy NEWS = new CrawlStrategy() {
 
         @Override
         public String crawlerType() {
