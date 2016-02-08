@@ -1,0 +1,7 @@
+The MySql instance used by the Sync3crawler requires:
+
+max_allowed_packet = 16M
+
+Within the [mysqld] stanza.
+
+This is default on Linux distributions, but is set lower by default on MacOS.

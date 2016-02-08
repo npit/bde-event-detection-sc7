@@ -28,6 +28,7 @@ import gr.demokritos.iit.crawlers.twitter.structures.TGeoLoc;
 import gr.demokritos.iit.crawlers.twitter.structures.TPlace;
 import gr.demokritos.iit.crawlers.twitter.url.IURLUnshortener;
 import gr.demokritos.iit.crawlers.twitter.utils.langdetect.CybozuLangDetect;
+import gr.demokritos.iit.crawlers.util.Utils;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -258,13 +259,13 @@ public class CassandraRepository extends AbstractRepository implements IReposito
             session.execute(insert_external_url);
         }
         // insert metadata in twitter_created_at_per_post
-        // extract year_month data to divide to buckets.
-        String year_month_bucket = extractYearMonthLiteral(post.getCreatedAt());
+        // extract year_month_day data to divide to buckets.
+        String year_month_bucket = Utils.extractYearMonthDayLiteral(post.getCreatedAt());
 
         Statement insert_created_at
                 = QueryBuilder
                 .insertInto(session.getLoggedKeyspace(), Table.TWITTER_POSTS_PER_DATE.table_name)
-                .value(TBL_TWITTER_POSTS_PER_DATE.FLD_YEAR_MONTH_BUCKET.columnn, year_month_bucket)
+                .value(TBL_TWITTER_POSTS_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.columnn, year_month_bucket)
                 .value(TBL_TWITTER_POSTS_PER_DATE.FLD_CREATED_AT.columnn, timestamp_created)
                 .value(TBL_TWITTER_POSTS_PER_DATE.FLD_POST_ID.columnn, post_id)
                 .value(TBL_TWITTER_POSTS_PER_DATE.FLD_ACCOUNT_NAME.columnn, account_name)
@@ -451,7 +452,6 @@ public class CassandraRepository extends AbstractRepository implements IReposito
     }
 
     // cassandra tables
-
     enum Table {
 
         TWITTER_SOURCE("twitter_source"),
@@ -557,7 +557,7 @@ public class CassandraRepository extends AbstractRepository implements IReposito
 
     enum TBL_TWITTER_POSTS_PER_DATE {
 
-        FLD_YEAR_MONTH_BUCKET("year_month_bucket"),
+        FLD_YEAR_MONTH_DAY_BUCKET("year_month_day_bucket"),
         FLD_CREATED_AT("created_at"),
         FLD_POST_ID("post_id"),
         FLD_ACCOUNT_NAME("account_name"),

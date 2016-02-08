@@ -30,6 +30,7 @@ import gr.demokritos.iit.crawlers.twitter.repository.IRepository;
 import gr.demokritos.iit.crawlers.twitter.repository.MongoRepository;
 import gr.demokritos.iit.crawlers.twitter.repository.MySQLRepository;
 import gr.demokritos.iit.crawlers.twitter.stream.IStreamConsumer;
+import gr.demokritos.iit.crawlers.twitter.stream.SampleStatusListener;
 import gr.demokritos.iit.crawlers.twitter.stream.user.UserStatusListener;
 import gr.demokritos.iit.crawlers.twitter.url.DefaultURLUnshortener;
 import gr.demokritos.iit.crawlers.twitter.url.IURLUnshortener;
@@ -286,6 +287,7 @@ public class SystemFactory {
      * @throws InvocationTargetException
      */
     public IStreamConsumer getStreamImpl() throws PropertyVetoException, ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, IllegalArgumentException, UndeclaredRepositoryException, InvocationTargetException {
+        IStreamConsumer cons;
         ConfigurationBuilder cb = new ConfigurationBuilder();
         cb.setDebugEnabled(true)
                 .setOAuthConsumerKey(conf.getTwitterConsumerKey())
@@ -297,8 +299,16 @@ public class SystemFactory {
         IRepository repos = getRepository();
         String stream_impl_decl = conf.getStreamImpl();
         Class sourceClass = Class.forName(stream_impl_decl);
-        Constructor class_constructor = sourceClass.getConstructor(TwitterStream.class, IRepository.class);
-        return (IStreamConsumer) class_constructor.newInstance(streamreader, repos);
+        Constructor class_constructor;
+        // if public sample, get lang wanted (default 'en');
+        if (stream_impl_decl.equalsIgnoreCase(SampleStatusListener.class.getName())) {
+            class_constructor = sourceClass.getConstructor(TwitterStream.class, IRepository.class, String.class);
+            cons = (IStreamConsumer) class_constructor.newInstance(streamreader, repos, conf.getStreamLanguage());
+        } else {
+            class_constructor = sourceClass.getConstructor(TwitterStream.class, IRepository.class);
+            cons = (IStreamConsumer) class_constructor.newInstance(streamreader, repos);
+        }
+        return cons;
     }
 
     private DataSource initializeSQLDataSource() throws PropertyVetoException {

@@ -14,8 +14,10 @@
  */
 package gr.demokritos.iit.crawlers.twitter.stream;
 
+import static gr.demokritos.iit.crawlers.twitter.factory.SystemFactory.LOGGER;
 import gr.demokritos.iit.crawlers.twitter.repository.IRepository;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicInteger;
 import twitter4j.StallWarning;
 import twitter4j.Status;
 import twitter4j.StatusDeletionNotice;
@@ -26,26 +28,26 @@ import twitter4j.TwitterStream;
  *
  * @author George K. <gkiom@iit.demokritos.gr>
  */
-public class SampleStatusListener extends AbstractStatusListener implements StatusListener, IStreamConsumer {
+public class SampleStatusListener extends BaseStreamListener implements StatusListener, IStreamConsumer {
 
     /**
      * will fetch sample stream in the lang specified. default is 'en'
      */
-    private String iso_code;
+    protected final String iso_code;
+
+    protected final long engine_id;
+    private final AtomicInteger cnt = new AtomicInteger();
 
     public SampleStatusListener(TwitterStream twitterStream, IRepository repos, String iso_code) {
         super(twitterStream, repos);
         this.iso_code = iso_code;
+        this.engine_id = repository.scheduleInitialized(IRepository.CrawlEngine.STREAM);
     }
 
     public SampleStatusListener(TwitterStream twitterStream, IRepository repos) {
         super(twitterStream, repos);
         this.iso_code = Locale.ENGLISH.getLanguage();
-    }
-
-    public SampleStatusListener(IRepository repos, String iso_code) {
-        super(repos);
-        this.iso_code = iso_code;
+        this.engine_id = repository.scheduleInitialized(IRepository.CrawlEngine.STREAM);
     }
 
     @Override
@@ -56,31 +58,30 @@ public class SampleStatusListener extends AbstractStatusListener implements Stat
 
     @Override
     public void onStatus(Status status) {
-        System.out.println(status.getUser().getName() + " : " + status.getText());
-    }
-
-    @Override
-    public void onDeletionNotice(StatusDeletionNotice sdn) {
-
-    }
-
-    @Override
-    public void onTrackLimitationNotice(int i) {
-
-    }
-
-    @Override
-    public void onScrubGeo(long l, long l1) {
-
+        LOGGER.info(String.format("{cnt: %d, user: %s, post_id: %d}: %s", cnt.incrementAndGet(), status.getUser().getScreenName(), status.getId(), status.getText()));
+        processStatus(status, engine_id);
     }
 
     @Override
     public void onStallWarning(StallWarning sw) {
+        LOGGER.warning(String.format("received onStallWarning: {code: %s, message: %s, percentage: %d}", sw.getCode(), sw.getMessage(), sw.getPercentFull()));
+    }
 
+    @Override
+    public void onTrackLimitationNotice(int i) {
+        LOGGER.warning(String.format("received OnTrackLimitationNotice: %d", i));
     }
 
     @Override
     public void onException(Exception excptn) {
-        excptn.printStackTrace();
+        LOGGER.severe(excptn.getMessage());
+    }
+
+    @Override
+    public void onScrubGeo(long l, long l1) {
+    }
+
+    @Override
+    public void onDeletionNotice(StatusDeletionNotice sdn) {
     }
 }

@@ -279,28 +279,28 @@ public class MySqlRepository implements IRepository {
         return results;
     }
 
-    public void deleteAllTestData() {
-        deleteTablesFromTestDatabase(crawlerStrategy.crawlerType() + "_crawls");
-        deleteTablesFromTestDatabase(crawlerStrategy.crawlerType() + "_feeds");
-        deleteTablesFromTestDatabase(crawlerStrategy.crawlerType() + "_articles");
-    }
-
-    private void deleteTablesFromTestDatabase(String tableName) {
-        Connection connection = null;
-        PreparedStatement statement = null;
-        try {
-            connection = connectionPool.getConnection();
-            //Note that this is meant to be hardcoded to the test database
-            String query = "delete from sync3test." + tableName + ";";
-            statement = connection.prepareStatement(query);
-            statement.execute();
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } finally {
-            release(connection, statement, null);
-        }
-    }
+//    public void deleteAllTestData() {
+//        deleteTablesFromTestDatabase(crawlerStrategy.crawlerType() + "_crawls");
+//        deleteTablesFromTestDatabase(crawlerStrategy.crawlerType() + "_feeds");
+//        deleteTablesFromTestDatabase(crawlerStrategy.crawlerType() + "_articles");
+//    }
+//
+//    private void deleteTablesFromTestDatabase(String tableName) {
+//        Connection connection = null;
+//        PreparedStatement statement = null;
+//        try {
+//            connection = connectionPool.getConnection();
+//            //Note that this is meant to be hardcoded to the test database
+//            String query = "delete from bdetest." + tableName + ";";
+//            statement = connection.prepareStatement(query);
+//            statement.execute();
+//
+//        } catch (SQLException e) {
+//            throw new RuntimeException(e);
+//        } finally {
+//            release(connection, statement, null);
+//        }
+//    }
 
     protected void release(Connection connection, Statement statement, ResultSet resultSet) {
         closeResultSet(resultSet);

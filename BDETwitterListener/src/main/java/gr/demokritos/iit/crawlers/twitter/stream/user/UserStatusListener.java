@@ -51,7 +51,7 @@ public class UserStatusListener extends AbstractUserListener implements UserStre
     @Override
     public void onStatus(Status status) {
         LOGGER.info(String.format("{cnt: %d, user: %s, post_id: %d}: %s", cnt.incrementAndGet(), status.getUser().getScreenName(), status.getId(), status.getText()));
-        processStatus(status);
+        processStatus(status, engine_id);
     }
 
     @Override

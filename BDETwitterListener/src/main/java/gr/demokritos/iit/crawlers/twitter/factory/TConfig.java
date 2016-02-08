@@ -87,6 +87,11 @@ public class TConfig extends BaseConfiguration implements ITwitterConf {
     }
 
     @Override
+    public String getStreamLanguage() {
+        return properties.getProperty("stream_lang", "en");
+    }
+
+    @Override
     public int getDelayBetweenCrawls() {
         String delayBetweenCrawls = properties.getProperty("delay_between_crawls");
         return Integer.parseInt(delayBetweenCrawls);

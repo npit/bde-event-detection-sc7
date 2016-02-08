@@ -55,6 +55,13 @@ public interface ITwitterConf extends IBaseConf {
      */
     String getStreamImpl();
 
+    /**
+     * lang to use, when monitoring public sample stream.
+     *
+     * @return
+     */
+    String getStreamLanguage();
+
     String getTwitterAccessTokken();
 
     String getTwitterAccessTokkenSecret();
