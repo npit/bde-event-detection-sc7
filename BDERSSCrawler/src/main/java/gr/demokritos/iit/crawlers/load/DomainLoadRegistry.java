@@ -15,10 +15,10 @@
 package gr.demokritos.iit.crawlers.load;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import gr.demokritos.iit.crawlers.schedule.DomainExtractor;
 import gr.demokritos.iit.model.CrawlId;
 import gr.demokritos.iit.model.Item;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,9 +35,9 @@ public class DomainLoadRegistry implements LoadRegistry {
 
     public DomainLoadRegistry(DomainExtractor extractor) {
         this.extractor = extractor;
-        this.hostsToLoadLevel = new ConcurrentHashMap<String, Integer>();
-        this.conditionVariable = new LinkedBlockingQueue<CrawlId>(1);
-        this.itemsBeingCrawled = Sets.newHashSet();
+        this.hostsToLoadLevel = new ConcurrentHashMap();
+        this.conditionVariable = new LinkedBlockingQueue(1);
+        this.itemsBeingCrawled = new HashSet();
     }
 
     @Override

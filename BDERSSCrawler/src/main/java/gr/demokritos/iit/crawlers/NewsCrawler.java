@@ -44,13 +44,18 @@ public class NewsCrawler extends AbstractCrawler {
     public static void main(String[] args) {
         // TODO impl arg parsing
         IRSSConf configuration = new RSSConf(DEFAULT_NEWS_CONFIGURATION);
-        SystemFactory systemFactory = new SystemFactory(configuration);
+        SystemFactory factory = null; 
         try {
-            NewsCrawler crawler = new NewsCrawler(systemFactory, configuration);
+            factory = new SystemFactory(configuration);
+            NewsCrawler crawler = new NewsCrawler(factory, configuration);
             crawler.startCrawling();
         } catch (Exception e) {
             log.severe(e.getMessage());
             System.exit(1);
+        } finally {
+            if (factory != null) {
+                factory.releaseResources(); // CAUTION only on run_forever = false
+            }
         }
     }
 }

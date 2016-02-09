@@ -88,6 +88,8 @@ public class FeedFetchTask implements DescribableRunnable {
                     eventSink.error(permaLink, e);
                 } catch (BoilerpipeProcessingException e) {
                     eventSink.error(permaLink, e);
+                } catch (Exception e) {
+                    eventSink.error(permaLink, e);
                 }
             }
 

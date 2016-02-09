@@ -47,7 +47,7 @@ public class DefaultScheduleLoader implements ScheduleLoader {
             while (linesIter.hasNext()) {
                 String curLine = linesIter.next();
                 // ignore empty lines
-                if (curLine == null || curLine.trim().isEmpty()) {
+                if (curLine == null || curLine.trim().isEmpty() || curLine.startsWith(COMMENT_INDICATOR)) {
                     linesIter.remove();
                 }
             }

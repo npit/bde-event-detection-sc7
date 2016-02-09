@@ -260,12 +260,12 @@ public class CassandraRepository extends AbstractRepository implements IReposito
         }
         // insert metadata in twitter_created_at_per_post
         // extract year_month_day data to divide to buckets.
-        String year_month_bucket = Utils.extractYearMonthDayLiteral(post.getCreatedAt());
+        String year_month_day = Utils.extractYearMonthDayLiteral(post.getCreatedAt());
 
         Statement insert_created_at
                 = QueryBuilder
                 .insertInto(session.getLoggedKeyspace(), Table.TWITTER_POSTS_PER_DATE.table_name)
-                .value(TBL_TWITTER_POSTS_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.columnn, year_month_bucket)
+                .value(TBL_TWITTER_POSTS_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.columnn, year_month_day)
                 .value(TBL_TWITTER_POSTS_PER_DATE.FLD_CREATED_AT.columnn, timestamp_created)
                 .value(TBL_TWITTER_POSTS_PER_DATE.FLD_POST_ID.columnn, post_id)
                 .value(TBL_TWITTER_POSTS_PER_DATE.FLD_ACCOUNT_NAME.columnn, account_name)
@@ -370,7 +370,6 @@ public class CassandraRepository extends AbstractRepository implements IReposito
                 .value(TBL_TWITTER_LOG.FLD_ENGINE_ID.columnn, current)
                 .value(TBL_TWITTER_LOG.FLD_STARTED.columnn, new Date().getTime());
         session.execute(insert);
-
         return current;
     }
 

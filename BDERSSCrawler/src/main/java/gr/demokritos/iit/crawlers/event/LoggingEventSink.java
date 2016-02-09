@@ -95,7 +95,7 @@ public class LoggingEventSink implements EventSink {
 
     @Override
     public void shutdown(String sTask) {
-        log.log(Level.INFO, "Shutdown {0}", sTask);
+        log.info(String.format("Shutting down %s", sTask));
     }
 
     private String convertToString(Exception e) {

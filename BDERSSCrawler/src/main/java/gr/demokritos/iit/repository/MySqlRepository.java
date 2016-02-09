@@ -31,14 +31,12 @@ import java.util.Date;
 import javax.sql.DataSource;
 
 /**
- * User: ade
+ * @author George K. <gkiom@iit.demokritos.gr>
  */
-public class MySqlRepository implements IRepository {
+public class MySqlRepository extends AbstractRepository implements IRepository {
 
     private final DataSource connectionPool;
-    private final CrawlStrategy crawlerStrategy;
     private final String databaseName;
-    private final BoilerpipeExtractor extractor;
 
     public static IRepository createBlogRepository(DataSource connectionPool, String databaseName) {
         return new MySqlRepository(connectionPool, databaseName, CrawlStrategy.BLOG, CrawlStrategy.BLOG.extractor());
@@ -50,30 +48,24 @@ public class MySqlRepository implements IRepository {
 
     private MySqlRepository(DataSource connectionPool, String databaseName, CrawlStrategy crawlerStrategy,
             BoilerpipeExtractor extractor) {
+        super(crawlerStrategy, extractor);
         this.connectionPool = connectionPool;
-        this.crawlerStrategy = crawlerStrategy;
         this.databaseName = databaseName;
-        this.extractor = extractor;
     }
 
     @Override
     public List<SyndEntry> identifyNewEntries(Item item, List<SyndEntry> candidateEntries) {
-        List<SyndEntry> newEntries = Lists.newArrayList();
-        for (SyndEntry candidateEntry : candidateEntries) {
-            if (isNewEntry(candidateEntry.getLink())) {
-                newEntries.add(candidateEntry);
-            }
-        }
-        return newEntries;
+        return findNewEntries(item, candidateEntries);
     }
 
-    private boolean isNewEntry(String link) {
+    @Override
+    public boolean isNewEntry(String link) {
         Connection connection = null;
         PreparedStatement statement = null;
         ResultSet resultSet = null;
         try {
             connection = connectionPool.getConnection();
-            String query = "select entry_url from " + databaseName + "." + crawlerStrategy.crawlerType() + "_articles"
+            String query = "select entry_url from " + databaseName + "." + crawlerStrategy.crawlType() + "_articles"
                     + " where entry_url = ? limit 1;";
             statement = connection.prepareStatement(query);
             statement.setString(1, link);
@@ -105,7 +97,7 @@ public class MySqlRepository implements IRepository {
         PreparedStatement statement = null;
         try {
             connection = connectionPool.getConnection();
-            String query = "insert into " + databaseName + "." + crawlerStrategy.crawlerType() + "_articles"
+            String query = "insert into " + databaseName + "." + crawlerStrategy.crawlType() + "_articles"
                     + "(entry_url, crawl_id, feed_url, raw_text, clean_text, published, crawled)"
                     + " values(?, ?, ?, ?, ?, ?, ?) on duplicate key update crawl_id = ?, raw_text = ?, clean_text = ?,"
                     + " published = ?, crawled = ?;";
@@ -135,15 +127,6 @@ public class MySqlRepository implements IRepository {
         }
     }
 
-    private long calculatePublishedValue(Date publishedDate) {
-        // If we don't have a published date then we set the value to a special sentinel value.
-        // This means we have to check for this sentinel value when retrieving data.
-        if (publishedDate == null) {
-            return MISSING_PUBLISHED_DATE;
-        }
-        return publishedDate.getTime();
-    }
-
     @Override
     public CrawlId findMostRecentCrawlId() {
         Connection connection = null;
@@ -151,7 +134,7 @@ public class MySqlRepository implements IRepository {
         ResultSet resultSet = null;
         try {
             connection = connectionPool.getConnection();
-            String query = "select id, start, end from " + databaseName + "." + crawlerStrategy.crawlerType()
+            String query = "select id, start, end from " + databaseName + "." + crawlerStrategy.crawlType()
                     + "_crawls order by id desc limit 1;";
             statement = connection.prepareStatement(query);
             resultSet = statement.executeQuery();
@@ -176,7 +159,7 @@ public class MySqlRepository implements IRepository {
         PreparedStatement statement = null;
         try {
             connection = connectionPool.getConnection();
-            String query = "insert into " + databaseName + "." + crawlerStrategy.crawlerType()
+            String query = "insert into " + databaseName + "." + crawlerStrategy.crawlType()
                     + "_crawls(id, start, end) values(?, ?, ?) on duplicate key "
                     + "update id = ?, start = ?, end = ?";
             statement = connection.prepareStatement(query);
@@ -203,7 +186,7 @@ public class MySqlRepository implements IRepository {
         ResultSet resultSet = null;
         try {
             connection = connectionPool.getConnection();
-            String query = "select etag, last_modified from " + databaseName + "." + crawlerStrategy.crawlerType()
+            String query = "select etag, last_modified from " + databaseName + "." + crawlerStrategy.crawlType()
                     + "_feeds where feed_url = ?;";
             statement = connection.prepareStatement(query);
             statement.setString(1, url);
@@ -229,7 +212,7 @@ public class MySqlRepository implements IRepository {
         PreparedStatement statement = null;
         try {
             connection = connectionPool.getConnection();
-            String query = "insert into " + databaseName + "." + crawlerStrategy.crawlerType()
+            String query = "insert into " + databaseName + "." + crawlerStrategy.crawlType()
                     + "_feeds(feed_url, etag, last_modified) values(?, ?, ?) "
                     + "on duplicate key update etag = ?, last_modified = ?";
             statement = connection.prepareStatement(query);
@@ -256,7 +239,7 @@ public class MySqlRepository implements IRepository {
         try {
             connection = connectionPool.getConnection();
             String query = "select entry_url, feed_url, crawl_id, raw_text, clean_text, published, crawled from " + databaseName + "."
-                    + crawlerStrategy.crawlerType() + "_articles where entry_url = ?";
+                    + crawlerStrategy.crawlType() + "_articles where entry_url = ?";
             statement = connection.prepareStatement(query);
             statement.setString(1, entryUrl);
             resultSet = statement.executeQuery();
@@ -301,7 +284,6 @@ public class MySqlRepository implements IRepository {
 //            release(connection, statement, null);
 //        }
 //    }
-
     protected void release(Connection connection, Statement statement, ResultSet resultSet) {
         closeResultSet(resultSet);
         closeStatement(statement);

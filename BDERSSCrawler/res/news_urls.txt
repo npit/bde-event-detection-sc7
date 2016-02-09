@@ -1,4 +1,5 @@
-http://diepresse.com/rss/home
-http://yperdiavgeia.gr/search/ΔΙΑΧΕΙΡΙΣΗ ΙΑΤΡΙΚΩΝ ΑΠΟΒΛΗΤΩΝ/organization_id:5012.rss
+# is a comment
+http://rss.in.gr/feed/news/
 
-http://www.krone.at/Nachrichten/rss.html
+http://rss.cnn.com/rss/edition_world.rss
+# http://www.bankwars.gr/category/media/feed/

@@ -40,13 +40,18 @@ public class BlogCrawler extends AbstractCrawler {
 
     public static void main(String[] args) {
         IRSSConf configuration = new RSSConf(DEFAULT_BLOG_CONFIGURATION);
-        SystemFactory systemFactory = new SystemFactory(configuration);
+        SystemFactory factory = null;
         try {
-            BlogCrawler crawler = new BlogCrawler(systemFactory, configuration);
+            factory = new SystemFactory(configuration);
+            BlogCrawler crawler = new BlogCrawler(factory, configuration);
             crawler.startCrawling();
         } catch (Exception e) {
             log.severe(e.getMessage());
             System.exit(1);
+        } finally {
+            if (factory != null) {
+                factory.releaseResources(); // CAUTION only on run_forever = false
+            }
         }
     }
 }

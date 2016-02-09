@@ -63,7 +63,7 @@ import javax.sql.DataSource;
 public class SystemFactory {
 
     public static final Logger log = Logger.getLogger(AbstractCrawler.class.getName());
-    
+
     private final int maxHttpConnections;
     private final int maxQueueSize;
     private final int maxNumberOfCrawlingThreads;
@@ -81,7 +81,7 @@ public class SystemFactory {
     }
 
     public SystemFactory() {
-        //Use the default settings
+        // use default settings
         this(new RSSConf());
     }
 
@@ -210,6 +210,18 @@ public class SystemFactory {
                 break;
         }
         return repository;
+    }
+
+    /**
+     * release underlying DB connection pools
+     */
+    public void releaseResources() {
+        if (cluster != null) {
+            cluster.close();
+        }
+        if (cpds != null) {
+            cpds.close();
+        }
     }
 
     private Repository getRepositoryType(String backend) throws UndeclaredRepositoryException {

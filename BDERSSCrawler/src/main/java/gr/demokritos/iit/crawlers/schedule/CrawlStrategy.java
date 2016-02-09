@@ -16,14 +16,19 @@ package gr.demokritos.iit.crawlers.schedule;
 
 import de.l3s.boilerpipe.BoilerpipeExtractor;
 import de.l3s.boilerpipe.extractors.ArticleExtractor;
-import gr.demokritos.iit.crawlers.SimpleExtractor;
+import gr.demokritos.iit.crawlers.extractors.SimpleExtractor;
 
 public interface CrawlStrategy {
 
-    public CrawlStrategy BLOG = new CrawlStrategy() {
+    String ARTICLES = "articles";
+    String ARTICLES_PER_DATE = "articles_per_published_date";
+    String ARTICLES_PER_PLACE = "articles_per_place";
+    String FEEDS = "feeds";
+    String CRAWLS = "crawls";
 
+    public CrawlStrategy BLOG = new CrawlStrategy() {
         @Override
-        public String crawlerType() {
+        public String crawlType() {
             return "blog";
         }
 
@@ -31,12 +36,37 @@ public interface CrawlStrategy {
         public BoilerpipeExtractor extractor() {
             return new SimpleExtractor();
         }
+
+        @Override
+        public String TableArticles() {
+            return crawlType().concat("_").concat(ARTICLES);
+        }
+
+        @Override
+        public String TableArticlesPerDate() {
+            return crawlType().concat("_").concat(ARTICLES_PER_DATE);
+        }
+
+        @Override
+        public String TableArticlesPerPlace() {
+            return crawlType().concat("_").concat(ARTICLES_PER_PLACE);
+        }
+
+        @Override
+        public String TableFeeds() {
+            return crawlType().concat("_").concat(FEEDS);
+        }
+
+        @Override
+        public String TableCrawls() {
+            return crawlType().concat("_").concat(CRAWLS);
+        }
     };
 
     public CrawlStrategy NEWS = new CrawlStrategy() {
 
         @Override
-        public String crawlerType() {
+        public String crawlType() {
             return "news";
         }
 
@@ -44,9 +74,44 @@ public interface CrawlStrategy {
         public BoilerpipeExtractor extractor() {
             return new ArticleExtractor();
         }
+
+        @Override
+        public String TableArticles() {
+            return crawlType().concat("_").concat(ARTICLES);
+        }
+
+        @Override
+        public String TableArticlesPerDate() {
+            return crawlType().concat("_").concat(ARTICLES_PER_DATE);
+        }
+
+        @Override
+        public String TableArticlesPerPlace() {
+            return crawlType().concat("_").concat(ARTICLES_PER_PLACE);
+        }
+
+        @Override
+        public String TableFeeds() {
+            return crawlType().concat("_").concat(FEEDS);
+        }
+
+        @Override
+        public String TableCrawls() {
+            return crawlType().concat("_").concat(CRAWLS);
+        }
     };
 
-    String crawlerType();
+    String crawlType();
 
     BoilerpipeExtractor extractor();
+
+    String TableArticles();
+
+    String TableArticlesPerDate();
+
+    String TableArticlesPerPlace();
+
+    String TableFeeds();
+
+    String TableCrawls();
 }

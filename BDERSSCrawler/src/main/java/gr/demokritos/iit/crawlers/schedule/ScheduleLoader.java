@@ -19,5 +19,7 @@ import java.util.List;
 
 public interface ScheduleLoader {
 
+    String COMMENT_INDICATOR = "#";
+
     List<String> load();
 }

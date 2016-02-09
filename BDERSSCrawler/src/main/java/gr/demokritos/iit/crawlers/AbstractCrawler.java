@@ -27,7 +27,6 @@ import gr.demokritos.iit.crawlers.schedule.DefaultScheduleLoader;
 import gr.demokritos.iit.crawlers.schedule.DefaultCrawlExecutor;
 import gr.demokritos.iit.crawlers.schedule.DefaultCrawlIdGenerator;
 import gr.demokritos.iit.factory.SystemFactory;
-import gr.demokritos.iit.factory.RSSConf;
 import gr.demokritos.iit.crawlers.schedule.DomainExtractor;
 import gr.demokritos.iit.crawlers.schedule.DefaultCrawlSchedule;
 import gr.demokritos.iit.crawlers.schedule.CrawlSchedule;
@@ -117,7 +116,7 @@ public abstract class AbstractCrawler {
         scheduledFuture.get();
     }
 
-    private void runOnce() throws InterruptedException, ExecutionException {
+    protected void runOnce() throws InterruptedException, ExecutionException {
         // Set up the task
         oneTimeProducerExecutorService.submit(crawlSchedulerTask);
         

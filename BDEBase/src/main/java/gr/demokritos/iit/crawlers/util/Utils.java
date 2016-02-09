@@ -15,7 +15,8 @@ import java.util.Date;
 public class Utils {
 
     /**
-     * return a 'yyyy_MM_dd' represantation of the date passed
+     * return a 'yyyy_MM_dd' represantation of the date passed. For usage in
+     * cassandra key buckets
      *
      * @param date
      * @return
@@ -29,7 +30,7 @@ public class Utils {
         int year = cal.get(Calendar.YEAR);
         int month = cal.get(Calendar.MONTH);
         int day = cal.get(Calendar.DAY_OF_MONTH);
-        String year_month_day_bucket = String.valueOf(year).concat("_").concat(String.valueOf(month)).concat("_").concat(String.valueOf(day));
+        String year_month_day_bucket = String.valueOf(year).concat("-").concat(String.valueOf(month)).concat("-").concat(String.valueOf(day));
         return year_month_day_bucket;
     }
 

@@ -15,17 +15,17 @@
 package gr.demokritos.iit.repository;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.sun.syndication.feed.synd.SyndEntry;
 import de.l3s.boilerpipe.BoilerpipeExtractor;
 import de.l3s.boilerpipe.BoilerpipeProcessingException;
-import gr.demokritos.iit.crawlers.SimpleExtractor;
+import gr.demokritos.iit.crawlers.extractors.SimpleExtractor;
 import gr.demokritos.iit.model.Content;
 import gr.demokritos.iit.model.CrawlId;
 import gr.demokritos.iit.model.Item;
 import gr.demokritos.iit.model.UrlMetaData;
 import java.io.IOException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -39,9 +39,9 @@ public class InMemoryRepository implements IRepository {
     private Content lastContentSaved;
 
     public InMemoryRepository() {
-        this.feedItemToEntryContent = Maps.newHashMap();
-        this.feedUrlToMetaData = Maps.newHashMap();
-        this.entryUrlToData = Maps.newHashMap();
+        this.feedItemToEntryContent = new HashMap();
+        this.feedUrlToMetaData = new HashMap();
+        this.entryUrlToData = new HashMap();
         this.extractor = new SimpleExtractor();
     }
 
@@ -76,7 +76,7 @@ public class InMemoryRepository implements IRepository {
         data.add(cleanText);
         data.add(convertToString(content.getCrawlDate()));
         if (publishedDate == null) {
-            data.add("" + IRepository.MISSING_PUBLISHED_DATE);
+            data.add("" + AbstractRepository.MISSING_PUBLISHED_DATE);
         } else {
             data.add(convertToString(publishedDate));
         }
