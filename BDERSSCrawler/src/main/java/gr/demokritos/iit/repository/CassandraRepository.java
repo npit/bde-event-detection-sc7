@@ -25,18 +25,19 @@ import com.sun.syndication.feed.synd.SyndEntry;
 import de.l3s.boilerpipe.BoilerpipeExtractor;
 import de.l3s.boilerpipe.BoilerpipeProcessingException;
 import gr.demokritos.iit.crawlers.schedule.CrawlStrategy;
+import gr.demokritos.iit.crawlers.util.TableUtil;
 import gr.demokritos.iit.crawlers.util.Utils;
+import gr.demokritos.iit.crawlers.util.langdetect.CybozuLangDetect;
 import gr.demokritos.iit.model.Content;
 import gr.demokritos.iit.model.CrawlId;
 import gr.demokritos.iit.model.Item;
 import gr.demokritos.iit.model.UrlMetaData;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.net.MalformedURLException;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.logging.Logger;
+import java.util.Set;
 
 /**
  *
@@ -44,6 +45,7 @@ import java.util.logging.Logger;
  */
 public class CassandraRepository extends AbstractRepository implements IRepository {
 
+    private static final long NOT_EXISTING_ARTICLE = -2l; // set it lower than MISSING_PUB_DATE
     private final Session session;
 
     public static IRepository createBlogRepository(Session session) {
@@ -66,47 +68,72 @@ public class CassandraRepository extends AbstractRepository implements IReposito
 
     @Override
     public void savePage(Item item, Content content, Date publishedDate) throws IOException, BoilerpipeProcessingException {
-        System.out.println("save content: " + content.getUrl());
-        Statement upsert;
         try {
-            String cleanText = extractor.getText(content.getRawText());
-            CrawlId crawlId = item.getCrawlId();
             long pub_date = calculatePublishedValue(publishedDate);
-            boolean isNewEntry = isNewEntry(content.getUrl());
-            // insert in base table.
-            upsert = QueryBuilder
-                    .update(session.getLoggedKeyspace(), crawlerStrategy.TableArticles())
-                    .with(set(TBL_ARTICLES.FLD_CRAWL_ID.columnn, crawlId.getId()))
-                    .and(set(TBL_ARTICLES.FLD_FEED_URL.columnn, item.getFeedUrl()))
-                    .and(set(TBL_ARTICLES.FLD_RAW_TEXT.columnn, content.getRawText()))
-                    .and(set(TBL_ARTICLES.FLD_CLEAN_TEXT.columnn, cleanText))
-                    .and(set(TBL_ARTICLES.FLD_CRAWLED.columnn, content.getCrawlDate().getTime()))
-                    .and(set(TBL_ARTICLES.FLD_PUBLISHED.columnn, pub_date))
-                    .and(set(TBL_ARTICLES.FLD_LANGUAGE.columnn, "")) // TODO identify language
-                    .and(set(TBL_ARTICLES.FLD_PLACE_LITERAL.columnn, new HashSet<String>())) // TODO call Named Entity Extraction, and set keys from there.
-                    .where(eq(TBL_ARTICLES.FLD_ENTRY_URL.columnn, content.getUrl()));
-            session.execute(upsert);
-            if (isNewEntry) {
-                // insert in articles_per_date
-                String year_month_day = Utils.extractYearMonthDayLiteral(publishedDate);
-                Statement insert = QueryBuilder
-                        .insertInto(session.getLoggedKeyspace(), crawlerStrategy.TableArticlesPerDate())
-                        .value(TBL_ARTICLES_PER_DATE.FLD_PUBLISHED.columnn, pub_date)
-                        .value(TBL_ARTICLES_PER_DATE.FLD_FEED_URL.columnn, item.getFeedUrl())
-                        .value(TBL_ARTICLES_PER_DATE.FLD_RAW_TEXT.columnn, content.getRawText())
-                        .value(TBL_ARTICLES_PER_DATE.FLD_CLEAN_TEXT.columnn, cleanText)
-                        .value(TBL_ARTICLES_PER_DATE.FLD_CRAWLED.columnn, content.getCrawlDate().getTime())
-                        .value(TBL_ARTICLES_PER_DATE.FLD_LANGUAGE.columnn, "")
-                        .value(TBL_ARTICLES_PER_DATE.FLD_PLACE_LITERAL.columnn, new HashSet<String>())
-                        .value(TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.columnn, year_month_day)
-                        .value(TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.columnn, content.getUrl());
-                session.execute(insert);
-            } else {
-                // TODO: get published date
-                // compare and if different remove and insert new.
-                // OR: update content and keep old date (faster)
+            long existing_pub_date = getPublishedDateIfExisting(content.getUrl());
+            String year_month_day = Utils.extractYearMonthDayLiteral(publishedDate);
+            // if article exists and is updated
+            if ((NOT_EXISTING_ARTICLE != existing_pub_date) && (MISSING_PUBLISHED_DATE != pub_date) && (pub_date > existing_pub_date)) {
+                // we need to specifically delete before inserting/updating cause pub_date is a clustering column
+                deletePage(content.getUrl(), year_month_day);
             }
-            // TODO use saving policy for _per_place
+            insertPage(item, content, pub_date, year_month_day);
+        } catch (BoilerpipeProcessingException | MalformedURLException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    private void insertPage(Item item, Content content, long pub_date, String year_month_day) throws BoilerpipeProcessingException, MalformedURLException {
+        System.out.println("save content: " + content.getUrl()); // debug
+        CrawlId crawlId = item.getCrawlId();
+        String cleanText = extractor.getText(content.getRawText());
+        // identify language
+        String lang = CybozuLangDetect.getInstance().identifyLanguage(cleanText);
+        long crawled_timestamp = content.getCrawlDate().getTime();
+        // a Named Entity place holder (for location)
+        Set<String> named_entities = new HashSet();
+
+        Statement insert;
+        // insert in base table.
+        insert = QueryBuilder
+                .insertInto(session.getLoggedKeyspace(), crawlerStrategy.TableArticles())
+                .value(TBL_ARTICLES.FLD_REVERSED_HOST.columnn, TableUtil.getReversedHost(TableUtil.reverseUrl(content.getUrl())))
+                .value(TBL_ARTICLES.FLD_ENTRY_URL.columnn, content.getUrl())
+                .value(TBL_ARTICLES.FLD_PUBLISHED.columnn, pub_date)
+                .value(TBL_ARTICLES.FLD_CRAWL_ID.columnn, crawlId.getId())
+                .value(TBL_ARTICLES.FLD_FEED_URL.columnn, item.getFeedUrl())
+                .value(TBL_ARTICLES.FLD_RAW_TEXT.columnn, content.getRawText())
+                .value(TBL_ARTICLES.FLD_CLEAN_TEXT.columnn, cleanText)
+                .value(TBL_ARTICLES.FLD_CRAWLED.columnn, crawled_timestamp)
+                .value(TBL_ARTICLES.FLD_LANGUAGE.columnn, lang)
+                .value(TBL_ARTICLES.FLD_PLACE_LITERAL.columnn, named_entities);
+        session.execute(insert);
+        // insert in articles_per_published_date
+        insert = QueryBuilder
+                .insertInto(session.getLoggedKeyspace(), crawlerStrategy.TableArticlesPerPublishedDate())
+                .value(TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.columnn, year_month_day)
+                .value(TBL_ARTICLES_PER_DATE.FLD_PUBLISHED.columnn, pub_date)
+                .value(TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.columnn, content.getUrl())
+                .value(TBL_ARTICLES_PER_DATE.FLD_FEED_URL.columnn, item.getFeedUrl())
+                .value(TBL_ARTICLES_PER_DATE.FLD_RAW_TEXT.columnn, content.getRawText())
+                .value(TBL_ARTICLES_PER_DATE.FLD_CLEAN_TEXT.columnn, cleanText)
+                .value(TBL_ARTICLES_PER_DATE.FLD_CRAWLED.columnn, crawled_timestamp)
+                .value(TBL_ARTICLES_PER_DATE.FLD_LANGUAGE.columnn, lang)
+                .value(TBL_ARTICLES_PER_DATE.FLD_PLACE_LITERAL.columnn, named_entities);
+        session.execute(insert);
+        // insert in articles_per_crawled_date
+        insert = QueryBuilder
+                .insertInto(session.getLoggedKeyspace(), crawlerStrategy.TableArticlesPerCrawledDate())
+                .value(TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.columnn, year_month_day)
+                .value(TBL_ARTICLES_PER_DATE.FLD_CRAWLED.columnn, crawled_timestamp)
+                .value(TBL_ARTICLES_PER_DATE.FLD_PUBLISHED.columnn, pub_date)
+                .value(TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.columnn, content.getUrl())
+                .value(TBL_ARTICLES_PER_DATE.FLD_FEED_URL.columnn, item.getFeedUrl())
+                .value(TBL_ARTICLES_PER_DATE.FLD_RAW_TEXT.columnn, content.getRawText())
+                .value(TBL_ARTICLES_PER_DATE.FLD_CLEAN_TEXT.columnn, cleanText)
+                .value(TBL_ARTICLES_PER_DATE.FLD_LANGUAGE.columnn, lang)
+                .value(TBL_ARTICLES_PER_DATE.FLD_PLACE_LITERAL.columnn, named_entities);
+        session.execute(insert);        // TODO use saving policy for _per_place
 //            // insert in articles_per_place
 //            upsert = QueryBuilder
 //                    .update(session.getLoggedKeyspace(), crawlerStrategy.TableArticlesPerPlace())
@@ -115,15 +142,10 @@ public class CassandraRepository extends AbstractRepository implements IReposito
 //                        .and(set(TBL_ARTICLES_PER_PLACE.FLD_RAW_TEXT.columnn, content.getRawText()))
 //                        .and(set(TBL_ARTICLES_PER_PLACE.FLD_CLEAN_TEXT.columnn, cleanText))
 //                        .and(set(TBL_ARTICLES_PER_PLACE.FLD_CRAWLED.columnn, content.getCrawlDate().getTime()))
-//                        .and(set(TBL_ARTICLES_PER_PLACE.FLD_LANGUAGE.columnn, "")) // TODO identify language
-//                    .where(eq(TBL_ARTICLES_PER_PLACE.FLD_PLACE_LITERAL.columnn, "")) // TODO add place literal KEY
+//                        .and(set(TBL_ARTICLES_PER_PLACE.FLD_LANGUAGE.columnn, ""))
+//                    .where(eq(TBL_ARTICLES_PER_PLACE.FLD_PLACE_LITERAL.columnn, ""))
 //                    .and(eq(TBL_ARTICLES_PER_PLACE.FLD_ENTRY_URL.columnn, content.getUrl()));
 //            session.execute(upsert);
-        } catch (BoilerpipeProcessingException ex) {
-            throw new RuntimeException(ex);
-        } catch (Exception ex1) {
-            throw new RuntimeException(ex1);
-        }
     }
 
     @Override
@@ -201,52 +223,93 @@ public class CassandraRepository extends AbstractRepository implements IReposito
     }
 
     @Override
-    public List<String> find(String url) { // TODO implement a method to get published date from existing URL in DB
-        // TODO: we need in articles_per_date, the date DESC ordered as CLUSTERING column, so we cannot update on the fly.
+    public List<String> find(String url) {
+        throw new UnsupportedOperationException("not supported");
+    }
+
+    /**
+     * return the published date of the article if existing.
+     *
+     * @param url
+     * @return
+     */
+    private long getPublishedDateIfExisting(String url) throws MalformedURLException {
+        // we need in articles_per_date, the date DESC ordered as CLUSTERING column, so we cannot update on the fly.
         Statement select = QueryBuilder
                 .select(
                         TBL_ARTICLES.FLD_ENTRY_URL.columnn, TBL_ARTICLES.FLD_PUBLISHED.columnn
                 )
                 .from(session.getLoggedKeyspace(), crawlerStrategy.TableArticles())
-                .where(eq(TBL_ARTICLES.FLD_ENTRY_URL.columnn, url));
+                .where(eq(TBL_ARTICLES.FLD_REVERSED_HOST.columnn, TableUtil.getReversedHost(TableUtil.reverseUrl(url))))
+                .and(eq(TBL_ARTICLES.FLD_ENTRY_URL.columnn, url));
         ResultSet results = session.execute(select);
 
         Row one = results.one();
         if (one != null) {
-            String sn = one.getString(TBL_ARTICLES.FLD_ENTRY_URL.columnn);
             long pub = one.getLong(TBL_ARTICLES.FLD_PUBLISHED.columnn);
-            if (sn != null && !sn.isEmpty()) {
-                List<String> res = new ArrayList(2);
-                res.add(sn);
-//                res.add(String.val)
-                return res;
-            }
+            return pub;
         }
-        return Collections.EMPTY_LIST;
+
+        return NOT_EXISTING_ARTICLE;
     }
 
     @Override
     public boolean isNewEntry(String link) {
-        String key = TBL_ARTICLES.FLD_ENTRY_URL.columnn;
-        Statement select = QueryBuilder
-                .select(key)
-                .from(session.getLoggedKeyspace(), crawlerStrategy.TableArticles())
-                .where(eq(key, link))
-                .limit(1);
-        ResultSet results = session.execute(select);
+        Statement select;
+        try {
+            select = QueryBuilder
+                    .select(TBL_ARTICLES.FLD_ENTRY_URL.columnn)
+                    .from(session.getLoggedKeyspace(), crawlerStrategy.TableArticles())
+                    .where(eq(TBL_ARTICLES.FLD_ENTRY_URL.columnn, link))
+                    .and(eq(TBL_ARTICLES.FLD_REVERSED_HOST.columnn, TableUtil.getReversedHost(TableUtil.reverseUrl(link))))
+                    .limit(1);
+            ResultSet results = session.execute(select);
 
-        Row one = results.one();
-        if (one != null) {
-            String sn = one.getString(key);
-            if (sn != null && !sn.isEmpty()) {
-                return false;
+            Row one = results.one();
+            if (one != null) {
+                String sn = one.getString(TBL_ARTICLES.FLD_ENTRY_URL.columnn);
+                if (sn != null && !sn.isEmpty()) {
+                    return false;
+                }
             }
+        } catch (MalformedURLException ex) {
+            throw new RuntimeException(ex);
         }
         return true;
     }
 
+    private void deletePage(String url, String year_month_day) {
+        System.out.println("delete content: " + url); //debug
+        Statement delete;
+        // delete from base table.
+        delete = QueryBuilder
+                .delete().all().from(session.getLoggedKeyspace(), crawlerStrategy.TableArticles())
+                .where(eq(TBL_ARTICLES.FLD_ENTRY_URL.columnn, url));
+        session.execute(delete);
+        // delete from articles per published date table
+        delete = QueryBuilder
+                .delete().all().from(session.getLoggedKeyspace(), crawlerStrategy.TableArticlesPerPublishedDate())
+                .where(eq(TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.columnn, year_month_day))
+                .and(eq(TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.columnn, url));
+        session.execute(delete);
+        // delete from articles per crawled date table
+        delete = QueryBuilder
+                .delete().all().from(session.getLoggedKeyspace(), crawlerStrategy.TableArticlesPerCrawledDate())
+                .where(eq(TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.columnn, year_month_day))
+                .and(eq(TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.columnn, url));
+        session.execute(delete);
+        // implement when needed
+        // delete from articles per place
+//        delete = QueryBuilder
+//                .delete().all().from(session.getLoggedKeyspace(), crawlerStrategy.TableArticlesPerPlace())
+//                .where(eq(TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.columnn, year_month_day))
+//                .and(eq(TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.columnn, url));
+//        session.execute(delete);
+    }
+
     enum TBL_ARTICLES {
 
+        FLD_REVERSED_HOST("reversed_host"),
         FLD_ENTRY_URL("entry_url"),
         FLD_PUBLISHED("published"),
         FLD_PLACE_LITERAL("place_literal"),

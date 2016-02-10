@@ -15,6 +15,7 @@
         <module>BDETwitterListener</module>
         <module>BDERSSCrawler</module>
         <module>BDEBase</module>
+        <module>BDELocationExtraction</module>
     </modules>
     <build>
         <plugins>

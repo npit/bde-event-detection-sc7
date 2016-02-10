@@ -28,13 +28,17 @@ public class Content {
     private final Date crawledDate;
 
     public Content(String url, String rawText, String etag, String lastModified, Date crawledDate) {
-        this.url = url;
+        this.url = url.trim();
         this.rawText = rawText;
         this.etag = etag;
         this.lastModified = lastModified;
         this.crawledDate = crawledDate;
     }
 
+    /**
+     * the permalink of the article
+     * @return 
+     */
     public String getUrl() {
         return url;
     }

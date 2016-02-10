@@ -21,7 +21,8 @@ import gr.demokritos.iit.crawlers.extractors.SimpleExtractor;
 public interface CrawlStrategy {
 
     String ARTICLES = "articles";
-    String ARTICLES_PER_DATE = "articles_per_published_date";
+    String ARTICLES_PER_PUBLISHED_DATE = "articles_per_published_date";
+    String ARTICLES_PER_CRAWLED_DATE = "articles_per_crawled_date";
     String ARTICLES_PER_PLACE = "articles_per_place";
     String FEEDS = "feeds";
     String CRAWLS = "crawls";
@@ -43,8 +44,8 @@ public interface CrawlStrategy {
         }
 
         @Override
-        public String TableArticlesPerDate() {
-            return crawlType().concat("_").concat(ARTICLES_PER_DATE);
+        public String TableArticlesPerPublishedDate() {
+            return crawlType().concat("_").concat(ARTICLES_PER_PUBLISHED_DATE);
         }
 
         @Override
@@ -60,6 +61,11 @@ public interface CrawlStrategy {
         @Override
         public String TableCrawls() {
             return crawlType().concat("_").concat(CRAWLS);
+        }
+
+        @Override
+        public String TableArticlesPerCrawledDate() {
+            return crawlType().concat("_").concat(ARTICLES_PER_CRAWLED_DATE);
         }
     };
 
@@ -81,8 +87,8 @@ public interface CrawlStrategy {
         }
 
         @Override
-        public String TableArticlesPerDate() {
-            return crawlType().concat("_").concat(ARTICLES_PER_DATE);
+        public String TableArticlesPerPublishedDate() {
+            return crawlType().concat("_").concat(ARTICLES_PER_PUBLISHED_DATE);
         }
 
         @Override
@@ -99,6 +105,11 @@ public interface CrawlStrategy {
         public String TableCrawls() {
             return crawlType().concat("_").concat(CRAWLS);
         }
+
+        @Override
+        public String TableArticlesPerCrawledDate() {
+            return crawlType().concat("_").concat(ARTICLES_PER_CRAWLED_DATE);
+        }
     };
 
     String crawlType();
@@ -107,7 +118,9 @@ public interface CrawlStrategy {
 
     String TableArticles();
 
-    String TableArticlesPerDate();
+    String TableArticlesPerPublishedDate();
+
+    String TableArticlesPerCrawledDate();
 
     String TableArticlesPerPlace();
 

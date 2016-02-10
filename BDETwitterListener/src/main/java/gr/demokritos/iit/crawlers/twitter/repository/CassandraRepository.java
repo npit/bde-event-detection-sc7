@@ -27,7 +27,7 @@ import gr.demokritos.iit.crawlers.twitter.structures.SourceAccount;
 import gr.demokritos.iit.crawlers.twitter.structures.TGeoLoc;
 import gr.demokritos.iit.crawlers.twitter.structures.TPlace;
 import gr.demokritos.iit.crawlers.twitter.url.IURLUnshortener;
-import gr.demokritos.iit.crawlers.twitter.utils.langdetect.CybozuLangDetect;
+import gr.demokritos.iit.crawlers.util.langdetect.CybozuLangDetect;
 import gr.demokritos.iit.crawlers.util.Utils;
 import java.util.Collection;
 import java.util.Collections;

@@ -27,7 +27,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import gr.demokritos.iit.crawlers.twitter.structures.SourceAccount;
 import gr.demokritos.iit.crawlers.twitter.url.IURLUnshortener;
-import gr.demokritos.iit.crawlers.twitter.utils.langdetect.CybozuLangDetect;
+import gr.demokritos.iit.crawlers.util.langdetect.CybozuLangDetect;
 import gr.demokritos.iit.crawlers.twitter.utils.SQLUtils;
 import java.text.SimpleDateFormat;
 import java.util.Collections;

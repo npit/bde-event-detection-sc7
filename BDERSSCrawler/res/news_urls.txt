@@ -1,5 +1,9 @@
 # is a comment
-http://rss.in.gr/feed/news/
+# Reuters news.
+http://feeds.reuters.com/news/artsculture
+http://feeds.reuters.com/reuters/businessNews
+http://feeds.reuters.com/reuters/companyNews
+http://feeds.reuters.com/reuters/entertainment
 
-http://rss.cnn.com/rss/edition_world.rss
-# http://www.bankwars.gr/category/media/feed/
+
+
