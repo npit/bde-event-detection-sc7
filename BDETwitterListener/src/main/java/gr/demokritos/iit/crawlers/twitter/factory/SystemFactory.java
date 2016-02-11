@@ -20,7 +20,7 @@ import com.datastax.driver.core.policies.DefaultRetryPolicy;
 import com.datastax.driver.core.policies.Policies;
 import com.mchange.v2.c3p0.AbstractComboPooledDataSource;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
-import gr.demokritos.iit.crawlers.exceptions.UndeclaredRepositoryException;
+import gr.demokritos.iit.base.exceptions.UndeclaredRepositoryException;
 import gr.demokritos.iit.crawlers.twitter.impl.ITwitterRestConsumer;
 import gr.demokritos.iit.crawlers.twitter.impl.BaseTwitterRestConsumer;
 import gr.demokritos.iit.crawlers.twitter.policy.ICrawlPolicy;
@@ -103,7 +103,7 @@ public class SystemFactory {
         ITwitterRestConsumer crawler;
         String crawl_decl = conf.getCrawlerImpl();
         Class sourceClass = Class.forName(crawl_decl);
-        Constructor class_constructor = sourceClass.getConstructor(TConfig.class, IRepository.class, ICrawlPolicy.class);
+        Constructor class_constructor = sourceClass.getConstructor(ITwitterConf.class, IRepository.class, ICrawlPolicy.class);
         ICrawlPolicy policy = getCrawlPolicy(repository);
         crawler = (ITwitterRestConsumer) class_constructor.newInstance(conf, repository, policy);
         return crawler;
@@ -135,7 +135,7 @@ public class SystemFactory {
         ITwitterRestConsumer crawler;
         String crawl_decl = conf.getCrawlerImpl();
         Class sourceClass = Class.forName(crawl_decl);
-        Constructor class_constructor = sourceClass.getConstructor(TConfig.class, IRepository.class, ICrawlPolicy.class);
+        Constructor class_constructor = sourceClass.getConstructor(ITwitterConf.class, IRepository.class, ICrawlPolicy.class);
         IRepository repository = getRepository();
         ICrawlPolicy policy = getCrawlPolicy(repository);
         crawler = (ITwitterRestConsumer) class_constructor.newInstance(conf, repository, policy);
@@ -165,7 +165,7 @@ public class SystemFactory {
             PropertyVetoException {
         ITwitterRestConsumer crawler;
         Class sourceClass = Class.forName(BaseTwitterRestConsumer.class.getName());
-        Constructor class_constructor = sourceClass.getConstructor(TConfig.class, IRepository.class, ICrawlPolicy.class);
+        Constructor class_constructor = sourceClass.getConstructor(ITwitterConf.class, IRepository.class, ICrawlPolicy.class);
         IRepository repository = getRepository();
         ICrawlPolicy policy = getCrawlPolicy(repository);
         crawler = (ITwitterRestConsumer) class_constructor.newInstance(conf, repository, policy);

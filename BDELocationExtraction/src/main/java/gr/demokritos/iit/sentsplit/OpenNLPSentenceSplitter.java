@@ -37,6 +37,7 @@ public class OpenNLPSentenceSplitter implements ISentenceSplitter {
      */
     private SentenceModel smSplitter = null;
     private static final Logger LOGGER = Logger.getAnonymousLogger();
+    private SentenceDetectorME sentenceDetector;
 
     /**
      *
@@ -45,6 +46,7 @@ public class OpenNLPSentenceSplitter implements ISentenceSplitter {
     public OpenNLPSentenceSplitter(String sModelPath) {
         this.sModelFilePath = sModelPath;
         initSplitter();
+        this.sentenceDetector = new SentenceDetectorME(smSplitter);
     }
 
     @Override
@@ -53,7 +55,6 @@ public class OpenNLPSentenceSplitter implements ISentenceSplitter {
             throw new IllegalArgumentException("no model found");
         }
         String[] saSentences;
-        SentenceDetectorME sentenceDetector = new SentenceDetectorME(smSplitter);
         saSentences = sentenceDetector.sentDetect(sDocument.trim());
         return saSentences;
     }
@@ -92,6 +93,8 @@ public class OpenNLPSentenceSplitter implements ISentenceSplitter {
                     }
                 }
             }
+        } else {
+            throw new IllegalArgumentException(String.format("'%s' not found", sModelFilePath));
         }
     }
 }

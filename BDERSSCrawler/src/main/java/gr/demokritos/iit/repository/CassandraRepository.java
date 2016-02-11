@@ -14,6 +14,7 @@
  */
 package gr.demokritos.iit.repository;
 
+import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
@@ -25,9 +26,9 @@ import com.sun.syndication.feed.synd.SyndEntry;
 import de.l3s.boilerpipe.BoilerpipeExtractor;
 import de.l3s.boilerpipe.BoilerpipeProcessingException;
 import gr.demokritos.iit.crawlers.schedule.CrawlStrategy;
-import gr.demokritos.iit.crawlers.util.TableUtil;
-import gr.demokritos.iit.crawlers.util.Utils;
-import gr.demokritos.iit.crawlers.util.langdetect.CybozuLangDetect;
+import gr.demokritos.iit.base.util.TableUtil;
+import gr.demokritos.iit.base.util.Utils;
+import gr.demokritos.iit.base.util.langdetect.CybozuLangDetect;
 import gr.demokritos.iit.model.Content;
 import gr.demokritos.iit.model.CrawlId;
 import gr.demokritos.iit.model.Item;
@@ -68,19 +69,15 @@ public class CassandraRepository extends AbstractRepository implements IReposito
 
     @Override
     public void savePage(Item item, Content content, Date publishedDate) throws IOException, BoilerpipeProcessingException {
-        try {
-            long pub_date = calculatePublishedValue(publishedDate);
-            long existing_pub_date = getPublishedDateIfExisting(content.getUrl());
-            String year_month_day = Utils.extractYearMonthDayLiteral(publishedDate);
-            // if article exists and is updated
-            if ((NOT_EXISTING_ARTICLE != existing_pub_date) && (MISSING_PUBLISHED_DATE != pub_date) && (pub_date > existing_pub_date)) {
-                // we need to specifically delete before inserting/updating cause pub_date is a clustering column
-                deletePage(content.getUrl(), year_month_day);
-            }
-            insertPage(item, content, pub_date, year_month_day);
-        } catch (BoilerpipeProcessingException | MalformedURLException ex) {
-            throw new RuntimeException(ex);
+        long pub_date = calculatePublishedValue(publishedDate);
+        long existing_pub_date = getPublishedDateIfExisting(content.getUrl());
+        String year_month_day = Utils.extractYearMonthDayLiteral(publishedDate);
+        // if article exists and is updated
+        if ((NOT_EXISTING_ARTICLE != existing_pub_date) && (MISSING_PUBLISHED_DATE != pub_date) && (pub_date > existing_pub_date)) {
+            // we need to specifically delete before inserting/updating cause pub_date is a clustering column
+            deletePage(content.getUrl(), year_month_day);
         }
+        insertPage(item, content, pub_date, year_month_day);
     }
 
     private void insertPage(Item item, Content content, long pub_date, String year_month_day) throws BoilerpipeProcessingException, MalformedURLException {
@@ -88,7 +85,13 @@ public class CassandraRepository extends AbstractRepository implements IReposito
         CrawlId crawlId = item.getCrawlId();
         String cleanText = extractor.getText(content.getRawText());
         // identify language
-        String lang = CybozuLangDetect.getInstance().identifyLanguage(cleanText);
+        String lang;
+        if (cleanText == null || cleanText.isEmpty()) {
+            cleanText = "";
+            lang = CybozuLangDetect.UNDEFINED_LANG;
+        } else {
+            lang = CybozuLangDetect.getInstance().identifyLanguage(cleanText);
+        }
         long crawled_timestamp = content.getCrawlDate().getTime();
         // a Named Entity place holder (for location)
         Set<String> named_entities = new HashSet();
@@ -302,8 +305,7 @@ public class CassandraRepository extends AbstractRepository implements IReposito
         // delete from articles per place
 //        delete = QueryBuilder
 //                .delete().all().from(session.getLoggedKeyspace(), crawlerStrategy.TableArticlesPerPlace())
-//                .where(eq(TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.columnn, year_month_day))
-//                .and(eq(TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.columnn, url));
+//                .where(eq(TBL_ARTICLES_PER_PLACE.FLD_ENTRY_URL.columnn, url));
 //        session.execute(delete);
     }
 

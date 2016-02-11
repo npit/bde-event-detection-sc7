@@ -12,7 +12,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package gr.demokritos.iit.crawlers.conf;
+package gr.demokritos.iit.base.conf;
 
 /**
  *

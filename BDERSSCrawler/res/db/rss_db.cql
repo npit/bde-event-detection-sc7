@@ -7,13 +7,13 @@ CREATE KEYSPACE IF NOT EXISTS bde WITH replication = {'class' : 'SimpleStrategy'
 CREATE TABLE bde.news_articles (
     reversed_host varchar,
     entry_url varchar,
-    published timestamp,
+    published bigint,
     place_literal set<varchar>,
     feed_url varchar,
     crawl_id bigint,
     raw_text text,
     clean_text text,
-    crawled timestamp,
+    crawled bigint,
     language varchar,
     primary key ((reversed_host), entry_url)
 );
@@ -24,13 +24,13 @@ create index plain_lang_idx on bde.news_articles(language);
 CREATE TABLE bde.news_articles_per_published_date (
     year_month_day_literal varchar,
     entry_url varchar,
-    published timestamp,
+    published bigint,
     place_literal set<varchar>,
     feed_url varchar,
     crawl_id bigint,
     raw_text text,
     clean_text text,
-    crawled timestamp,
+    crawled bigint,
     language varchar,
     primary key ((year_month_day_literal), published, entry_url)
 ) WITH CLUSTERING ORDER BY (published DESC, entry_url ASC);
@@ -40,14 +40,14 @@ create index rss_lang_idx on bde.news_articles_per_published_date(language);
 
 CREATE TABLE bde.news_articles_per_crawled_date (
     year_month_day_literal varchar,
-    crawled timestamp,
+    crawled bigint,
     entry_url varchar,
     place_literal set<varchar>,
     feed_url varchar,
     crawl_id bigint,
     raw_text text,
     clean_text text,
-    published timestamp,
+    published bigint,
     language varchar,
     primary key ((year_month_day_literal), crawled, entry_url)
 ) WITH CLUSTERING ORDER BY (crawled DESC, entry_url ASC);
@@ -58,13 +58,13 @@ create index rssc_lang_idx on bde.news_articles_per_crawled_date(language);
 CREATE TABLE bde.news_articles_per_place (
     place_literal varchar,
     entry_url varchar,
-    published timestamp,
+    published bigint,
     place frozen<tplace>,
     feed_url varchar,
     crawl_id bigint,
     raw_text text,
     clean_text text,
-    crawled timestamp,
+    crawled bigint,
     language varchar,
     primary key ((place_literal), entry_url)
 ) WITH CLUSTERING ORDER BY (entry_url ASC);
@@ -83,7 +83,7 @@ CREATE TABLE bde.news_feeds (
 CREATE TABLE bde.news_crawls (
     crawl_type varchar,
     crawl_id bigint,
-    start timestamp, 
-    end timestamp,
+    start bigint, 
+    end bigint,
     primary key ((crawl_type), crawl_id)
 )WITH CLUSTERING ORDER BY (crawl_id DESC);

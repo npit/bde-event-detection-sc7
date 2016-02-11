@@ -47,21 +47,6 @@ public class Testing {
 //        createNewsRepository.saveCrawlId(new CrawlId(2));
 //        CrawlId findMostRecentCrawlId = createNewsRepository.findMostRecentCrawlId();
 //        System.out.println(findMostRecentCrawlId.toString());
-
-//        Item item = new Item("feed_url_1", new CrawlId(1));
-//        Content content = new Content("content_url_1", "<html>raw text</html>", "etag", "after some time", new Date());
-////                createNewsRepository.updateFeedMetaData(content);
-//        Date published = new Date();
-//        createNewsRepository.savePage(item, content, published);
-//
-//        factory.releaseResources();
-//        long timestamp = new Date().getTime();
-//        System.out.println(timestamp);
-//        UUID endOf = UUIDs.endOf(timestamp);
-//        System.out.println(endOf.toString());
-//        
-//        System.out.println(UUIDs.unixTimestamp(endOf));
-        
         
     }
 }

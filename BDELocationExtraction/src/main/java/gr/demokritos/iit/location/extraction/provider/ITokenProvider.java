@@ -12,7 +12,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package gr.demokritos.iit.location.extraction;
+package gr.demokritos.iit.location.extraction.provider;
 
 import java.util.Set;
 
@@ -22,7 +22,7 @@ import java.util.Set;
  */
 public interface ITokenProvider {
 
-    public String UTF8 = "UTF-8";
+    public String CHARSET_UTF8 = "UTF-8";
 
     /**
      * Provided a text, extract the Named Entities found, based on a preloaded

@@ -14,7 +14,7 @@
  */
 package gr.demokritos.iit.crawlers.twitter.factory;
 
-import gr.demokritos.iit.crawlers.conf.IBaseConf;
+import gr.demokritos.iit.base.conf.IBaseConf;
 import gr.demokritos.iit.crawlers.twitter.impl.ITwitterRestConsumer;
 import gr.demokritos.iit.crawlers.twitter.policy.InfluentialCrawlPolicy;
 

@@ -26,7 +26,7 @@ import gr.demokritos.iit.crawlers.event.EventSink;
 import gr.demokritos.iit.crawlers.Fetcher;
 import gr.demokritos.iit.model.Item;
 import gr.demokritos.iit.crawlers.event.LoggingEventSink;
-import gr.demokritos.iit.crawlers.exceptions.UndeclaredRepositoryException;
+import gr.demokritos.iit.base.exceptions.UndeclaredRepositoryException;
 import gr.demokritos.iit.repository.CassandraRepository;
 import gr.demokritos.iit.repository.MySqlRepository;
 import gr.demokritos.iit.repository.IRepository;

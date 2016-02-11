@@ -12,7 +12,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package gr.demokritos.iit.crawlers.util.langdetect;
+package gr.demokritos.iit.base.util.langdetect;
 
 import com.cybozu.labs.langdetect.Detector;
 import com.cybozu.labs.langdetect.DetectorFactory;
@@ -30,7 +30,7 @@ public class CybozuLangDetect implements ILangDetect {
     private static final String PROFILES_FILE_PROD = "./profiles/";
     private static final String PROFILES_FILE_DEV = "../BDEBase/profiles/";
 
-    protected static final String UNDEFINED_LANG = "und";
+    public static final String UNDEFINED_LANG = "und";
 
     private static class InstanceHolder {
 

@@ -28,7 +28,7 @@ create index user_account_name_idx on bde.twitter_user(account_name);
 
 CREATE TABLE bde.twitter_post (
   post_id bigint,
-  created_at timestamp,
+  created_at bigint,
   coordinates text,
   place text,
   retweet_count bigint,
@@ -45,7 +45,7 @@ create index post_account_name_idx on bde.twitter_post(account_name);
 
 CREATE TABLE bde.twitter_posts_per_date (
     year_month_day_bucket varchar,
-    created_at timestamp,
+    created_at bigint,
     post_id bigint,
     tweet text,
     language text,
@@ -59,7 +59,7 @@ create index language_created_at_idx on bde.twitter_posts_per_date(language);
 CREATE TABLE bde.twitter_posts_per_hashtag (
     hashtag text,
     post_id bigint,
-    created_at timestamp,
+    created_at bigint,
     tweet text,    
     language text,
     url text,
@@ -70,7 +70,7 @@ CREATE TABLE bde.twitter_posts_per_hashtag (
 CREATE TABLE bde.twitter_posts_per_external_url (
     external_url text,
     post_id bigint,
-    created_at timestamp,
+    created_at bigint,
     tweet text,
     language text,
     url text,
@@ -83,7 +83,7 @@ CREATE TYPE bde.geolocation (latitude double, longitude double);
 CREATE TABLE bde.twitter_posts_per_coordinates (
     geo_bucket varchar,
     geolocation frozen<geolocation>,
-    created_at timestamp,
+    created_at bigint,
     post_id bigint,
     tweet text,
     language text,
@@ -107,7 +107,7 @@ CREATE TYPE bde.tplace (
 
 CREATE TABLE bde.twitter_posts_per_place (
     place_literal varchar,
-    created_at timestamp,
+    created_at bigint,
     post_id bigint,
     place frozen<tplace>,
     tweet text,
@@ -120,8 +120,8 @@ CREATE TABLE bde.twitter_posts_per_place (
 CREATE TABLE bde.twitter_log (
   engine_type text,
   engine_id bigint,
-  started timestamp, 
-  ended timestamp,
+  started bigint, 
+  ended bigint,
   primary key ((engine_type), engine_id)
 ) WITH CLUSTERING ORDER BY (engine_id DESC);
 

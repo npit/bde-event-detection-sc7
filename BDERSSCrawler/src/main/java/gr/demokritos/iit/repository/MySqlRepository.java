@@ -21,6 +21,8 @@ import de.l3s.boilerpipe.BoilerpipeProcessingException;
 import gr.demokritos.iit.model.Content;
 import gr.demokritos.iit.model.CrawlId;
 import gr.demokritos.iit.crawlers.schedule.CrawlStrategy;
+import gr.demokritos.iit.base.util.langdetect.CybozuLangDetect;
+import gr.demokritos.iit.base.util.langdetect.ILangDetect;
 import gr.demokritos.iit.model.Item;
 import gr.demokritos.iit.model.UrlMetaData;
 
@@ -86,11 +88,14 @@ public class MySqlRepository extends AbstractRepository implements IRepository {
     @Override
     public void savePage(Item item, Content content, Date publishedDate) throws IOException, BoilerpipeProcessingException {
         String cleanText = extractor.getText(content.getRawText());
-
+        String lang;
         // For backwards compatibility with the old versions of the crawler which didn't do any cleaning we
         // store null when we don't successfully clean some text.
         if (cleanText.isEmpty()) {
             cleanText = null;
+            lang = CybozuLangDetect.UNDEFINED_LANG;
+        } else {
+            lang = CybozuLangDetect.getInstance().identifyLanguage(cleanText);
         }
 
         Connection connection = null;
@@ -98,9 +103,9 @@ public class MySqlRepository extends AbstractRepository implements IRepository {
         try {
             connection = connectionPool.getConnection();
             String query = "insert into " + databaseName + "." + crawlerStrategy.crawlType() + "_articles"
-                    + "(entry_url, crawl_id, feed_url, raw_text, clean_text, published, crawled)"
-                    + " values(?, ?, ?, ?, ?, ?, ?) on duplicate key update crawl_id = ?, raw_text = ?, clean_text = ?,"
-                    + " published = ?, crawled = ?;";
+                    + "(entry_url, crawl_id, feed_url, raw_text, clean_text, published, crawled, language)"
+                    + " values(?, ?, ?, ?, ?, ?, ?, ?) on duplicate key update crawl_id = ?, raw_text = ?, clean_text = ?,"
+                    + " published = ?, crawled = ?, language = ?;";
             statement = connection.prepareStatement(query);
             long published = calculatePublishedValue(publishedDate);
             long crawled = content.getCrawlDate().getTime();
@@ -113,11 +118,13 @@ public class MySqlRepository extends AbstractRepository implements IRepository {
             statement.setString(5, cleanText);
             statement.setLong(6, published);
             statement.setLong(7, crawled);
-            statement.setLong(8, crawlId.getId());
-            statement.setString(9, content.getRawText());
-            statement.setString(10, cleanText);
-            statement.setLong(11, published);
-            statement.setLong(12, crawled);
+            statement.setString(8, lang);
+            statement.setLong(9, crawlId.getId());
+            statement.setString(10, content.getRawText());
+            statement.setString(11, cleanText);
+            statement.setLong(12, published);
+            statement.setLong(13, crawled);
+            statement.setString(14, lang);
 
             statement.execute();
         } catch (SQLException e) {
@@ -238,7 +245,7 @@ public class MySqlRepository extends AbstractRepository implements IRepository {
         ResultSet resultSet = null;
         try {
             connection = connectionPool.getConnection();
-            String query = "select entry_url, feed_url, crawl_id, raw_text, clean_text, published, crawled from " + databaseName + "."
+            String query = "select entry_url, feed_url, crawl_id, raw_text, clean_text, published, crawled, language from " + databaseName + "."
                     + crawlerStrategy.crawlType() + "_articles where entry_url = ?";
             statement = connection.prepareStatement(query);
             statement.setString(1, entryUrl);
@@ -252,6 +259,7 @@ public class MySqlRepository extends AbstractRepository implements IRepository {
                 results.add(resultSet.getString("clean_text"));
                 results.add(resultSet.getString("crawled"));
                 results.add(resultSet.getString("published"));
+                results.add(resultSet.getString("language"));
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);

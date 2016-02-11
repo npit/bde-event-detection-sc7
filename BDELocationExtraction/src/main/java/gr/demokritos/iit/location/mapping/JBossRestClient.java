@@ -61,6 +61,5 @@ public class JBossRestClient implements IRestClient {
         IRestClient cl = new JBossRestClient();
         ClientResponse execGet = (ClientResponse) cl.execGet("http://143.233.226.97:60091/InfoAssetService/categories/getCategories", null, String.class);
         System.out.println(execGet.getEntity());
-
     }
 }

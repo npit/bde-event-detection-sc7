@@ -67,6 +67,7 @@ public class UserStatusListener extends AbstractUserListener implements UserStre
     @Override
     public void onException(Exception excptn) {
         LOGGER.severe(excptn.getMessage());
+//        excptn.printStackTrace();
     }
 
     @Override

@@ -14,7 +14,7 @@
  */
 package gr.demokritos.iit.crawlers.twitter.factory;
 
-import gr.demokritos.iit.crawlers.conf.BaseConfiguration;
+import gr.demokritos.iit.base.conf.BaseConfiguration;
 import gr.demokritos.iit.crawlers.twitter.policy.InfluentialCrawlPolicy;
 
 /**
