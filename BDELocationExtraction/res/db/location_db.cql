@@ -3,7 +3,6 @@ CREATE KEYSPACE IF NOT EXISTS bde WITH replication = {'class' : 'SimpleStrategy'
 -- CREATE KEYSPACE IF NOT EXISTS bde WITH replication = {'class' : 'NetworkTopologyStrategy', 'replication_factor' : 3}; // prod
 
 CREATE TABLE IF NOT EXISTS bde.location_extraction_log (
-    -- the same as from the crawler.
     schedule_type varchar,
     schedule_id bigint,
     start bigint,

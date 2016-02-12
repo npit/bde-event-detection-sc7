@@ -53,8 +53,8 @@ public class NewsCrawler extends AbstractCrawler {
             log.severe(e.getMessage());
             System.exit(1);
         } finally {
-            if (factory != null) {
-                factory.releaseResources(); // CAUTION only on run_forever = false
+            if (factory != null && !configuration.runForever()) {
+                factory.releaseResources();
             }
         }
     }

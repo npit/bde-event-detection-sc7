@@ -5,7 +5,7 @@
  */
 package gr.demokritos.iit.location.repository;
 
-import gr.demokritos.iit.base.repository.IRepository;
+import gr.demokritos.iit.base.repository.IBaseRepository;
 import gr.demokritos.iit.structs.LocSched;
 import java.util.Set;
 
@@ -13,7 +13,7 @@ import java.util.Set;
  *
  * @author George K. <gkiom@iit.demokritos.gr>
  */
-public interface ILocationRepository extends IRepository {
+public interface ILocationRepository extends IBaseRepository {
 
     void updateArticleWithPlacesLiteral(String permalink, Set<String> places);
 

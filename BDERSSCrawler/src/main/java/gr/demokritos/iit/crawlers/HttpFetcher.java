@@ -1,17 +1,17 @@
 /* Copyright 2016 NCSR Demokritos
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
-*/
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package gr.demokritos.iit.crawlers;
 
 import gr.demokritos.iit.model.UrlMetaData;
@@ -34,6 +34,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.util.Date;
+import org.apache.http.util.EntityUtils;
 
 /**
  * User: ade
@@ -133,46 +134,60 @@ public class HttpFetcher implements Fetcher {
     }
 
     private boolean urlExists(String url) throws IOException {
-        HttpHead httpHead = new HttpHead(url);
-        setHeaders(url, httpHead);
-        HttpResponse response = client.execute(httpHead);
-        StatusLine statusLine = response.getStatusLine();
-        return (NOT_FOUND != statusLine.getStatusCode());
+        HttpHead httpHead = null;
+        HttpResponse response = null;
+        try {
+            httpHead = new HttpHead(url);
+            setHeaders(url, httpHead);
+            response = client.execute(httpHead);
+            StatusLine statusLine = response.getStatusLine();
+            return (NOT_FOUND != statusLine.getStatusCode());
+        } finally {
+        }
     }
 
     private Content fetchUrlWithoutWorryingAboutRobotsTxt(String url) throws IOException {
-        //We need to do a head request because there are sites out there that will apply tarpitting to GET requests
-        if (!urlExists(url)) {
-            return null;
-        }
-
-        //TODO(ade) Add support for GZIP encoding and decoding
-        HttpGet httpGet = new HttpGet(url);
-        setHeaders(url, httpGet);
-
-        //Make the request
-        HttpResponse response = client.execute(httpGet);
-        StatusLine statusLine = response.getStatusLine();
-        if (NOT_MODIFIED == statusLine.getStatusCode() || NOT_FOUND == statusLine.getStatusCode()) {
-            return null;
-        }
-
-        //Copy the content into memory
-        HttpEntity httpEntity = response.getEntity();
-        InputStreamReader reader = getEncodedContentStreamReader(httpEntity);
-        StringWriter writer = new StringWriter();
+        HttpEntity httpEntity = null;
+        InputStreamReader reader = null;
+        HttpGet httpGet = null;
         try {
-            CharStreams.copy(reader, writer);
-        } finally {
-            //Ensure that the stream is flushed
-            httpEntity.consumeContent();
 
-            // We assume that closing the reader closes the inputstream
-            // We know that closing the inputstream releases the HTTP connection
-            Closeables.close(reader, false);
+            //We need to do a head request because there are sites out there that will apply tarpitting to GET requests
+            if (!urlExists(url)) {
+                return null;
+            }
+
+            //TODO(ade) Add support for GZIP encoding and decoding
+            httpGet = new HttpGet(url);
+            setHeaders(url, httpGet);
+
+            //Make the request
+            HttpResponse response = client.execute(httpGet);
+            StatusLine statusLine = response.getStatusLine();
+            if (NOT_MODIFIED == statusLine.getStatusCode() || NOT_FOUND == statusLine.getStatusCode()) {
+                return null;
+            }
+
+            //Copy the content into memory
+            httpEntity = response.getEntity();
+            reader = getEncodedContentStreamReader(httpEntity);
+            StringWriter writer = new StringWriter();
+            CharStreams.copy(reader, writer);
+            Date crawledDate = new Date();
+            return createContent(url, response, writer.toString(), crawledDate);
+        } finally {
+            if (httpEntity != null) {
+                EntityUtils.consumeQuietly(httpEntity);
+            }
+            if (httpGet != null) {
+                httpGet.releaseConnection();
+            }
+            if (reader != null) {
+                // We assume that closing the reader closes the inputstream
+                // We know that closing the inputstream releases the HTTP connection
+                Closeables.close(reader, false);
+            }
         }
-        Date crawledDate = new Date();
-        return createContent(url, response, writer.toString(), crawledDate);
     }
 
     private Content createContent(String url, HttpResponse response, String rawText, Date crawledDate) {

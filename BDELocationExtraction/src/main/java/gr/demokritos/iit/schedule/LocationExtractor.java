@@ -7,7 +7,7 @@ package gr.demokritos.iit.schedule;
 
 import gr.demokritos.iit.base.conf.BaseConfiguration;
 import gr.demokritos.iit.base.conf.IBaseConf;
-import gr.demokritos.iit.base.repository.BaseCassandraRepository;
+import gr.demokritos.iit.base.repository.views.Cassandra;
 import gr.demokritos.iit.factory.LocationFactory;
 import gr.demokritos.iit.location.extraction.BaseLocationExtractor;
 import gr.demokritos.iit.location.extraction.ILocationExtractor;
@@ -17,6 +17,7 @@ import gr.demokritos.iit.location.repository.ILocationRepository;
 import gr.demokritos.iit.structs.LocSched;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
@@ -27,41 +28,52 @@ import java.util.Set;
 public class LocationExtractor {
 
     public static void main(String[] args) throws IOException {
-
         IBaseConf conf = new BaseConfiguration("../BDETwitterListener/res/twitter.properties");
-        LocationFactory factory = new LocationFactory(conf);
+        LocationFactory factory = null;
+        try {
 
-        // init connection pool to the repository
-        ILocationRepository repos = factory.createLocationCassandraRepository();
+            factory = new LocationFactory(conf);
 
-        // register starting operation
-        LocSched sched = repos.scheduleInitialized();
+            // init connection pool to the repository
+            ILocationRepository repos = factory.createLocationCassandraRepository();
 
-        // init location extractor
-        ITokenProvider tp = new EnhancedOpenNLPTokenProvider(); // use default paths for debug TODO FIXME
-        ILocationExtractor locExtractor = new BaseLocationExtractor(tp);
+            // register starting operation
+            LocSched sched = repos.scheduleInitialized();
+            System.out.println("last parsed: " + new Date(sched.getLastParsed()).toString());
+            // init location extractor
+            ITokenProvider tp = new EnhancedOpenNLPTokenProvider(); // use default paths for debug TODO FIXME
+            ILocationExtractor locExtractor = new BaseLocationExtractor(tp);
 
-        // load articles to process
-        Collection<Map<String, Object>> loadArticles = repos.loadArticles(1455115849000l);
+            // load articles to process
+            Collection<Map<String, Object>> loadArticles = repos.loadArticles(sched.getLastParsed());
 
-        // keep most recent published for reference
-        long published = Long.MIN_VALUE;
-        // for each article
-        for (Map<String, Object> article : loadArticles) {
-            published = Math.max(published, (long) article.get(BaseCassandraRepository.TBL_NEWS_ARTICLES_PER_PUBLISHED_DATE.FLD_PUBLISHED.getColumnName()));
+            // keep most recent published for reference
+            long published = Long.MIN_VALUE;
+            int i = 0;
+            // for each article
+            for (Map<String, Object> article : loadArticles) {
+                published = Math.max(published, (long) article.get(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PUBLISHED.getColumnName()));
 
-            String permalink = (String) article.get(BaseCassandraRepository.TBL_NEWS_ARTICLES_PER_PUBLISHED_DATE.FLD_ENTRY_URL.getColumnName());
-            String clean_text = (String) article.get(BaseCassandraRepository.TBL_NEWS_ARTICLES_PER_PUBLISHED_DATE.FLD_CLEAN_TEXT.getColumnName());
-            Set<String> locationsFound = locExtractor.extractLocation(clean_text);
-            if (!locationsFound.isEmpty()) {
-                // update entry
-                repos.updateArticleWithPlacesLiteral(permalink, locationsFound);
+                String permalink = (String) article.get(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName());
+                String clean_text = (String) article.get(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CLEAN_TEXT.getColumnName());
+                Set<String> locationsFound = locExtractor.extractLocation(clean_text);
+                if (!locationsFound.isEmpty()) {
+                    // update entry
+                    repos.updateArticleWithPlacesLiteral(permalink, locationsFound);
+                    i++;
+                }
+            }
+            sched.setItemsUpdated(i);
+            // update last timestamp parsed
+            sched.setLastParsed(published);
+            System.out.println("last parsed: " + new Date(published).toString());
+            // register completed
+            repos.scheduleFinalized(sched);
+        } finally {
+            if (factory != null) {
+                // release connection with cluster
+                factory.releaseResources();
             }
         }
-
-        // register completed
-        repos.scheduleFinalized(sched);
-        // release connection with cluster
-        factory.releaseResources();
     }
 }

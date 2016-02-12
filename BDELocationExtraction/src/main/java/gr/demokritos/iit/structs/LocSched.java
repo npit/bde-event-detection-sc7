@@ -13,7 +13,8 @@ public class LocSched {
 
     private final long schedule_id;
     private long last_parsed;
-
+    private long items_updated; 
+    
     public LocSched(long schedule_id) {
         this.schedule_id = schedule_id;
     }
@@ -23,16 +24,24 @@ public class LocSched {
         this.last_parsed = last_parsed;
     }
 
-    public long getLast_parsed() {
+    public long getLastParsed() {
         return last_parsed;
     }
 
-    public void setLast_parsed(long last_parsed) {
+    public void setLastParsed(long last_parsed) {
         this.last_parsed = last_parsed;
     }
 
-    public long getSchedule_id() {
+    public long getScheduleID() {
         return schedule_id;
+    }
+
+    public long getItemsUpdated() {
+        return items_updated;
+    }
+
+    public void setItemsUpdated(long items_updated) {
+        this.items_updated = items_updated;
     }
 
     @Override

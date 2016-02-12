@@ -13,7 +13,7 @@ import java.util.Map;
  *
  * @author George K. <gkiom@iit.demokritos.gr>
  */
-public interface IRepository {
+public interface IBaseRepository {
 
     /**
      * load tweets that occured after a specified timestamp

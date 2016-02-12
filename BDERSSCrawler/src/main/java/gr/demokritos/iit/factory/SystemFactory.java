@@ -23,34 +23,34 @@ import com.mchange.v2.c3p0.ComboPooledDataSource;
 import gr.demokritos.iit.crawlers.AbstractCrawler;
 import gr.demokritos.iit.crawlers.schedule.DefaultScheduleLoader;
 import gr.demokritos.iit.crawlers.event.EventSink;
-import gr.demokritos.iit.crawlers.Fetcher;
 import gr.demokritos.iit.model.Item;
 import gr.demokritos.iit.crawlers.event.LoggingEventSink;
 import gr.demokritos.iit.base.exceptions.UndeclaredRepositoryException;
+import gr.demokritos.iit.crawlers.Fetcher;
 import gr.demokritos.iit.repository.CassandraRepository;
 import gr.demokritos.iit.repository.MySqlRepository;
 import gr.demokritos.iit.repository.IRepository;
 import gr.demokritos.iit.repository.InMemoryRepository;
 import java.beans.PropertyVetoException;
 import org.apache.http.client.HttpClient;
-import org.apache.http.conn.ClientConnectionManager;
-import org.apache.http.conn.params.ConnManagerParams;
-import org.apache.http.conn.scheme.PlainSocketFactory;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
-import org.apache.http.params.HttpProtocolParams;
 
 import java.io.File;
+import java.nio.charset.CodingErrorAction;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.concurrent.*;
 import java.util.logging.Logger;
 import javax.sql.DataSource;
+import org.apache.http.Consts;
+import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.config.ConnectionConfig;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
 /**
  *
@@ -85,23 +85,58 @@ public class SystemFactory {
         this(new RSSConf());
     }
 
+//    public HttpClient createHttpClient() {
+//        HttpParams params = new BasicHttpParams();
+//        ConnManagerParams.setMaxTotalConnections(params, maxHttpConnections);
+//
+//        HttpProtocolParams.setUserAgent(params, Fetcher.USER_AGENT);
+//        ConnManagerParams.setTimeout(params, conf.getHttpTimeoutInSeconds());
+//
+//        SchemeRegistry schemeRegistry = new SchemeRegistry();
+//        schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+//
+//        ClientConnectionManager clientConnManager = new ThreadSafeClientConnManager(params, schemeRegistry);
+//
+//        DefaultHttpClient httpClient = new DefaultHttpClient(clientConnManager, params);
+//        HttpParams httpParams = httpClient.getParams();
+//        HttpConnectionParams.setConnectionTimeout(httpParams, conf.getHttpTimeoutInSeconds() * 1000);
+//        HttpConnectionParams.setSoTimeout(httpParams, conf.getHttpTimeoutInSeconds() * 1000);
+//        return httpClient;
+//    }
     public HttpClient createHttpClient() {
-        HttpParams params = new BasicHttpParams();
-        ConnManagerParams.setMaxTotalConnections(params, maxHttpConnections);
+        Registry<ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory>create()
+                .register("http", PlainConnectionSocketFactory.INSTANCE)
+                .build();
+        PoolingHttpClientConnectionManager connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
 
-        HttpProtocolParams.setUserAgent(params, Fetcher.USER_AGENT);
-        ConnManagerParams.setTimeout(params, conf.getHttpTimeoutInSeconds());
+        ConnectionConfig connectionConfig = ConnectionConfig.custom()
+                .setMalformedInputAction(CodingErrorAction.IGNORE)
+                .setUnmappableInputAction(CodingErrorAction.IGNORE)
+                .setCharset(Consts.UTF_8)
+                .build();
+        // Configure the connection manager to use connection configuration 
+        connManager.setDefaultConnectionConfig(connectionConfig);
 
-        SchemeRegistry schemeRegistry = new SchemeRegistry();
-        schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+        // Configure total max or per route limits for persistent connections
+        // that can be kept in the pool or leased by the connection manager.
+        connManager.setMaxTotal(maxHttpConnections);
+        connManager.setValidateAfterInactivity(conf.getHttpTimeoutInSeconds() * 1000);
+        // Create global request configuration
+        RequestConfig defaultRequestConfig = RequestConfig.custom()
+                .setCookieSpec(CookieSpecs.DEFAULT)
+                .setExpectContinueEnabled(true)
+                .setSocketTimeout(conf.getSocketTimeout())
+                .setConnectTimeout(conf.getConnectionTimeOut())
+                .setConnectionRequestTimeout(conf.getConnectionTimeOut())
+                .build();
 
-        ClientConnectionManager clientConnManager = new ThreadSafeClientConnManager(params, schemeRegistry);
-
-        DefaultHttpClient httpClient = new DefaultHttpClient(clientConnManager, params);
-        HttpParams httpParams = httpClient.getParams();
-        HttpConnectionParams.setConnectionTimeout(httpParams, conf.getHttpTimeoutInSeconds() * 1000);
-        HttpConnectionParams.setSoTimeout(httpParams, conf.getHttpTimeoutInSeconds() * 1000);
-        return httpClient;
+        // Create an HttpClient with the given custom dependencies and configuration.
+        HttpClient httpclient = HttpClients.custom()
+                .setConnectionManager(connManager)
+                .setDefaultRequestConfig(defaultRequestConfig)
+                .setUserAgent(Fetcher.USER_AGENT)
+                .build();
+        return httpclient;
     }
 
     public EventSink createEventSink() {

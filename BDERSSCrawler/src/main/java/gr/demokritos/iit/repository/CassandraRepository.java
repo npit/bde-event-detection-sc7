@@ -14,7 +14,6 @@
  */
 package gr.demokritos.iit.repository;
 
-import com.datastax.driver.core.ConsistencyLevel;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
@@ -25,6 +24,7 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.set;
 import com.sun.syndication.feed.synd.SyndEntry;
 import de.l3s.boilerpipe.BoilerpipeExtractor;
 import de.l3s.boilerpipe.BoilerpipeProcessingException;
+import gr.demokritos.iit.base.repository.views.Cassandra;
 import gr.demokritos.iit.crawlers.schedule.CrawlStrategy;
 import gr.demokritos.iit.base.util.TableUtil;
 import gr.demokritos.iit.base.util.Utils;
@@ -100,63 +100,63 @@ public class CassandraRepository extends AbstractRepository implements IReposito
         // insert in base table.
         insert = QueryBuilder
                 .insertInto(session.getLoggedKeyspace(), crawlerStrategy.TableArticles())
-                .value(TBL_ARTICLES.FLD_REVERSED_HOST.columnn, TableUtil.getReversedHost(TableUtil.reverseUrl(content.getUrl())))
-                .value(TBL_ARTICLES.FLD_ENTRY_URL.columnn, content.getUrl())
-                .value(TBL_ARTICLES.FLD_PUBLISHED.columnn, pub_date)
-                .value(TBL_ARTICLES.FLD_CRAWL_ID.columnn, crawlId.getId())
-                .value(TBL_ARTICLES.FLD_FEED_URL.columnn, item.getFeedUrl())
-                .value(TBL_ARTICLES.FLD_RAW_TEXT.columnn, content.getRawText())
-                .value(TBL_ARTICLES.FLD_CLEAN_TEXT.columnn, cleanText)
-                .value(TBL_ARTICLES.FLD_CRAWLED.columnn, crawled_timestamp)
-                .value(TBL_ARTICLES.FLD_LANGUAGE.columnn, lang)
-                .value(TBL_ARTICLES.FLD_PLACE_LITERAL.columnn, named_entities);
+                .value(Cassandra.RSS.TBL_ARTICLES.FLD_REVERSED_HOST.getColumnName(), TableUtil.getReversedHost(TableUtil.reverseUrl(content.getUrl())))
+                .value(Cassandra.RSS.TBL_ARTICLES.FLD_ENTRY_URL.getColumnName(), content.getUrl())
+                .value(Cassandra.RSS.TBL_ARTICLES.FLD_PUBLISHED.getColumnName(), pub_date)
+                .value(Cassandra.RSS.TBL_ARTICLES.FLD_CRAWL_ID.getColumnName(), crawlId.getId())
+                .value(Cassandra.RSS.TBL_ARTICLES.FLD_FEED_URL.getColumnName(), item.getFeedUrl())
+                .value(Cassandra.RSS.TBL_ARTICLES.FLD_RAW_TEXT.getColumnName(), content.getRawText())
+                .value(Cassandra.RSS.TBL_ARTICLES.FLD_CLEAN_TEXT.getColumnName(), cleanText)
+                .value(Cassandra.RSS.TBL_ARTICLES.FLD_CRAWLED.getColumnName(), crawled_timestamp)
+                .value(Cassandra.RSS.TBL_ARTICLES.FLD_LANGUAGE.getColumnName(), lang)
+                .value(Cassandra.RSS.TBL_ARTICLES.FLD_PLACE_LITERAL.getColumnName(), named_entities);
         session.execute(insert);
         // insert in articles_per_published_date
         insert = QueryBuilder
                 .insertInto(session.getLoggedKeyspace(), crawlerStrategy.TableArticlesPerPublishedDate())
-                .value(TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.columnn, year_month_day)
-                .value(TBL_ARTICLES_PER_DATE.FLD_PUBLISHED.columnn, pub_date)
-                .value(TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.columnn, content.getUrl())
-                .value(TBL_ARTICLES_PER_DATE.FLD_FEED_URL.columnn, item.getFeedUrl())
-                .value(TBL_ARTICLES_PER_DATE.FLD_RAW_TEXT.columnn, content.getRawText())
-                .value(TBL_ARTICLES_PER_DATE.FLD_CLEAN_TEXT.columnn, cleanText)
-                .value(TBL_ARTICLES_PER_DATE.FLD_CRAWLED.columnn, crawled_timestamp)
-                .value(TBL_ARTICLES_PER_DATE.FLD_LANGUAGE.columnn, lang)
-                .value(TBL_ARTICLES_PER_DATE.FLD_PLACE_LITERAL.columnn, named_entities);
+                .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.getColumnName(), year_month_day)
+                .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PUBLISHED.getColumnName(), pub_date)
+                .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName(), content.getUrl())
+                .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_FEED_URL.getColumnName(), item.getFeedUrl())
+                .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_RAW_TEXT.getColumnName(), content.getRawText())
+                .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CLEAN_TEXT.getColumnName(), cleanText)
+                .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CRAWLED.getColumnName(), crawled_timestamp)
+                .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_LANGUAGE.getColumnName(), lang)
+                .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PLACE_LITERAL.getColumnName(), named_entities);
         session.execute(insert);
         // insert in articles_per_crawled_date
         insert = QueryBuilder
                 .insertInto(session.getLoggedKeyspace(), crawlerStrategy.TableArticlesPerCrawledDate())
-                .value(TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.columnn, year_month_day)
-                .value(TBL_ARTICLES_PER_DATE.FLD_CRAWLED.columnn, crawled_timestamp)
-                .value(TBL_ARTICLES_PER_DATE.FLD_PUBLISHED.columnn, pub_date)
-                .value(TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.columnn, content.getUrl())
-                .value(TBL_ARTICLES_PER_DATE.FLD_FEED_URL.columnn, item.getFeedUrl())
-                .value(TBL_ARTICLES_PER_DATE.FLD_RAW_TEXT.columnn, content.getRawText())
-                .value(TBL_ARTICLES_PER_DATE.FLD_CLEAN_TEXT.columnn, cleanText)
-                .value(TBL_ARTICLES_PER_DATE.FLD_LANGUAGE.columnn, lang)
-                .value(TBL_ARTICLES_PER_DATE.FLD_PLACE_LITERAL.columnn, named_entities);
+                .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.getColumnName(), year_month_day)
+                .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CRAWLED.getColumnName(), crawled_timestamp)
+                .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PUBLISHED.getColumnName(), pub_date)
+                .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName(), content.getUrl())
+                .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_FEED_URL.getColumnName(), item.getFeedUrl())
+                .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_RAW_TEXT.getColumnName(), content.getRawText())
+                .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CLEAN_TEXT.getColumnName(), cleanText)
+                .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_LANGUAGE.getColumnName(), lang)
+                .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PLACE_LITERAL.getColumnName(), named_entities);
         session.execute(insert);        // TODO use saving policy for _per_place
 //            // insert in articles_per_place
 //            upsert = QueryBuilder
 //                    .update(session.getLoggedKeyspace(), crawlerStrategy.TableArticlesPerPlace())
-//                    .with(set(TBL_ARTICLES_PER_PLACE.FLD_PUBLISHED.columnn, pub_date))
-//                        .and(set(TBL_ARTICLES_PER_PLACE.FLD_FEED_URL.columnn, item.getFeedUrl()))
-//                        .and(set(TBL_ARTICLES_PER_PLACE.FLD_RAW_TEXT.columnn, content.getRawText()))
-//                        .and(set(TBL_ARTICLES_PER_PLACE.FLD_CLEAN_TEXT.columnn, cleanText))
-//                        .and(set(TBL_ARTICLES_PER_PLACE.FLD_CRAWLED.columnn, content.getCrawlDate().getTime()))
-//                        .and(set(TBL_ARTICLES_PER_PLACE.FLD_LANGUAGE.columnn, ""))
-//                    .where(eq(TBL_ARTICLES_PER_PLACE.FLD_PLACE_LITERAL.columnn, ""))
-//                    .and(eq(TBL_ARTICLES_PER_PLACE.FLD_ENTRY_URL.columnn, content.getUrl()));
+//                    .with(set(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_PUBLISHED.getColumnName(), pub_date))
+//                        .and(set(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_FEED_URL.getColumnName(), item.getFeedUrl()))
+//                        .and(set(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_RAW_TEXT.getColumnName(), content.getRawText()))
+//                        .and(set(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_CLEAN_TEXT.getColumnName(), cleanText))
+//                        .and(set(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_CRAWLED.getColumnName(), content.getCrawlDate().getTime()))
+//                        .and(set(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_LANGUAGE.getColumnName(), ""))
+//                    .where(eq(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_PLACE_LITERAL.getColumnName(), ""))
+//                    .and(eq(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_ENTRY_URL.getColumnName(), content.getUrl()));
 //            session.execute(upsert);
     }
 
     @Override
     public CrawlId findMostRecentCrawlId() {
-        String key = TBL_CRAWLS.FLD_CRAWL_TYPE.columnn;
-        String id = TBL_CRAWLS.FLD_CRAWL_ID.columnn;
-        String start = TBL_CRAWLS.FLD_START.columnn;
-        String end = TBL_CRAWLS.FLD_END.columnn;
+        String key = Cassandra.RSS.TBL_CRAWLS.FLD_CRAWL_TYPE.getColumnName();
+        String id = Cassandra.RSS.TBL_CRAWLS.FLD_CRAWL_ID.getColumnName();
+        String start = Cassandra.RSS.TBL_CRAWLS.FLD_START.getColumnName();
+        String end = Cassandra.RSS.TBL_CRAWLS.FLD_END.getColumnName();
 
         Statement select = QueryBuilder
                 .select(id, start, end)
@@ -168,8 +168,8 @@ public class CassandraRepository extends AbstractRepository implements IReposito
 
         if (one != null) {
             long max_existing = one.getLong(id);
-            long started = one.getTimestamp(start).getTime();
-            long ended = one.getTimestamp(end).getTime();
+            long started = one.getLong(start);
+            long ended = one.getLong(end);
             return new CrawlId(max_existing, started, ended);
         }
         return null;
@@ -177,10 +177,10 @@ public class CassandraRepository extends AbstractRepository implements IReposito
 
     @Override
     public void saveCrawlId(CrawlId crawlId) {
-        String key = TBL_CRAWLS.FLD_CRAWL_TYPE.columnn;
-        String id = TBL_CRAWLS.FLD_CRAWL_ID.columnn;
-        String start = TBL_CRAWLS.FLD_START.columnn;
-        String end = TBL_CRAWLS.FLD_END.columnn;
+        String key = Cassandra.RSS.TBL_CRAWLS.FLD_CRAWL_TYPE.getColumnName();
+        String id = Cassandra.RSS.TBL_CRAWLS.FLD_CRAWL_ID.getColumnName();
+        String start = Cassandra.RSS.TBL_CRAWLS.FLD_START.getColumnName();
+        String end = Cassandra.RSS.TBL_CRAWLS.FLD_END.getColumnName();
         Statement upsert = QueryBuilder
                 .update(session.getLoggedKeyspace(), crawlerStrategy.TableCrawls())
                 .with(set(start, crawlId.getStartTimestamp())).and(set(end, crawlId.getEndTimestamp()))
@@ -193,9 +193,9 @@ public class CassandraRepository extends AbstractRepository implements IReposito
     public UrlMetaData getFeedMetadata(String url) {
         UrlMetaData metadata = null;
 
-        String feed_url_key = TBL_FEEDS.FLD_FEED_URL.columnn;
-        String etag_key = TBL_FEEDS.FLD_ETAG.columnn;
-        String last_modified_key = TBL_FEEDS.FLD_LAST_MODIFIED.columnn;
+        String feed_url_key = Cassandra.RSS.TBL_FEEDS.FLD_FEED_URL.getColumnName();
+        String etag_key = Cassandra.RSS.TBL_FEEDS.FLD_ETAG.getColumnName();
+        String last_modified_key = Cassandra.RSS.TBL_FEEDS.FLD_LAST_MODIFIED.getColumnName();
 
         Statement select = QueryBuilder
                 .select(etag_key, last_modified_key)
@@ -215,9 +215,9 @@ public class CassandraRepository extends AbstractRepository implements IReposito
 
     @Override
     public void updateFeedMetaData(Content content) {
-        String feed_url_key = TBL_FEEDS.FLD_FEED_URL.columnn;
-        String etag_key = TBL_FEEDS.FLD_ETAG.columnn;
-        String last_modified_key = TBL_FEEDS.FLD_LAST_MODIFIED.columnn;
+        String feed_url_key = Cassandra.RSS.TBL_FEEDS.FLD_FEED_URL.getColumnName();
+        String etag_key = Cassandra.RSS.TBL_FEEDS.FLD_ETAG.getColumnName();
+        String last_modified_key = Cassandra.RSS.TBL_FEEDS.FLD_LAST_MODIFIED.getColumnName();
         Statement upsert = QueryBuilder
                 .update(session.getLoggedKeyspace(), crawlerStrategy.TableFeeds())
                 .with(set(etag_key, content.getEtag())).and(set(last_modified_key, content.getLastModified()))
@@ -240,16 +240,16 @@ public class CassandraRepository extends AbstractRepository implements IReposito
         // we need in articles_per_date, the date DESC ordered as CLUSTERING column, so we cannot update on the fly.
         Statement select = QueryBuilder
                 .select(
-                        TBL_ARTICLES.FLD_ENTRY_URL.columnn, TBL_ARTICLES.FLD_PUBLISHED.columnn
+                        Cassandra.RSS.TBL_ARTICLES.FLD_ENTRY_URL.getColumnName(), Cassandra.RSS.TBL_ARTICLES.FLD_PUBLISHED.getColumnName()
                 )
                 .from(session.getLoggedKeyspace(), crawlerStrategy.TableArticles())
-                .where(eq(TBL_ARTICLES.FLD_REVERSED_HOST.columnn, TableUtil.getReversedHost(TableUtil.reverseUrl(url))))
-                .and(eq(TBL_ARTICLES.FLD_ENTRY_URL.columnn, url));
+                .where(eq(Cassandra.RSS.TBL_ARTICLES.FLD_REVERSED_HOST.getColumnName(), TableUtil.getReversedHost(TableUtil.reverseUrl(url))))
+                .and(eq(Cassandra.RSS.TBL_ARTICLES.FLD_ENTRY_URL.getColumnName(), url));
         ResultSet results = session.execute(select);
 
         Row one = results.one();
         if (one != null) {
-            long pub = one.getLong(TBL_ARTICLES.FLD_PUBLISHED.columnn);
+            long pub = one.getLong(Cassandra.RSS.TBL_ARTICLES.FLD_PUBLISHED.getColumnName());
             return pub;
         }
 
@@ -261,16 +261,16 @@ public class CassandraRepository extends AbstractRepository implements IReposito
         Statement select;
         try {
             select = QueryBuilder
-                    .select(TBL_ARTICLES.FLD_ENTRY_URL.columnn)
+                    .select(Cassandra.RSS.TBL_ARTICLES.FLD_ENTRY_URL.getColumnName())
                     .from(session.getLoggedKeyspace(), crawlerStrategy.TableArticles())
-                    .where(eq(TBL_ARTICLES.FLD_ENTRY_URL.columnn, link))
-                    .and(eq(TBL_ARTICLES.FLD_REVERSED_HOST.columnn, TableUtil.getReversedHost(TableUtil.reverseUrl(link))))
+                    .where(eq(Cassandra.RSS.TBL_ARTICLES.FLD_ENTRY_URL.getColumnName(), link))
+                    .and(eq(Cassandra.RSS.TBL_ARTICLES.FLD_REVERSED_HOST.getColumnName(), TableUtil.getReversedHost(TableUtil.reverseUrl(link))))
                     .limit(1);
             ResultSet results = session.execute(select);
 
             Row one = results.one();
             if (one != null) {
-                String sn = one.getString(TBL_ARTICLES.FLD_ENTRY_URL.columnn);
+                String sn = one.getString(Cassandra.RSS.TBL_ARTICLES.FLD_ENTRY_URL.getColumnName());
                 if (sn != null && !sn.isEmpty()) {
                     return false;
                 }
@@ -287,113 +287,25 @@ public class CassandraRepository extends AbstractRepository implements IReposito
         // delete from base table.
         delete = QueryBuilder
                 .delete().all().from(session.getLoggedKeyspace(), crawlerStrategy.TableArticles())
-                .where(eq(TBL_ARTICLES.FLD_ENTRY_URL.columnn, url));
+                .where(eq(Cassandra.RSS.TBL_ARTICLES.FLD_ENTRY_URL.getColumnName(), url));
         session.execute(delete);
         // delete from articles per published date table
         delete = QueryBuilder
                 .delete().all().from(session.getLoggedKeyspace(), crawlerStrategy.TableArticlesPerPublishedDate())
-                .where(eq(TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.columnn, year_month_day))
-                .and(eq(TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.columnn, url));
+                .where(eq(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.getColumnName(), year_month_day))
+                .and(eq(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName(), url));
         session.execute(delete);
         // delete from articles per crawled date table
         delete = QueryBuilder
                 .delete().all().from(session.getLoggedKeyspace(), crawlerStrategy.TableArticlesPerCrawledDate())
-                .where(eq(TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.columnn, year_month_day))
-                .and(eq(TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.columnn, url));
+                .where(eq(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.getColumnName(), year_month_day))
+                .and(eq(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName(), url));
         session.execute(delete);
         // implement when needed
         // delete from articles per place
 //        delete = QueryBuilder
 //                .delete().all().from(session.getLoggedKeyspace(), crawlerStrategy.TableArticlesPerPlace())
-//                .where(eq(TBL_ARTICLES_PER_PLACE.FLD_ENTRY_URL.columnn, url));
+//                .where(eq(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_ENTRY_URL.getColumnName(), url));
 //        session.execute(delete);
     }
-
-    enum TBL_ARTICLES {
-
-        FLD_REVERSED_HOST("reversed_host"),
-        FLD_ENTRY_URL("entry_url"),
-        FLD_PUBLISHED("published"),
-        FLD_PLACE_LITERAL("place_literal"),
-        FLD_FEED_URL("feed_url"),
-        FLD_CRAWL_ID("crawl_id"),
-        FLD_RAW_TEXT("raw_text"),
-        FLD_CLEAN_TEXT("clean_text"),
-        FLD_CRAWLED("crawled"),
-        FLD_LANGUAGE("language");
-
-        private final String columnn;
-
-        private TBL_ARTICLES(String columnn) {
-            this.columnn = columnn;
-        }
-    }
-
-    enum TBL_ARTICLES_PER_DATE {
-
-        FLD_YEAR_MONTH_DAY_BUCKET("year_month_day_literal"),
-        FLD_PUBLISHED("published"),
-        FLD_ENTRY_URL("entry_url"),
-        FLD_PLACE_LITERAL("place_literal"),
-        FLD_FEED_URL("feed_url"),
-        FLD_CRAWL_ID("crawl_id"),
-        FLD_RAW_TEXT("raw_text"),
-        FLD_CLEAN_TEXT("clean_text"),
-        FLD_CRAWLED("crawled"),
-        FLD_LANGUAGE("language");
-
-        private final String columnn;
-
-        private TBL_ARTICLES_PER_DATE(String columnn) {
-            this.columnn = columnn;
-        }
-    }
-
-    enum TBL_ARTICLES_PER_PLACE {
-
-        FLD_PLACE_LITERAL("place_literal"),
-        FLD_PUBLISHED("published"),
-        FLD_ENTRY_URL("entry_url"),
-        FLD_PLACE("tplace"),
-        FLD_FEED_URL("feed_url"),
-        FLD_CRAWL_ID("crawl_id"),
-        FLD_RAW_TEXT("raw_text"),
-        FLD_CLEAN_TEXT("clean_text"),
-        FLD_CRAWLED("crawled"),
-        FLD_LANGUAGE("language");
-
-        private final String columnn;
-
-        private TBL_ARTICLES_PER_PLACE(String columnn) {
-            this.columnn = columnn;
-        }
-    }
-
-    enum TBL_FEEDS {
-
-        FLD_FEED_URL("feed_url"),
-        FLD_ETAG("etag"),
-        FLD_LAST_MODIFIED("last_modified");
-
-        private final String columnn;
-
-        private TBL_FEEDS(String columnn) {
-            this.columnn = columnn;
-        }
-    }
-
-    enum TBL_CRAWLS {
-
-        FLD_CRAWL_TYPE("crawl_type"),
-        FLD_CRAWL_ID("crawl_id"),
-        FLD_START("start"),
-        FLD_END("end");
-
-        private final String columnn;
-
-        private TBL_CRAWLS(String columnn) {
-            this.columnn = columnn;
-        }
-    }
-
 }

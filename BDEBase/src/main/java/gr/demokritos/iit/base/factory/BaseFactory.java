@@ -11,7 +11,7 @@ import com.datastax.driver.core.policies.DefaultRetryPolicy;
 import com.datastax.driver.core.policies.Policies;
 import gr.demokritos.iit.base.conf.IBaseConf;
 import gr.demokritos.iit.base.repository.BaseCassandraRepository;
-import gr.demokritos.iit.base.repository.IRepository;
+import gr.demokritos.iit.base.repository.IBaseRepository;
 
 /**
  *
@@ -26,8 +26,8 @@ public class BaseFactory {
         this.conf = conf;
     }
 
-    public IRepository createBaseCassandraRepository() {
-        IRepository repository = null;
+    public IBaseRepository createBaseCassandraRepository() {
+        IBaseRepository repository = null;
         String[] hosts = conf.getCassandraHosts();
         if (hosts.length == 1) {
             this.cluster = Cluster

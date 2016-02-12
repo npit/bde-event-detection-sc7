@@ -13,6 +13,7 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.set;
 import gr.demokritos.iit.base.repository.BaseCassandraRepository;
+import gr.demokritos.iit.base.repository.views.Cassandra;
 import gr.demokritos.iit.structs.LocSched;
 import java.util.Date;
 import java.util.Set;
@@ -24,7 +25,6 @@ import java.util.Set;
 public class CassandraLocationRepository extends BaseCassandraRepository implements ILocationRepository {
 
     private static final String SCHEDULE_TYPE = "location_extraction";
-    private long items_updated;
 
     public CassandraLocationRepository(Session session) {
         super(session);
@@ -32,28 +32,28 @@ public class CassandraLocationRepository extends BaseCassandraRepository impleme
 
     @Override
     public LocSched scheduleInitialized() {
-        String key = TBL_LOCATION_LOG.FLD_SCHEDULE_ID.column;
         Statement select = QueryBuilder
-                .select(key)
-                .from(session.getLoggedKeyspace(), Table.LOCATION_LOG.table_name)
-                .where(eq(TBL_LOCATION_LOG.FLD_SCHEDULE_TYPE.column, SCHEDULE_TYPE)).limit(1);
+                .select(Cassandra.Location.TBL_LOCATION_LOG.FLD_SCHEDULE_ID.getColumnName())
+                .from(session.getLoggedKeyspace(), Cassandra.Location.Table.LOCATION_LOG.getTableName())
+                .where(eq(Cassandra.Location.TBL_LOCATION_LOG.FLD_SCHEDULE_TYPE.getColumnName(), SCHEDULE_TYPE)).limit(1);
         ResultSet results = session.execute(select);
-        Row one = results.one();
 
         long max_existing = 0l;
         long last_parsed = 0l;
 
+        Row one = results.one();
         if (one != null) {
-            max_existing = one.getLong(key);
-            last_parsed = one.getLong(TBL_LOCATION_LOG.FLD_LAST_PARSED.column);
+            max_existing = one.getLong(Cassandra.Location.TBL_LOCATION_LOG.FLD_SCHEDULE_ID.getColumnName());
+            last_parsed = one.getLong(Cassandra.Location.TBL_LOCATION_LOG.FLD_LAST_PARSED.getColumnName());
         }
         long current = max_existing + 1;
         LocSched curSched = new LocSched(current, last_parsed);
 
-        Statement insert = QueryBuilder.insertInto(session.getLoggedKeyspace(), Table.LOCATION_LOG.table_name)
-                .value(TBL_LOCATION_LOG.FLD_SCHEDULE_TYPE.column, SCHEDULE_TYPE)
-                .value(TBL_LOCATION_LOG.FLD_SCHEDULE_ID.column, current)
-                .value(TBL_LOCATION_LOG.FLD_START.column, new Date().getTime());
+        Statement insert = QueryBuilder
+                .insertInto(session.getLoggedKeyspace(), Cassandra.Location.Table.LOCATION_LOG.getTableName())
+                .value(Cassandra.Location.TBL_LOCATION_LOG.FLD_SCHEDULE_TYPE.getColumnName(), SCHEDULE_TYPE)
+                .value(Cassandra.Location.TBL_LOCATION_LOG.FLD_SCHEDULE_ID.getColumnName(), current)
+                .value(Cassandra.Location.TBL_LOCATION_LOG.FLD_START.getColumnName(), new Date().getTime());
         session.execute(insert);
         return curSched;
     }
@@ -61,44 +61,20 @@ public class CassandraLocationRepository extends BaseCassandraRepository impleme
     @Override
     public void scheduleFinalized(LocSched sched) {
         Statement update = QueryBuilder
-                .update(session.getLoggedKeyspace(), Table.LOCATION_LOG.table_name)
-                .with(set(TBL_LOCATION_LOG.FLD_END.column, new Date().getTime()))
-                .and(set(TBL_LOCATION_LOG.FLD_LAST_PARSED.column, sched.getLast_parsed()))
-                .where(eq(TBL_LOCATION_LOG.FLD_SCHEDULE_TYPE.column, SCHEDULE_TYPE))
-                .and(eq(TBL_LOCATION_LOG.FLD_SCHEDULE_ID.column, sched.getSchedule_id()));
+                .update(session.getLoggedKeyspace(), Cassandra.Location.Table.LOCATION_LOG.getTableName())
+                .with(set(Cassandra.Location.TBL_LOCATION_LOG.FLD_END.getColumnName(), new Date().getTime()))
+                .and(set(Cassandra.Location.TBL_LOCATION_LOG.FLD_LAST_PARSED.getColumnName(), sched.getLastParsed()))
+                .and(set(Cassandra.Location.TBL_LOCATION_LOG.FLD_ITEMS_UPDATED.getColumnName(), sched.getItemsUpdated()))
+                .where(eq(Cassandra.Location.TBL_LOCATION_LOG.FLD_SCHEDULE_TYPE.getColumnName(), SCHEDULE_TYPE))
+                .and(eq(Cassandra.Location.TBL_LOCATION_LOG.FLD_SCHEDULE_ID.getColumnName(), sched.getScheduleID()));
         session.execute(update);
     }
-    // TODO implement.
 
     @Override
     public void updateArticleWithPlacesLiteral(String permalink, Set<String> places) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    enum Table {
-
-        LOCATION_LOG("location_extraction_log");
-        private String table_name;
-
-        private Table(String name) {
-            this.table_name = name;
-        }
-    }
-
-    enum TBL_LOCATION_LOG {
-
-        FLD_SCHEDULE_TYPE("schedule_type"),
-        FLD_SCHEDULE_ID("schedule_id"),
-        FLD_START("start"),
-        FLD_END("end"),
-        FLD_LAST_PARSED("last_parsed"),
-        FLD_ITEMS_UPDATED("items_updated");
-        private String column;
-
-        private TBL_LOCATION_LOG(String column) {
-            this.column = column;
-        }
-
+        // TODO implement.
+        // update articles per place. Insert All data.
+        System.out.println(String.format("updating %s with places: %s", permalink, places.toString()));
     }
 
 }

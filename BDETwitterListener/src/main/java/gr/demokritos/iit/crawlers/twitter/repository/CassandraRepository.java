@@ -23,6 +23,7 @@ import com.datastax.driver.core.TypeCodec;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import com.datastax.driver.mapping.MappingManager;
+import gr.demokritos.iit.base.repository.views.Cassandra;
 import gr.demokritos.iit.crawlers.twitter.structures.SourceAccount;
 import gr.demokritos.iit.crawlers.twitter.structures.TGeoLoc;
 import gr.demokritos.iit.crawlers.twitter.structures.TPlace;
@@ -92,15 +93,15 @@ public class CassandraRepository extends AbstractRepository implements IReposito
 
     @Override
     public Collection<SourceAccount> getAccounts() {
-        Statement select = QueryBuilder.select().all().from(session.getLoggedKeyspace(), Table.TWITTER_SOURCE.table_name);
+        Statement select = QueryBuilder.select().all().from(session.getLoggedKeyspace(), Cassandra.Twitter.Tables.TWITTER_SOURCE.getTableName());
         ResultSet results;
         results = session.execute(select);
 
         Collection<SourceAccount> res = new LinkedHashSet();
 
         for (Row row : results) {
-            String screen_name = row.getString(TBL_TWITTER_SOURCE.FLD_ACCOUNT_NAME.column);
-            Boolean active = row.getBool(TBL_TWITTER_SOURCE.FLD_ACTIVE.column);
+            String screen_name = row.getString(Cassandra.Twitter.TBL_TWITTER_SOURCE.FLD_ACCOUNT_NAME.getColumnName());
+            Boolean active = row.getBool(Cassandra.Twitter.TBL_TWITTER_SOURCE.FLD_ACTIVE.getColumnName());
             res.add(new SourceAccount(screen_name, active));
         }
         return res;
@@ -115,16 +116,16 @@ public class CassandraRepository extends AbstractRepository implements IReposito
     public long insertUser(User user) {
         Statement insert
                 = QueryBuilder
-                .insertInto(session.getLoggedKeyspace(), Table.TWITTER_USER.table_name)
-                .value(TBL_TWITTER_USER.FLD_USER_ID.column, user.getId())
-                .value(TBL_TWITTER_USER.FLD_FOLLOWERS_CNT.column, user.getFollowersCount())
-                .value(TBL_TWITTER_USER.FLD_FRIENDS_CNT.column, user.getFriendsCount())
-                .value(TBL_TWITTER_USER.FLD_LISTED_CNT.column, user.getListedCount())
-                .value(TBL_TWITTER_USER.FLD_LOCATION.column, user.getLocation())
-                .value(TBL_TWITTER_USER.FLD_NAME.column, user.getName())
-                .value(TBL_TWITTER_USER.FLD_ACCOUNT_NAME.column, user.getScreenName())
-                .value(TBL_TWITTER_USER.FLD_STATUSES_CNT.column, user.getStatusesCount())
-                .value(TBL_TWITTER_USER.FLD_TIMEZONE.column, user.getTimeZone());
+                .insertInto(session.getLoggedKeyspace(), Cassandra.Twitter.Tables.TWITTER_USER.getTableName())
+                .value(Cassandra.Twitter.TBL_TWITTER_USER.FLD_USER_ID.getColumnName(), user.getId())
+                .value(Cassandra.Twitter.TBL_TWITTER_USER.FLD_FOLLOWERS_CNT.getColumnName(), user.getFollowersCount())
+                .value(Cassandra.Twitter.TBL_TWITTER_USER.FLD_FRIENDS_CNT.getColumnName(), user.getFriendsCount())
+                .value(Cassandra.Twitter.TBL_TWITTER_USER.FLD_LISTED_CNT.getColumnName(), user.getListedCount())
+                .value(Cassandra.Twitter.TBL_TWITTER_USER.FLD_LOCATION.getColumnName(), user.getLocation())
+                .value(Cassandra.Twitter.TBL_TWITTER_USER.FLD_NAME.getColumnName(), user.getName())
+                .value(Cassandra.Twitter.TBL_TWITTER_USER.FLD_ACCOUNT_NAME.getColumnName(), user.getScreenName())
+                .value(Cassandra.Twitter.TBL_TWITTER_USER.FLD_STATUSES_CNT.getColumnName(), user.getStatusesCount())
+                .value(Cassandra.Twitter.TBL_TWITTER_USER.FLD_TIMEZONE.getColumnName(), user.getTimeZone());
         session.execute(insert);
         return user.getId();
     }
@@ -136,11 +137,11 @@ public class CassandraRepository extends AbstractRepository implements IReposito
 
     @Override
     public boolean existsUser(long userID) {
-        String key = TBL_TWITTER_USER.FLD_ACCOUNT_NAME.column;
+        String key = Cassandra.Twitter.TBL_TWITTER_USER.FLD_ACCOUNT_NAME.getColumnName();
         Statement select = QueryBuilder
                 .select(key)
-                .from(session.getLoggedKeyspace(), Table.TWITTER_USER.table_name)
-                .where(eq(TBL_TWITTER_USER.FLD_USER_ID.column, userID));
+                .from(session.getLoggedKeyspace(), Cassandra.Twitter.Tables.TWITTER_USER.getTableName())
+                .where(eq(Cassandra.Twitter.TBL_TWITTER_USER.FLD_USER_ID.getColumnName(), userID));
         ResultSet results = session.execute(select);
 
         Row one = results.one();
@@ -212,18 +213,18 @@ public class CassandraRepository extends AbstractRepository implements IReposito
         // insert post in twitter_post
         Statement insert
                 = QueryBuilder
-                .insertInto(session.getLoggedKeyspace(), Table.TWITTER_POST.table_name)
-                .value(TBL_TWITTER_POST.FLD_POST_ID.column, post_id)
-                .value(TBL_TWITTER_POST.FLD_LANGUAGE.column, tweet_identified_lang)
-                .value(TBL_TWITTER_POST.FLD_ACCOUNT_NAME.column, account_name)
-                .value(TBL_TWITTER_POST.FLD_COORDINATES.column, coordinates)
-                .value(TBL_TWITTER_POST.FLD_CREATED_AT.column, timestamp_created)
-                .value(TBL_TWITTER_POST.FLD_EXTERNAL_LINKS.column, external_links)
-                .value(TBL_TWITTER_POST.FLD_FOLLOWERS_WHEN_PUBLISHED.column, followersWhenPublished)
-                .value(TBL_TWITTER_POST.FLD_PLACE.column, sPlace)
-                .value(TBL_TWITTER_POST.FLD_RETWEET_CNT.column, post.getRetweetCount())
-                .value(TBL_TWITTER_POST.FLD_TWEET.column, tweet)
-                .value(TBL_TWITTER_POST.FLD_PERMALINK.column, permalink);
+                .insertInto(session.getLoggedKeyspace(), Cassandra.Twitter.Tables.TWITTER_POST.getTableName())
+                .value(Cassandra.Twitter.TBL_TWITTER_POST.FLD_POST_ID.getColumnName(), post_id)
+                .value(Cassandra.Twitter.TBL_TWITTER_POST.FLD_LANGUAGE.getColumnName(), tweet_identified_lang)
+                .value(Cassandra.Twitter.TBL_TWITTER_POST.FLD_ACCOUNT_NAME.getColumnName(), account_name)
+                .value(Cassandra.Twitter.TBL_TWITTER_POST.FLD_COORDINATES.getColumnName(), coordinates)
+                .value(Cassandra.Twitter.TBL_TWITTER_POST.FLD_CREATED_AT.getColumnName(), timestamp_created)
+                .value(Cassandra.Twitter.TBL_TWITTER_POST.FLD_EXTERNAL_LINKS.getColumnName(), external_links)
+                .value(Cassandra.Twitter.TBL_TWITTER_POST.FLD_FOLLOWERS_WHEN_PUBLISHED.getColumnName(), followersWhenPublished)
+                .value(Cassandra.Twitter.TBL_TWITTER_POST.FLD_PLACE.getColumnName(), sPlace)
+                .value(Cassandra.Twitter.TBL_TWITTER_POST.FLD_RETWEET_CNT.getColumnName(), post.getRetweetCount())
+                .value(Cassandra.Twitter.TBL_TWITTER_POST.FLD_TWEET.getColumnName(), tweet)
+                .value(Cassandra.Twitter.TBL_TWITTER_POST.FLD_PERMALINK.getColumnName(), permalink);
         session.execute(insert);
 
         // insert metadata in twitter_hashtags_per_post
@@ -233,14 +234,14 @@ public class CassandraRepository extends AbstractRepository implements IReposito
         for (HashtagEntity hashtag : hashtagEntities) {
             Statement insert_hashtag
                     = QueryBuilder
-                    .insertInto(session.getLoggedKeyspace(), Table.TWITTER_POSTS_PER_HASHTAG.table_name)
-                    .value(TBL_TWITTER_POSTS_PER_HASHTAG.FLD_HASHTAG.column, hashtag.getText())
-                    .value(TBL_TWITTER_POSTS_PER_HASHTAG.FLD_CREATED_AT.column, timestamp_created)
-                    .value(TBL_TWITTER_POSTS_PER_HASHTAG.FLD_POST_ID.column, post_id)
-                    .value(TBL_TWITTER_POSTS_PER_HASHTAG.FLD_ACCOUNT_NAME.column, account_name)
-                    .value(TBL_TWITTER_POSTS_PER_HASHTAG.FLD_LANGUAGE.column, tweet_identified_lang)
-                    .value(TBL_TWITTER_POSTS_PER_HASHTAG.FLD_TWEET.column, tweet)
-                    .value(TBL_TWITTER_POSTS_PER_HASHTAG.FLD_PERMALINK.column, permalink);
+                    .insertInto(session.getLoggedKeyspace(), Cassandra.Twitter.Tables.TWITTER_POSTS_PER_HASHTAG.getTableName())
+                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_HASHTAG.FLD_HASHTAG.getColumnName(), hashtag.getText())
+                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_HASHTAG.FLD_CREATED_AT.getColumnName(), timestamp_created)
+                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_HASHTAG.FLD_POST_ID.getColumnName(), post_id)
+                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_HASHTAG.FLD_ACCOUNT_NAME.getColumnName(), account_name)
+                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_HASHTAG.FLD_LANGUAGE.getColumnName(), tweet_identified_lang)
+                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_HASHTAG.FLD_TWEET.getColumnName(), tweet)
+                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_HASHTAG.FLD_PERMALINK.getColumnName(), permalink);
             session.execute(insert_hashtag);
         }
 
@@ -248,14 +249,14 @@ public class CassandraRepository extends AbstractRepository implements IReposito
         for (String external_url : external_links) {
             Statement insert_external_url
                     = QueryBuilder
-                    .insertInto(session.getLoggedKeyspace(), Table.TWITTER_POSTS_PER_EXTERNAL_URL.table_name)
-                    .value(TBL_TWITTER_POSTS_PER_EXTERNAL_URL.FLD_EXTERNAL_URL.column, external_url)
-                    .value(TBL_TWITTER_POSTS_PER_EXTERNAL_URL.FLD_CREATED_AT.column, timestamp_created)
-                    .value(TBL_TWITTER_POSTS_PER_EXTERNAL_URL.FLD_POST_ID.column, post_id)
-                    .value(TBL_TWITTER_POSTS_PER_EXTERNAL_URL.FLD_ACCOUNT_NAME.column, account_name)
-                    .value(TBL_TWITTER_POSTS_PER_EXTERNAL_URL.FLD_LANGUAGE.column, tweet_identified_lang)
-                    .value(TBL_TWITTER_POSTS_PER_EXTERNAL_URL.FLD_TWEET.column, tweet)
-                    .value(TBL_TWITTER_POSTS_PER_EXTERNAL_URL.FLD_PERMALINK.column, permalink);
+                    .insertInto(session.getLoggedKeyspace(), Cassandra.Twitter.Tables.TWITTER_POSTS_PER_EXTERNAL_URL.getTableName())
+                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_EXTERNAL_URL.FLD_EXTERNAL_URL.getColumnName(), external_url)
+                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_EXTERNAL_URL.FLD_CREATED_AT.getColumnName(), timestamp_created)
+                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_EXTERNAL_URL.FLD_POST_ID.getColumnName(), post_id)
+                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_EXTERNAL_URL.FLD_ACCOUNT_NAME.getColumnName(), account_name)
+                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_EXTERNAL_URL.FLD_LANGUAGE.getColumnName(), tweet_identified_lang)
+                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_EXTERNAL_URL.FLD_TWEET.getColumnName(), tweet)
+                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_EXTERNAL_URL.FLD_PERMALINK.getColumnName(), permalink);
             session.execute(insert_external_url);
         }
         // insert metadata in twitter_created_at_per_post
@@ -264,14 +265,14 @@ public class CassandraRepository extends AbstractRepository implements IReposito
 
         Statement insert_created_at
                 = QueryBuilder
-                .insertInto(session.getLoggedKeyspace(), Table.TWITTER_POSTS_PER_DATE.table_name)
-                .value(TBL_TWITTER_POSTS_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.column, year_month_day)
-                .value(TBL_TWITTER_POSTS_PER_DATE.FLD_CREATED_AT.column, timestamp_created)
-                .value(TBL_TWITTER_POSTS_PER_DATE.FLD_POST_ID.column, post_id)
-                .value(TBL_TWITTER_POSTS_PER_DATE.FLD_ACCOUNT_NAME.column, account_name)
-                .value(TBL_TWITTER_POSTS_PER_DATE.FLD_LANGUAGE.column, tweet_identified_lang)
-                .value(TBL_TWITTER_POSTS_PER_DATE.FLD_TWEET.column, tweet)
-                .value(TBL_TWITTER_POSTS_PER_DATE.FLD_PERMALINK.column, permalink);
+                .insertInto(session.getLoggedKeyspace(), Cassandra.Twitter.Tables.TWITTER_POSTS_PER_DATE.getTableName())
+                .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.getColumnName(), year_month_day)
+                .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_CREATED_AT.getColumnName(), timestamp_created)
+                .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_POST_ID.getColumnName(), post_id)
+                .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_ACCOUNT_NAME.getColumnName(), account_name)
+                .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_LANGUAGE.getColumnName(), tweet_identified_lang)
+                .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_TWEET.getColumnName(), tweet)
+                .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_PERMALINK.getColumnName(), permalink);
         session.execute(insert_created_at);
 
         if (!geo_bucket_literal.isEmpty()) {
@@ -279,15 +280,15 @@ public class CassandraRepository extends AbstractRepository implements IReposito
             // insert metadata at twitter_coordinates_per_post
             Statement insert_coords
                     = QueryBuilder
-                    .insertInto(session.getLoggedKeyspace(), Table.TWITTER_POSTS_PER_COORDINATES.table_name)
-                    .value(TBL_TWITTER_POSTS_PER_COORDINATE.FLD_GEO_BUCKET.column, geo_bucket_literal)
-                    .value(TBL_TWITTER_POSTS_PER_COORDINATE.FLD_CREATED_AT.column, timestamp_created)
-                    .value(TBL_TWITTER_POSTS_PER_COORDINATE.FLD_GEOLOCATION.column, geoCodec.serialize(geoloc, ProtocolVersion.V2))
-                    .value(TBL_TWITTER_POSTS_PER_COORDINATE.FLD_POST_ID.column, post_id)
-                    .value(TBL_TWITTER_POSTS_PER_COORDINATE.FLD_ACCOUNT_NAME.column, account_name)
-                    .value(TBL_TWITTER_POSTS_PER_COORDINATE.FLD_LANGUAGE.column, tweet_identified_lang)
-                    .value(TBL_TWITTER_POSTS_PER_COORDINATE.FLD_TWEET.column, tweet)
-                    .value(TBL_TWITTER_POSTS_PER_COORDINATE.FLD_PERMALINK.column, permalink);
+                    .insertInto(session.getLoggedKeyspace(), Cassandra.Twitter.Tables.TWITTER_POSTS_PER_COORDINATES.getTableName())
+                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_COORDINATE.FLD_GEO_BUCKET.getColumnName(), geo_bucket_literal)
+                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_COORDINATE.FLD_CREATED_AT.getColumnName(), timestamp_created)
+                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_COORDINATE.FLD_GEOLOCATION.getColumnName(), geoCodec.serialize(geoloc, ProtocolVersion.V2))
+                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_COORDINATE.FLD_POST_ID.getColumnName(), post_id)
+                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_COORDINATE.FLD_ACCOUNT_NAME.getColumnName(), account_name)
+                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_COORDINATE.FLD_LANGUAGE.getColumnName(), tweet_identified_lang)
+                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_COORDINATE.FLD_TWEET.getColumnName(), tweet)
+                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_COORDINATE.FLD_PERMALINK.getColumnName(), permalink);
             session.execute(insert_coords);
         }
         if (!sPlace.isEmpty()) {
@@ -295,24 +296,24 @@ public class CassandraRepository extends AbstractRepository implements IReposito
             // insert metadata at twitter_place_per_post
             Statement insert_place
                     = QueryBuilder
-                    .insertInto(session.getLoggedKeyspace(), Table.TWITTER_POSTS_PER_PLACE.table_name)
-                    .value(TBL_TWITTER_POSTS_PER_PLACE.FLD_PLACE_LITERAL.column, sPlace)
-                    .value(TBL_TWITTER_POSTS_PER_PLACE.FLD_CREATED_AT.column, timestamp_created)
-                    .value(TBL_TWITTER_POSTS_PER_PLACE.FLD_POST_ID.column, post_id)
-                    .value(TBL_TWITTER_POSTS_PER_PLACE.FLD_ACCOUNT_NAME.column, account_name)
-                    .value(TBL_TWITTER_POSTS_PER_PLACE.FLD_LANGUAGE.column, tweet_identified_lang)
-                    .value(TBL_TWITTER_POSTS_PER_PLACE.FLD_PLACE.column, plCodec.serialize(tplace, ProtocolVersion.V2))
-                    .value(TBL_TWITTER_POSTS_PER_PLACE.FLD_TWEET.column, tweet)
-                    .value(TBL_TWITTER_POSTS_PER_PLACE.FLD_PERMALINK.column, permalink);
+                    .insertInto(session.getLoggedKeyspace(), Cassandra.Twitter.Tables.TWITTER_POSTS_PER_PLACE.getTableName())
+                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_PLACE.FLD_PLACE_LITERAL.getColumnName(), sPlace)
+                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_PLACE.FLD_CREATED_AT.getColumnName(), timestamp_created)
+                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_PLACE.FLD_POST_ID.getColumnName(), post_id)
+                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_PLACE.FLD_ACCOUNT_NAME.getColumnName(), account_name)
+                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_PLACE.FLD_LANGUAGE.getColumnName(), tweet_identified_lang)
+                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_PLACE.FLD_PLACE.getColumnName(), plCodec.serialize(tplace, ProtocolVersion.V2))
+                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_PLACE.FLD_TWEET.getColumnName(), tweet)
+                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_PLACE.FLD_PERMALINK.getColumnName(), permalink);
             session.execute(insert_place);
         }
         // insert metadata at twitter_engine_per_post
         Statement insert_engine
                 = QueryBuilder
-                .insertInto(session.getLoggedKeyspace(), Table.TWITTER_POSTS_PER_ENGINE.table_name)
-                .value(TBL_TWITTER_POSTS_PER_ENGINE.FLD_ENGINE_TYPE.column, engine.toString().toLowerCase())
-                .value(TBL_TWITTER_POSTS_PER_ENGINE.FLD_ENGINE_ID.column, engine_id)
-                .value(TBL_TWITTER_POSTS_PER_ENGINE.FLD_POST_ID.column, post_id);
+                .insertInto(session.getLoggedKeyspace(), Cassandra.Twitter.Tables.TWITTER_POSTS_PER_ENGINE.getTableName())
+                .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_ENGINE.FLD_ENGINE_TYPE.getColumnName(), engine.toString().toLowerCase())
+                .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_ENGINE.FLD_ENGINE_ID.getColumnName(), engine_id)
+                .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_ENGINE.FLD_POST_ID.getColumnName(), post_id);
         session.execute(insert_engine);
     }
 
@@ -322,10 +323,10 @@ public class CassandraRepository extends AbstractRepository implements IReposito
         if (tweet_identified_lang == null || tweet_identified_lang.equalsIgnoreCase(TWEET_UNDEFINED_LANG)) {
             tweet_identified_lang = CybozuLangDetect.getInstance().identifyLanguage(cleanTweetFromURLs(post), TWEET_UNDEFINED_LANG);
         }
-        Statement update = QueryBuilder.update(session.getLoggedKeyspace(), Table.TWITTER_POST.table_name)
-                .with(QueryBuilder.set(TBL_TWITTER_POST.FLD_RETWEET_CNT.column, post.getRetweetCount()))
-                .where(QueryBuilder.eq(TBL_TWITTER_POST.FLD_POST_ID.column, post.getId()))
-                .and(QueryBuilder.eq(TBL_TWITTER_POST.FLD_LANGUAGE.column, tweet_identified_lang));
+        Statement update = QueryBuilder.update(session.getLoggedKeyspace(), Cassandra.Twitter.Tables.TWITTER_POST.getTableName())
+                .with(QueryBuilder.set(Cassandra.Twitter.TBL_TWITTER_POST.FLD_RETWEET_CNT.getColumnName(), post.getRetweetCount()))
+                .where(QueryBuilder.eq(Cassandra.Twitter.TBL_TWITTER_POST.FLD_POST_ID.getColumnName(), post.getId()))
+                .and(QueryBuilder.eq(Cassandra.Twitter.TBL_TWITTER_POST.FLD_LANGUAGE.getColumnName(), tweet_identified_lang));
         session.execute(update);
     }
 
@@ -334,15 +335,15 @@ public class CassandraRepository extends AbstractRepository implements IReposito
         Statement select
                 = QueryBuilder
                 .select()
-                .column(TBL_TWITTER_POST.FLD_LANGUAGE.column)
-                .from(session.getLoggedKeyspace(), Table.TWITTER_POST.table_name)
-                .where(eq(TBL_TWITTER_POST.FLD_POST_ID.column, post_id)).limit(1);
+                .column(Cassandra.Twitter.TBL_TWITTER_POST.FLD_LANGUAGE.getColumnName())
+                .from(session.getLoggedKeyspace(), Cassandra.Twitter.Tables.TWITTER_POST.getTableName())
+                .where(eq(Cassandra.Twitter.TBL_TWITTER_POST.FLD_POST_ID.getColumnName(), post_id)).limit(1);
         ResultSet result = session.execute(select);
 
         if (result != null) {
             Row one = result.one();
             if (one != null) {
-                String lang = one.getString(TBL_TWITTER_POST.FLD_LANGUAGE.column);
+                String lang = one.getString(Cassandra.Twitter.TBL_TWITTER_POST.FLD_LANGUAGE.getColumnName());
                 return (lang != null && !lang.isEmpty());
             }
         }
@@ -351,11 +352,11 @@ public class CassandraRepository extends AbstractRepository implements IReposito
 
     @Override
     public long scheduleInitialized(CrawlEngine engine_type) {
-        String key = TBL_TWITTER_LOG.FLD_ENGINE_ID.column;
+        String key = Cassandra.Twitter.TBL_TWITTER_LOG.FLD_ENGINE_ID.getColumnName();
         Statement select = QueryBuilder
                 .select(key)
-                .from(session.getLoggedKeyspace(), Table.TWITTER_LOG.table_name)
-                .where(eq(TBL_TWITTER_LOG.FLD_ENGINE_TYPE.column, engine_type.toString().toLowerCase())).limit(1);
+                .from(session.getLoggedKeyspace(), Cassandra.Twitter.Tables.TWITTER_LOG.getTableName())
+                .where(eq(Cassandra.Twitter.TBL_TWITTER_LOG.FLD_ENGINE_TYPE.getColumnName(), engine_type.toString().toLowerCase())).limit(1);
         ResultSet results = session.execute(select);
         Row one = results.one();
 
@@ -365,20 +366,20 @@ public class CassandraRepository extends AbstractRepository implements IReposito
             max_existing = one.getLong(key);
         }
         long current = max_existing + 1;
-        Statement insert = QueryBuilder.insertInto(session.getLoggedKeyspace(), Table.TWITTER_LOG.table_name)
-                .value(TBL_TWITTER_LOG.FLD_ENGINE_TYPE.column, engine_type.toString())
-                .value(TBL_TWITTER_LOG.FLD_ENGINE_ID.column, current)
-                .value(TBL_TWITTER_LOG.FLD_STARTED.column, new Date().getTime());
+        Statement insert = QueryBuilder.insertInto(session.getLoggedKeyspace(), Cassandra.Twitter.Tables.TWITTER_LOG.getTableName())
+                .value(Cassandra.Twitter.TBL_TWITTER_LOG.FLD_ENGINE_TYPE.getColumnName(), engine_type.toString())
+                .value(Cassandra.Twitter.TBL_TWITTER_LOG.FLD_ENGINE_ID.getColumnName(), current)
+                .value(Cassandra.Twitter.TBL_TWITTER_LOG.FLD_STARTED.getColumnName(), new Date().getTime());
         session.execute(insert);
         return current;
     }
 
     @Override
     public void scheduleFinalized(long schedule_id, CrawlEngine engine_type) {
-        Statement update = QueryBuilder.update(session.getLoggedKeyspace(), Table.TWITTER_LOG.table_name)
-                .with(QueryBuilder.set(TBL_TWITTER_LOG.FLD_ENDED.column, new Date().getTime()))
-                .where(QueryBuilder.eq(TBL_TWITTER_LOG.FLD_ENGINE_TYPE.column, engine_type.toString().toLowerCase()))
-                .and(QueryBuilder.eq(TBL_TWITTER_LOG.FLD_ENGINE_ID.column, schedule_id));
+        Statement update = QueryBuilder.update(session.getLoggedKeyspace(), Cassandra.Twitter.Tables.TWITTER_LOG.getTableName())
+                .with(QueryBuilder.set(Cassandra.Twitter.TBL_TWITTER_LOG.FLD_ENDED.getColumnName(), new Date().getTime()))
+                .where(QueryBuilder.eq(Cassandra.Twitter.TBL_TWITTER_LOG.FLD_ENGINE_TYPE.getColumnName(), engine_type.toString().toLowerCase()))
+                .and(QueryBuilder.eq(Cassandra.Twitter.TBL_TWITTER_LOG.FLD_ENGINE_ID.getColumnName(), schedule_id));
         session.execute(update);
     }
 
@@ -388,8 +389,8 @@ public class CassandraRepository extends AbstractRepository implements IReposito
                 = QueryBuilder
                 .select()
                 .countAll()
-                .from(session.getLoggedKeyspace(), Table.TWITTER_SOURCE.table_name)
-                .where(eq(TBL_TWITTER_SOURCE.FLD_ACCOUNT_NAME.column, account_name)).limit(1);
+                .from(session.getLoggedKeyspace(), Cassandra.Twitter.Tables.TWITTER_SOURCE.getTableName())
+                .where(eq(Cassandra.Twitter.TBL_TWITTER_SOURCE.FLD_ACCOUNT_NAME.getColumnName(), account_name)).limit(1);
         ResultSet result = session.execute(select);
 
         if (result != null) {
@@ -406,9 +407,9 @@ public class CassandraRepository extends AbstractRepository implements IReposito
     public void saveAccount(String account_name, boolean active) {
         Statement insert
                 = QueryBuilder
-                .insertInto(Table.TWITTER_SOURCE.table_name)
-                .value(TBL_TWITTER_SOURCE.FLD_ACCOUNT_NAME.column, account_name)
-                .value(TBL_TWITTER_SOURCE.FLD_ACTIVE.column, active);
+                .insertInto(Cassandra.Twitter.Tables.TWITTER_SOURCE.getTableName())
+                .value(Cassandra.Twitter.TBL_TWITTER_SOURCE.FLD_ACCOUNT_NAME.getColumnName(), account_name)
+                .value(Cassandra.Twitter.TBL_TWITTER_SOURCE.FLD_ACTIVE.getColumnName(), active);
         session.execute(insert);
     }
 
@@ -418,29 +419,29 @@ public class CassandraRepository extends AbstractRepository implements IReposito
                 = QueryBuilder
                 .select()
                 .all()
-                .from(session.getLoggedKeyspace(), Table.TWITTER_USER.table_name)
-                .where(eq(TBL_TWITTER_USER.FLD_ACCOUNT_NAME.column, account_name));
+                .from(session.getLoggedKeyspace(), Cassandra.Twitter.Tables.TWITTER_USER.getTableName())
+                .where(eq(Cassandra.Twitter.TBL_TWITTER_USER.FLD_ACCOUNT_NAME.getColumnName(), account_name));
         ResultSet results;
         results = session.execute(select);
 
         Map<String, Object> res = new HashMap();
         for (Row row : results) {
-            long user_id = row.getLong(TBL_TWITTER_USER.FLD_USER_ID.column);
-            res.put(TBL_TWITTER_USER.FLD_USER_ID.column, user_id);
-            long followers_count = row.getLong(TBL_TWITTER_USER.FLD_FOLLOWERS_CNT.column);
-            res.put(TBL_TWITTER_USER.FLD_FOLLOWERS_CNT.column, followers_count);
-            long friends_count = row.getLong(TBL_TWITTER_USER.FLD_FRIENDS_CNT.column);
-            res.put(TBL_TWITTER_USER.FLD_FRIENDS_CNT.column, friends_count);
-            long listed_count = row.getLong(TBL_TWITTER_USER.FLD_LISTED_CNT.column);
-            res.put(TBL_TWITTER_USER.FLD_LISTED_CNT.column, listed_count);
-            String name = row.getString(TBL_TWITTER_USER.FLD_NAME.column);
-            res.put(TBL_TWITTER_USER.FLD_NAME.column, name);
-            String location = row.getString(TBL_TWITTER_USER.FLD_LOCATION.column);
-            res.put(TBL_TWITTER_USER.FLD_LOCATION.column, location);
-            long statuses_count = row.getLong(TBL_TWITTER_USER.FLD_STATUSES_CNT.column);
-            res.put(TBL_TWITTER_USER.FLD_STATUSES_CNT.column, statuses_count);
-            String timezone = row.getString(TBL_TWITTER_USER.FLD_TIMEZONE.column);
-            res.put(TBL_TWITTER_USER.FLD_TIMEZONE.column, timezone);
+            long user_id = row.getLong(Cassandra.Twitter.TBL_TWITTER_USER.FLD_USER_ID.getColumnName());
+            res.put(Cassandra.Twitter.TBL_TWITTER_USER.FLD_USER_ID.getColumnName(), user_id);
+            long followers_count = row.getLong(Cassandra.Twitter.TBL_TWITTER_USER.FLD_FOLLOWERS_CNT.getColumnName());
+            res.put(Cassandra.Twitter.TBL_TWITTER_USER.FLD_FOLLOWERS_CNT.getColumnName(), followers_count);
+            long friends_count = row.getLong(Cassandra.Twitter.TBL_TWITTER_USER.FLD_FRIENDS_CNT.getColumnName());
+            res.put(Cassandra.Twitter.TBL_TWITTER_USER.FLD_FRIENDS_CNT.getColumnName(), friends_count);
+            long listed_count = row.getLong(Cassandra.Twitter.TBL_TWITTER_USER.FLD_LISTED_CNT.getColumnName());
+            res.put(Cassandra.Twitter.TBL_TWITTER_USER.FLD_LISTED_CNT.getColumnName(), listed_count);
+            String name = row.getString(Cassandra.Twitter.TBL_TWITTER_USER.FLD_NAME.getColumnName());
+            res.put(Cassandra.Twitter.TBL_TWITTER_USER.FLD_NAME.getColumnName(), name);
+            String location = row.getString(Cassandra.Twitter.TBL_TWITTER_USER.FLD_LOCATION.getColumnName());
+            res.put(Cassandra.Twitter.TBL_TWITTER_USER.FLD_LOCATION.getColumnName(), location);
+            long statuses_count = row.getLong(Cassandra.Twitter.TBL_TWITTER_USER.FLD_STATUSES_CNT.getColumnName());
+            res.put(Cassandra.Twitter.TBL_TWITTER_USER.FLD_STATUSES_CNT.getColumnName(), statuses_count);
+            String timezone = row.getString(Cassandra.Twitter.TBL_TWITTER_USER.FLD_TIMEZONE.getColumnName());
+            res.put(Cassandra.Twitter.TBL_TWITTER_USER.FLD_TIMEZONE.getColumnName(), timezone);
         }
         return Collections.unmodifiableMap(res);
     }
@@ -449,189 +450,4 @@ public class CassandraRepository extends AbstractRepository implements IReposito
     public LinkedHashMap<Integer, String> getUsersSortedByMaxRetweets() {
         throw new UnsupportedOperationException("Not supported.");
     }
-
-    // cassandra tables
-    enum Table {
-
-        TWITTER_SOURCE("twitter_source"),
-        TWITTER_USER("twitter_user"),
-        TWITTER_POST("twitter_post"),
-        TWITTER_POSTS_PER_DATE("twitter_posts_per_date"),
-        TWITTER_POSTS_PER_HASHTAG("twitter_posts_per_hashtag"),
-        TWITTER_POSTS_PER_EXTERNAL_URL("twitter_posts_per_external_url"),
-        TWITTER_POSTS_PER_COORDINATES("twitter_posts_per_coordinates"),
-        TWITTER_POSTS_PER_PLACE("twitter_posts_per_place"),
-        TWITTER_POSTS_PER_ENGINE("twitter_posts_per_engine"),
-        TWITTER_LOG("twitter_log");
-        private final String table_name;
-
-        private Table(String table_name) {
-            this.table_name = table_name;
-        }
-    }
-
-    // cassandra table fields
-    enum TBL_TWITTER_SOURCE {
-
-        FLD_ACCOUNT_NAME("account_name"),
-        FLD_ACTIVE("active");
-        private final String column;
-
-        private TBL_TWITTER_SOURCE(String columnn) {
-            this.column = columnn;
-        }
-    }
-
-    enum TBL_TWITTER_USER {
-
-        FLD_USER_ID("user_id"),
-        FLD_FOLLOWERS_CNT("followers_count"),
-        FLD_FRIENDS_CNT("friends_count"),
-        FLD_LISTED_CNT("listed_count"),
-        FLD_NAME("name"),
-        FLD_ACCOUNT_NAME("account_name"),
-        FLD_LOCATION("location"),
-        FLD_STATUSES_CNT("statuses_count"),
-        FLD_TIMEZONE("timezone");
-        private final String column;
-
-        private TBL_TWITTER_USER(String columnn) {
-            this.column = columnn;
-        }
-    }
-
-    enum TBL_TWITTER_POST {
-
-        FLD_POST_ID("post_id"),
-        FLD_CREATED_AT("created_at"),
-        FLD_COORDINATES("coordinates"),
-        FLD_PLACE("place"),
-        FLD_RETWEET_CNT("retweet_count"),
-        FLD_FOLLOWERS_WHEN_PUBLISHED("followers_when_published"),
-        FLD_TWEET("tweet"),
-        FLD_LANGUAGE("language"),
-        FLD_PERMALINK("url"),
-        FLD_EXTERNAL_LINKS("external_links"),
-        FLD_ACCOUNT_NAME("account_name");
-        private final String column;
-
-        private TBL_TWITTER_POST(String columnn) {
-            this.column = columnn;
-        }
-    }
-
-    enum TBL_TWITTER_POSTS_PER_HASHTAG {
-
-        FLD_HASHTAG("hashtag"),
-        FLD_CREATED_AT("created_at"),
-        FLD_POST_ID("post_id"),
-        FLD_ACCOUNT_NAME("account_name"),
-        FLD_LANGUAGE("language"),
-        FLD_TWEET("tweet"),
-        FLD_PERMALINK("url");
-
-        private final String column;
-
-        private TBL_TWITTER_POSTS_PER_HASHTAG(String columnn) {
-            this.column = columnn;
-        }
-    }
-
-    enum TBL_TWITTER_POSTS_PER_EXTERNAL_URL {
-
-        FLD_EXTERNAL_URL("external_url"),
-        FLD_CREATED_AT("created_at"),
-        FLD_POST_ID("post_id"),
-        FLD_ACCOUNT_NAME("account_name"),
-        FLD_LANGUAGE("language"),
-        FLD_TWEET("tweet"),
-        FLD_PERMALINK("url");
-
-        private final String column;
-
-        private TBL_TWITTER_POSTS_PER_EXTERNAL_URL(String columnn) {
-            this.column = columnn;
-        }
-    }
-
-    enum TBL_TWITTER_POSTS_PER_DATE {
-
-        FLD_YEAR_MONTH_DAY_BUCKET("year_month_day_bucket"),
-        FLD_CREATED_AT("created_at"),
-        FLD_POST_ID("post_id"),
-        FLD_ACCOUNT_NAME("account_name"),
-        FLD_LANGUAGE("language"),
-        FLD_TWEET("tweet"),
-        FLD_PERMALINK("url");
-
-        private final String column;
-
-        private TBL_TWITTER_POSTS_PER_DATE(String columnn) {
-            this.column = columnn;
-        }
-    }
-
-    enum TBL_TWITTER_POSTS_PER_COORDINATE {
-
-        FLD_GEO_BUCKET("geo_bucket"),
-        FLD_CREATED_AT("created_at"),
-        FLD_GEOLOCATION("geolocation"),
-        FLD_POST_ID("post_id"),
-        FLD_ACCOUNT_NAME("account_name"),
-        FLD_LANGUAGE("language"),
-        FLD_TWEET("tweet"),
-        FLD_PERMALINK("url");
-
-        private final String column;
-
-        private TBL_TWITTER_POSTS_PER_COORDINATE(String columnn) {
-            this.column = columnn;
-        }
-    }
-
-    enum TBL_TWITTER_POSTS_PER_PLACE {
-
-        FLD_PLACE_LITERAL("place_literal"),
-        FLD_CREATED_AT("created_at"),
-        FLD_PLACE("place"),
-        FLD_POST_ID("post_id"),
-        FLD_ACCOUNT_NAME("account_name"),
-        FLD_LANGUAGE("language"),
-        FLD_TWEET("tweet"),
-        FLD_PERMALINK("url");
-
-        private final String column;
-
-        private TBL_TWITTER_POSTS_PER_PLACE(String columnn) {
-            this.column = columnn;
-        }
-    }
-
-    enum TBL_TWITTER_POSTS_PER_ENGINE {
-
-        FLD_ENGINE_TYPE("engine_type"),
-        FLD_ENGINE_ID("engine_id"),
-        FLD_POST_ID("post_id");
-
-        private final String column;
-
-        private TBL_TWITTER_POSTS_PER_ENGINE(String columnn) {
-            this.column = columnn;
-        }
-    }
-
-    enum TBL_TWITTER_LOG {
-
-        FLD_ENGINE_TYPE("engine_type"),
-        FLD_ENGINE_ID("engine_id"),
-        FLD_STARTED("started"),
-        FLD_ENDED("ended");
-
-        private final String column;
-
-        private TBL_TWITTER_LOG(String columnn) {
-            this.column = columnn;
-        }
-    }
-
 }
