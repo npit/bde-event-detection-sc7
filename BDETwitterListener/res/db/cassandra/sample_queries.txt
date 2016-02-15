@@ -70,3 +70,5 @@ COPY bde.twitter_source (account_name, active) TO '~/Programming/Java/BigDataEur
 COPY bde.twitter_source (account_name, active) FROM '~/Programming/Java/BigDataEurope/BDETwitterListener/res/db/cassandra/sample_source_accounts.csv' WITH HEADER = TRUE AND DELIMITER = '|';
 
 SOURCE '~/Programming/Java/BigDataEurope/BDETwitterListener/res/db/cassandra/twitter_cql_db_dev.cql';
+SOURCE '~/Programming/Java/BigDataEurope/BDERSSCrawler/res/db/rss_db.cql';
+SOURCE '~/Programming/Java/BigDataEurope/BDELocationExtraction/res/db/location_db.cql';

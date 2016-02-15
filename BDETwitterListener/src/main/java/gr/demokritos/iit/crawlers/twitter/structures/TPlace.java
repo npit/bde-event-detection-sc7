@@ -17,6 +17,7 @@ package gr.demokritos.iit.crawlers.twitter.structures;
 import com.datastax.driver.mapping.annotations.Field;
 import com.datastax.driver.mapping.annotations.UDT;
 import java.util.Objects;
+import twitter4j.GeoLocation;
 import twitter4j.Place;
 
 /**
@@ -48,6 +49,8 @@ public class TPlace {
     private String boundingBoxType;
     @Field(name = "geometry_type")
     private String geometryType;
+    @Field(name = "bounding_box")
+    private String bounding_box;
 
     /**
      * replace possible nulls with empty strings.
@@ -65,6 +68,7 @@ public class TPlace {
         this.URL = place.getURL() == null ? "" : place.getURL();
         this.boundingBoxType = place.getBoundingBoxType() == null ? "" : place.getBoundingBoxType();
         this.geometryType = place.getGeometryType() == null ? "" : place.getGeometryType();
+        this.bounding_box = place.getBoundingBoxCoordinates() == null ? "" : boundingBoxToString(place.getBoundingBoxCoordinates());
     }
 
     /**
@@ -81,10 +85,19 @@ public class TPlace {
         this.URL = "";
         this.boundingBoxType = "";
         this.geometryType = "";
+        this.bounding_box = "";
     }
 
     public String getFullName() {
         return fullName;
+    }
+
+    public String getBounding_box() {
+        return bounding_box;
+    }
+
+    public void setBounding_box(String bounding_box) {
+        this.bounding_box = bounding_box;
     }
 
     public void setFullName(String fullName) {
@@ -202,6 +215,20 @@ public class TPlace {
                 + ", url=" + URL
                 + ", bounding_box_type=" + boundingBoxType
                 + ", geometry_type=" + geometryType
+                + ", bounding_box=" + bounding_box
                 + "}";
+    }
+
+    private String boundingBoxToString(GeoLocation[][] boundingBoxCoordinates) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("POLYGON((");
+        for (GeoLocation[] boundingBoxCoordinate : boundingBoxCoordinates) {
+            for (GeoLocation boundingBoxCoordinate1 : boundingBoxCoordinate) {
+                sb.append(boundingBoxCoordinate1.getLatitude()).append(" ").append(boundingBoxCoordinate1.getLongitude()).append(", ");
+            }
+        }
+        sb.deleteCharAt(sb.lastIndexOf(", "));
+        sb.append("))");
+        return sb.toString();
     }
 }

@@ -11,7 +11,7 @@ import com.datastax.driver.core.policies.DefaultRetryPolicy;
 import com.datastax.driver.core.policies.Policies;
 import gr.demokritos.iit.base.conf.IBaseConf;
 import gr.demokritos.iit.base.factory.BaseFactory;
-import gr.demokritos.iit.location.repository.CassandraLocationRepository;
+import gr.demokritos.iit.location.repository.LocationCassandraRepository;
 import gr.demokritos.iit.location.repository.ILocationRepository;
 
 /**
@@ -47,7 +47,7 @@ public class LocationFactory extends BaseFactory {
         }
         Session session = cluster.connect(conf.getCassandraKeyspace());
         System.out.println("connected to: " + session.getState().getConnectedHosts().toString());
-        repository = new CassandraLocationRepository(session);
+        repository = new LocationCassandraRepository(session);
         return repository;
     }
 

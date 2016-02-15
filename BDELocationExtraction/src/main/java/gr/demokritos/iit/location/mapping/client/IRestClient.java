@@ -12,7 +12,7 @@
 *  See the License for the specific language governing permissions and
 *  limitations under the License.
 */
-package gr.demokritos.iit.location.mapping;
+package gr.demokritos.iit.location.mapping.client;
 
 import java.util.Map;
 import javax.ws.rs.core.Response;

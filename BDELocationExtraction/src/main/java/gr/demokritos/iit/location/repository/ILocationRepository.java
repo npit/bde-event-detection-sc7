@@ -7,7 +7,7 @@ package gr.demokritos.iit.location.repository;
 
 import gr.demokritos.iit.base.repository.IBaseRepository;
 import gr.demokritos.iit.structs.LocSched;
-import java.util.Set;
+import java.util.Map;
 
 /**
  *
@@ -15,7 +15,7 @@ import java.util.Set;
  */
 public interface ILocationRepository extends IBaseRepository {
 
-    void updateArticleWithPlacesLiteral(String permalink, Set<String> places);
+    void updateArticleWithPlaceMetadata(String permalink, Map<String, String> places_polygons);
 
     /**
      *

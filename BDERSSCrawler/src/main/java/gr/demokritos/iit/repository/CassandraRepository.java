@@ -136,19 +136,8 @@ public class CassandraRepository extends AbstractRepository implements IReposito
                 .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CLEAN_TEXT.getColumnName(), cleanText)
                 .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_LANGUAGE.getColumnName(), lang)
                 .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PLACE_LITERAL.getColumnName(), named_entities);
-        session.execute(insert);        // TODO use saving policy for _per_place
-//            // insert in articles_per_place
-//            upsert = QueryBuilder
-//                    .update(session.getLoggedKeyspace(), crawlerStrategy.TableArticlesPerPlace())
-//                    .with(set(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_PUBLISHED.getColumnName(), pub_date))
-//                        .and(set(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_FEED_URL.getColumnName(), item.getFeedUrl()))
-//                        .and(set(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_RAW_TEXT.getColumnName(), content.getRawText()))
-//                        .and(set(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_CLEAN_TEXT.getColumnName(), cleanText))
-//                        .and(set(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_CRAWLED.getColumnName(), content.getCrawlDate().getTime()))
-//                        .and(set(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_LANGUAGE.getColumnName(), ""))
-//                    .where(eq(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_PLACE_LITERAL.getColumnName(), ""))
-//                    .and(eq(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_ENTRY_URL.getColumnName(), content.getUrl()));
-//            session.execute(upsert);
+        session.execute(insert);
+        // insert in articles_per_place gets place in LocationExtraction module
     }
 
     @Override
@@ -301,11 +290,5 @@ public class CassandraRepository extends AbstractRepository implements IReposito
                 .where(eq(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.getColumnName(), year_month_day))
                 .and(eq(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName(), url));
         session.execute(delete);
-        // implement when needed
-        // delete from articles per place
-//        delete = QueryBuilder
-//                .delete().all().from(session.getLoggedKeyspace(), crawlerStrategy.TableArticlesPerPlace())
-//                .where(eq(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_ENTRY_URL.getColumnName(), url));
-//        session.execute(delete);
     }
 }

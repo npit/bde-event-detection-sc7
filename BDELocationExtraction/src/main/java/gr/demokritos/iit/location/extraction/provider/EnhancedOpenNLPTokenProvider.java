@@ -91,8 +91,7 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
         }
         HashSet<String> ret = new HashSet();
         String[] sentences = sentenceSplitter.splitToSentences(text);
-        for (int i = 0; i < sentences.length; i++) {
-            String sentence = sentences[i];
+        for (String sentence : sentences) {
             sentence = sentence.replaceAll("([^Α-Ωα-ωa-zA-Z0-9άέίόώήύΐΪΊΆΈΏΌΉΎ. ])", " $1 ");
             if (sentence.charAt(sentence.length() - 1) == '.') {
                 String[] words = sentence.split(" ");
@@ -128,7 +127,7 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
                     sentence = sentence.substring(0, sentence.length() - 1);
                 }
             }
-            System.out.println(sentence);
+//            System.out.println(sentence);
             Map<String, String> qq = getTokenMap(sentence);
             for (Map.Entry<String, String> entrySet : qq.entrySet()) {
                 String ne = entrySet.getKey();
@@ -163,7 +162,7 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
                     String ne = sb.toString().trim();
                     String type = span.getType();
                     res.put(ne, type);
-                    System.out.println("ne: " + ne + ", type: " + type);
+//                    System.out.println("ne: " + ne + ", type: " + type);
                 }
             }
         }

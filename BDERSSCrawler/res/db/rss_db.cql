@@ -59,7 +59,7 @@ CREATE TABLE bde.news_articles_per_place (
     place_literal varchar,
     entry_url varchar,
     published bigint,
-    place frozen<tplace>,
+    bounding_box varchar,
     feed_url varchar,
     crawl_id bigint,
     raw_text text,
