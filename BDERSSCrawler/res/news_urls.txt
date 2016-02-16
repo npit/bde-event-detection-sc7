@@ -5,3 +5,4 @@ http://feeds.reuters.com/reuters/businessNews
 http://feeds.reuters.com/reuters/companyNews
 http://feeds.reuters.com/reuters/entertainment
 http://feeds.reuters.com/Reuters/PoliticsNews
+http://feeds.reuters.com/reuters/financialsNews

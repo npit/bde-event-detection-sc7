@@ -1,18 +1,28 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/* Copyright 2016 NCSR Demokritos
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 package gr.demokritos.iit.location.extraction.provider;
 
-import gr.demokritos.iit.sentsplit.ISentenceSplitter;
-import gr.demokritos.iit.sentsplit.OpenNLPSentenceSplitter;
+import gr.demokritos.iit.location.sentsplit.ISentenceSplitter;
+import gr.demokritos.iit.location.sentsplit.OpenNLPSentenceSplitter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import opennlp.tools.namefind.NameFinderME;
@@ -100,8 +110,7 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
                     sentence = sentence.substring(0, sentence.length() - 1);
                 }
             }
-            //System.out.println(sentence);
-            java.util.Iterator<String> iter = getTokenMap(sentence).keySet().iterator();
+            Iterator<String> iter = getTokenMap(sentence).keySet().iterator();
             while (iter.hasNext()) {
                 String nameEntity = iter.next();
                 ret.add(nameEntity);
@@ -127,7 +136,6 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
                     sentence = sentence.substring(0, sentence.length() - 1);
                 }
             }
-//            System.out.println(sentence);
             Map<String, String> qq = getTokenMap(sentence);
             for (Map.Entry<String, String> entrySet : qq.entrySet()) {
                 String ne = entrySet.getKey();
@@ -162,7 +170,6 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
                     String ne = sb.toString().trim();
                     String type = span.getType();
                     res.put(ne, type);
-//                    System.out.println("ne: " + ne + ", type: " + type);
                 }
             }
         }

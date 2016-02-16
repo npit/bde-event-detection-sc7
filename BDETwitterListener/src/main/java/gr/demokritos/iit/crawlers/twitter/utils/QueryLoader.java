@@ -14,7 +14,7 @@
  */
 package gr.demokritos.iit.crawlers.twitter.utils;
 
-import static gr.demokritos.iit.crawlers.twitter.factory.SystemFactory.LOGGER;
+import static gr.demokritos.iit.crawlers.twitter.factory.TwitterListenerFactory.LOGGER;
 import gr.demokritos.iit.crawlers.twitter.structures.SearchQuery;
 import java.io.BufferedReader;
 import java.io.DataInputStream;

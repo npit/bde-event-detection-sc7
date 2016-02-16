@@ -14,8 +14,8 @@
  */
 package gr.demokritos.iit.crawlers.twitter.impl;
 
-import gr.demokritos.iit.crawlers.twitter.factory.ITwitterConf;
-import static gr.demokritos.iit.crawlers.twitter.factory.SystemFactory.LOGGER;
+import gr.demokritos.iit.crawlers.twitter.factory.conf.ITwitterConf;
+import static gr.demokritos.iit.crawlers.twitter.factory.TwitterListenerFactory.LOGGER;
 import static gr.demokritos.iit.crawlers.twitter.impl.AbstractTwitterRestConsumer.TWITTER_API_CALL_USER_TIMELINE;
 import gr.demokritos.iit.crawlers.twitter.policy.ICrawlPolicy;
 import gr.demokritos.iit.crawlers.twitter.repository.IRepository;

@@ -16,7 +16,7 @@ package gr.demokritos.iit.crawlers.twitter.url;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-import static gr.demokritos.iit.crawlers.twitter.factory.SystemFactory.LOGGER;
+import static gr.demokritos.iit.crawlers.twitter.factory.TwitterListenerFactory.LOGGER;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;

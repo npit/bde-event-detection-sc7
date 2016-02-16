@@ -14,7 +14,7 @@
  */
 package gr.demokritos.iit.crawlers.twitter.stream.user;
 
-import static gr.demokritos.iit.crawlers.twitter.factory.SystemFactory.LOGGER;
+import static gr.demokritos.iit.crawlers.twitter.factory.TwitterListenerFactory.LOGGER;
 import gr.demokritos.iit.crawlers.twitter.repository.IRepository;
 import gr.demokritos.iit.crawlers.twitter.stream.IStreamConsumer;
 import java.util.concurrent.atomic.AtomicInteger;
