@@ -26,6 +26,8 @@ for each in `find $1 -iname 'BDE*' -type d`; do
 	mkdir lib
 	cp $CURDIR/$fname/target/dependency/*.jar lib/
 	cp -r $CURDIR/$fname/target/res .
+	mv res/*.sh ../
+	chmod +x *.sh
 	cd $DEP
 done
 echo "Done"
