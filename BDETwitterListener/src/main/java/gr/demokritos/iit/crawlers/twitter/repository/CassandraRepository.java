@@ -203,7 +203,7 @@ public class CassandraRepository extends AbstractRepository implements IReposito
         long timestamp_created = post.getCreatedAt().getTime();
 
         // extract tweet permalink
-        String permalink = "https://twitter.com/" + account_name + "/status/" + post_id;
+        String permalink = extractTweetPermalink(account_name, post_id);
 
         // get URL links, if there 
         List<String> external_links = getURLEntities(post);

@@ -38,6 +38,8 @@ public abstract class AbstractRepository {
     protected Extractor extractor;
     protected IURLUnshortener unshortener;
 
+    private final StringBuilder sb;
+
     /**
      *
      * @param unshortenerArg the unshortener
@@ -47,6 +49,7 @@ public abstract class AbstractRepository {
         this.extractor = new Extractor();
         // init DefaultURLUnshortener
         this.unshortener = unshortenerArg;
+        this.sb = new StringBuilder();
     }
 
     /**
@@ -58,6 +61,7 @@ public abstract class AbstractRepository {
         this.extractor = new Extractor();
         // init DefaultURLUnshortener
         this.unshortener = new DefaultURLUnshortener();
+        this.sb = new StringBuilder();
     }
 
     /**
@@ -82,8 +86,7 @@ public abstract class AbstractRepository {
         cal.setTime(date);
         int year = cal.get(Calendar.YEAR);
         int month = cal.get(Calendar.MONTH);
-        String year_month_bucket = String.valueOf(year).concat("_") + String.valueOf(month);
-        return year_month_bucket;
+        return new StringBuilder(year).append("-").append(month).toString();
     }
 
     /**
@@ -93,19 +96,20 @@ public abstract class AbstractRepository {
      * digits before the dot.
      */
     protected String extractGeolocationLiteral(GeoLocation geolocation) {
-        String res = "";
-        if (geolocation != null) {
-            double lat = geolocation.getLatitude();
-            double lon = geolocation.getLongitude();
-            String sLat = String.valueOf(lat);
-            String sLon = String.valueOf(lon);
-
-            String first = getSubText(sLat, geo_regex, 1);
-            String second = getSubText(sLon, geo_regex, 1);
-
-            res = first.concat("_").concat(second);
+        if (geolocation == null) {
+            return "";
         }
-        return res;
+        StringBuilder sb = new StringBuilder();
+        double lat = geolocation.getLatitude();
+        double lon = geolocation.getLongitude();
+        String sLat = String.valueOf(lat);
+        String sLon = String.valueOf(lon);
+
+        String first = getSubText(sLat, geo_regex, 1);
+        String second = getSubText(sLon, geo_regex, 1);
+
+        sb.append(first).append("_").append(second);
+        return sb.toString();
     }
     protected String geo_regex = "([+-]*[0-9]+)[.][0-9]+";
     protected String tco_regex = "http[s]*://t.co";
@@ -149,4 +153,12 @@ public abstract class AbstractRepository {
         return res;
     }
 
+    protected String extractTweetPermalink(String account_name, Long post_id) {
+        try {
+            sb.append("https://twitter.com/").append(account_name).append("/status/").append(post_id);
+            return sb.toString();
+        } finally {
+            sb.delete(0, sb.length());
+        }
+    }
 }

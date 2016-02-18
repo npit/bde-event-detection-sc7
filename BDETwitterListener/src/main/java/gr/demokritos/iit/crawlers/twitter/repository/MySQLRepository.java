@@ -210,8 +210,8 @@ public class MySQLRepository extends AbstractRepository implements IRepository {
             prepStmt.setInt(6, followersWhenPublished);
             prepStmt.setString(7, sTweet);
             prepStmt.setString(8, tweet_identified_lang);
-            String url = "https://twitter.com/" + source_account_name + "/status/" + postID;
-            prepStmt.setString(9, url);
+            String permalink = extractTweetPermalink(source_account_name, postID);
+            prepStmt.setString(9, permalink);
             prepStmt.setLong(10, api_user_id);
             prepStmt.setString(11, engine_type.toString());
             prepStmt.setLong(12, engine_id);

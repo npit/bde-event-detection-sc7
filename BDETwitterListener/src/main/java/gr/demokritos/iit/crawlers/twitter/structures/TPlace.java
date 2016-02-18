@@ -219,12 +219,18 @@ public class TPlace {
                 + "}";
     }
 
+    /**
+     * extract the POLYGON((...)) WKT type
+     *
+     * @param boundingBoxCoordinates
+     * @return
+     */
     private String boundingBoxToString(GeoLocation[][] boundingBoxCoordinates) {
         StringBuilder sb = new StringBuilder();
         sb.append("POLYGON((");
         for (GeoLocation[] boundingBoxCoordinate : boundingBoxCoordinates) {
             for (GeoLocation boundingBoxCoordinate1 : boundingBoxCoordinate) {
-                sb.append(boundingBoxCoordinate1.getLatitude()).append(" ").append(boundingBoxCoordinate1.getLongitude()).append(", ");
+                sb.append(boundingBoxCoordinate1.getLongitude()).append(" ").append(boundingBoxCoordinate1.getLatitude()).append(", ");
             }
         }
         sb.deleteCharAt(sb.lastIndexOf(", "));
