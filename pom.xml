@@ -16,6 +16,7 @@
         <module>BDERSSCrawler</module>
         <module>BDEBase</module>
         <module>BDELocationExtraction</module>
+        <module>BDECLustering</module>
     </modules>
     <build>
         <plugins>
