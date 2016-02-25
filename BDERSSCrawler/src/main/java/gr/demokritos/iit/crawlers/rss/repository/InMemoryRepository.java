@@ -53,12 +53,11 @@ public class InMemoryRepository implements IRepository {
                 entries.add(candidateEntry);
             }
         }
-
         return entries;
     }
 
     @Override
-    public void savePage(Item item, Content content, Date publishedDate) throws IOException, BoilerpipeProcessingException {
+    public void savePage(Item item, String title, Content content, Date publishedDate) throws IOException, BoilerpipeProcessingException {
         feedItemToEntryContent.put(item, content);
         lastContentSaved = content;
 
@@ -80,6 +79,9 @@ public class InMemoryRepository implements IRepository {
         } else {
             data.add(convertToString(publishedDate));
         }
+        // append title at the end.
+        data.add(title);
+        System.out.println("save: " + entryUrl + ", title: " + title);
         entryUrlToData.put(entryUrl, data);
     }
 

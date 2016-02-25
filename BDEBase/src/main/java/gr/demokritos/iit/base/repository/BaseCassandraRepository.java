@@ -21,11 +21,15 @@ import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.gte;
+import gr.demokritos.iit.base.conf.BaseConfiguration;
+import gr.demokritos.iit.base.conf.IBaseConf;
+import gr.demokritos.iit.base.factory.BaseFactory;
 import gr.demokritos.iit.base.repository.views.Cassandra;
 import gr.demokritos.iit.base.util.TableUtil;
 import gr.demokritos.iit.base.util.Utils;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -113,6 +117,15 @@ public class BaseCassandraRepository implements IBaseRepository {
             }
             results = session.execute(select);
             for (Row row : results) {
+//                ColumnDefinitions defs = row.getColumnDefinitions();
+//                for (ColumnDefinitions.Definition def : defs) {
+//                    String name = def.getName();
+//                    DataType type = def.getType();
+//                    DataType.Name name1 = type.getName();
+//                    System.out.println("definition name: " + name + ", type.name: " + name1);
+//                    res.put(name, row.get(name, MAPPINGS.get(name1)));
+//                    out.add(res);
+//                }
                 Map<String, Object> res = new HashMap();
                 String year_month_day_bucket = row.getString(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.getColumnName());
                 res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.getColumnName(), year_month_day_bucket);
@@ -134,12 +147,24 @@ public class BaseCassandraRepository implements IBaseRepository {
                 res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CRAWLED.getColumnName(), crawled);
                 String lang = row.getString(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_LANGUAGE.getColumnName());
                 res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_LANGUAGE.getColumnName(), lang);
+                String title = row.getString(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_TITLE.getColumnName());
+                res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_TITLE.getColumnName(), title);
                 // append
                 out.add(res);
             }
         }
+        // debug
         System.out.println(String.format("loaded %d articles", out.size()));
+        // debug
         return Collections.unmodifiableCollection(out);
+    }
+
+    private static final Map<String, Class> MAPPINGS = new HashMap();
+
+    static {
+        MAPPINGS.put("varchar", String.class);
+        MAPPINGS.put("bigint", Long.class);
+        MAPPINGS.put("set", Set.class);
     }
 
     @Override
@@ -182,5 +207,18 @@ public class BaseCassandraRepository implements IBaseRepository {
             Logger.getLogger(BaseCassandraRepository.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
         }
         return res;
+    }
+
+    public static void main(String[] args) {
+        IBaseConf co = new BaseConfiguration("../BDELocationExtraction/res/location_extraction.properties");
+        BaseFactory bf = new BaseFactory(co);
+        IBaseRepository re = bf.createBaseCassandraRepository();
+        Calendar now = Calendar.getInstance();
+        now.set(Calendar.DAY_OF_YEAR, Calendar.DAY_OF_YEAR - 10);
+        Collection<Map<String, Object>> loadArticles = re.loadArticles(now.getTimeInMillis());
+        for (Map<String, Object> loadArticle : loadArticles) {
+            System.out.println(loadArticle.get("title"));
+        }
+
     }
 }

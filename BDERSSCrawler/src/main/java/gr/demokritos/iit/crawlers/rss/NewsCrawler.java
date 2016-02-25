@@ -42,7 +42,6 @@ public class NewsCrawler extends AbstractCrawler {
     }
 
     public static void main(String[] args) {
-        // TODO impl arg parsing
         IRSSConf configuration = new RSSConf(DEFAULT_NEWS_CONFIGURATION);
         RSSCrawlFactory factory = null; 
         try {

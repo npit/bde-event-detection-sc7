@@ -68,7 +68,7 @@ public class CassandraRepository extends AbstractRepository implements IReposito
     }
 
     @Override
-    public void savePage(Item item, Content content, Date publishedDate) throws IOException, BoilerpipeProcessingException {
+    public void savePage(Item item, String title, Content content, Date publishedDate) throws IOException, BoilerpipeProcessingException {
         long pub_date = calculatePublishedValue(publishedDate);
         long existing_pub_date = getPublishedDateIfExisting(content.getUrl());
         String year_month_day = Utils.extractYearMonthDayLiteral(publishedDate);
@@ -77,10 +77,10 @@ public class CassandraRepository extends AbstractRepository implements IReposito
             // we need to specifically delete before inserting/updating cause pub_date is a clustering column
             deletePage(content.getUrl(), year_month_day);
         }
-        insertPage(item, content, pub_date, year_month_day);
+        insertPage(item, title, content, pub_date, year_month_day);
     }
 
-    private void insertPage(Item item, Content content, long pub_date, String year_month_day) throws BoilerpipeProcessingException, MalformedURLException {
+    private void insertPage(Item item, String title, Content content, long pub_date, String year_month_day) throws BoilerpipeProcessingException, MalformedURLException {
 //        System.out.println("save content: " + content.getUrl()); // debug
         CrawlId crawlId = item.getCrawlId();
         String cleanText = extractor.getText(content.getRawText());
@@ -109,7 +109,8 @@ public class CassandraRepository extends AbstractRepository implements IReposito
                 .value(Cassandra.RSS.TBL_ARTICLES.FLD_CLEAN_TEXT.getColumnName(), cleanText)
                 .value(Cassandra.RSS.TBL_ARTICLES.FLD_CRAWLED.getColumnName(), crawled_timestamp)
                 .value(Cassandra.RSS.TBL_ARTICLES.FLD_LANGUAGE.getColumnName(), lang)
-                .value(Cassandra.RSS.TBL_ARTICLES.FLD_PLACE_LITERAL.getColumnName(), named_entities);
+                .value(Cassandra.RSS.TBL_ARTICLES.FLD_PLACE_LITERAL.getColumnName(), named_entities)
+                .value(Cassandra.RSS.TBL_ARTICLES.FLD_TITLE.getColumnName(), title);
         session.execute(insert);
         // insert in articles_per_published_date
         insert = QueryBuilder
@@ -122,7 +123,8 @@ public class CassandraRepository extends AbstractRepository implements IReposito
                 .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CLEAN_TEXT.getColumnName(), cleanText)
                 .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CRAWLED.getColumnName(), crawled_timestamp)
                 .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_LANGUAGE.getColumnName(), lang)
-                .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PLACE_LITERAL.getColumnName(), named_entities);
+                .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PLACE_LITERAL.getColumnName(), named_entities)
+                .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_TITLE.getColumnName(), title);
         session.execute(insert);
         // insert in articles_per_crawled_date
         insert = QueryBuilder
@@ -135,7 +137,8 @@ public class CassandraRepository extends AbstractRepository implements IReposito
                 .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_RAW_TEXT.getColumnName(), content.getRawText())
                 .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CLEAN_TEXT.getColumnName(), cleanText)
                 .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_LANGUAGE.getColumnName(), lang)
-                .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PLACE_LITERAL.getColumnName(), named_entities);
+                .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PLACE_LITERAL.getColumnName(), named_entities)
+                .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_TITLE.getColumnName(), title);
         session.execute(insert);
         // insert in articles_per_place gets place in LocationExtraction module
     }

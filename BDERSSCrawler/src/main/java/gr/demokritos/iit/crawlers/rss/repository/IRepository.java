@@ -37,7 +37,7 @@ public interface IRepository {
 
     public List<SyndEntry> identifyNewEntries(Item item, List<SyndEntry> candidateEntries);
 
-    void savePage(Item item, Content content, Date publishedDate) throws IOException, BoilerpipeProcessingException;
+    void savePage(Item item, String title, Content content, Date publishedDate) throws IOException, BoilerpipeProcessingException;
 
     CrawlId findMostRecentCrawlId();
 
