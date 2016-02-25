@@ -12,6 +12,7 @@ import gr.demokritos.iit.base.repository.views.Cassandra;
 import gr.demokritos.iit.clustering.util.CassandraArticleRowToTuple4RDD;
 import gr.demokritos.iit.clustering.util.FilterByAfterTimeStamp;
 import java.util.Calendar;
+import java.util.List;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaRDD;
 import scala.Tuple4;
