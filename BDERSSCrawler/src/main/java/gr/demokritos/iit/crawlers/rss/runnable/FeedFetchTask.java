@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 
 public class FeedFetchTask implements DescribableRunnable {
 
@@ -75,6 +76,7 @@ public class FeedFetchTask implements DescribableRunnable {
             for (SyndEntry newEntry : newEntries) {
                 String permaLink = newEntry.getLink();
                 Date publishedDate = newEntry.getPublishedDate();
+                String title = newEntry.getTitle();
                 try {
                     Content htmlContent = fetcher.fetchUrl(permaLink);
                     if (htmlContent == null) {
@@ -82,8 +84,12 @@ public class FeedFetchTask implements DescribableRunnable {
                                 + ". Continuing with next entry.");
                         continue;
                     }
-
-                    repository.savePage(item, htmlContent, publishedDate);
+                    if (title == null) {
+                        title = "";
+                    } else {
+                        title = removeAscIIDeleteChar(title);
+                    }
+                    repository.savePage(item, title, htmlContent, publishedDate);
                 } catch (IOException e) {
                     eventSink.error(permaLink, e);
                 } catch (BoilerpipeProcessingException e) {
@@ -97,9 +103,7 @@ public class FeedFetchTask implements DescribableRunnable {
             //out if the feed has changed rather than a particular html page.
             repository.updateFeedMetaData(contentFromFeed);
             eventSink.finishedFetching(item, contentFromFeed);
-        } catch (FeedException e) {
-            handleFetchError(item.getFeedUrl(), e);
-        } catch (IOException e) {
+        } catch (FeedException | IOException e) {
             handleFetchError(item.getFeedUrl(), e);
         }
     }
@@ -112,5 +116,16 @@ public class FeedFetchTask implements DescribableRunnable {
     @Override
     public String description() {
         return "FeedFetchTask<" + item + ">";
+    }
+
+    /**
+     * reuters feed titles sometimes contain the ascii delete char, we do not
+     * want it stored.
+     *
+     * @param str
+     * @return
+     */
+    private String removeAscIIDeleteChar(String str) {
+        return StringUtils.normalizeSpace(str.replaceAll("\\x7f", " "));
     }
 }

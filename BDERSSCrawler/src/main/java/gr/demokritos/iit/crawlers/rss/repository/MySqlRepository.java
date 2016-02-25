@@ -22,7 +22,6 @@ import gr.demokritos.iit.crawlers.rss.model.Content;
 import gr.demokritos.iit.crawlers.rss.model.CrawlId;
 import gr.demokritos.iit.crawlers.rss.schedule.CrawlStrategy;
 import gr.demokritos.iit.base.util.langdetect.CybozuLangDetect;
-import gr.demokritos.iit.base.util.langdetect.ILangDetect;
 import gr.demokritos.iit.crawlers.rss.model.Item;
 import gr.demokritos.iit.crawlers.rss.model.UrlMetaData;
 
@@ -72,12 +71,7 @@ public class MySqlRepository extends AbstractRepository implements IRepository {
             statement = connection.prepareStatement(query);
             statement.setString(1, link);
             resultSet = statement.executeQuery();
-            if (!resultSet.next()) {
-                return true;
-            } else {
-                return false;
-            }
-
+            return !resultSet.next();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
@@ -86,7 +80,7 @@ public class MySqlRepository extends AbstractRepository implements IRepository {
     }
 
     @Override
-    public void savePage(Item item, Content content, Date publishedDate) throws IOException, BoilerpipeProcessingException {
+    public void savePage(Item item, String title, Content content, Date publishedDate) throws IOException, BoilerpipeProcessingException {
         String cleanText = extractor.getText(content.getRawText());
         String lang;
         // For backwards compatibility with the old versions of the crawler which didn't do any cleaning we
@@ -103,8 +97,8 @@ public class MySqlRepository extends AbstractRepository implements IRepository {
         try {
             connection = connectionPool.getConnection();
             String query = "insert into " + databaseName + "." + crawlerStrategy.crawlType() + "_articles"
-                    + "(entry_url, crawl_id, feed_url, raw_text, clean_text, published, crawled, language)"
-                    + " values(?, ?, ?, ?, ?, ?, ?, ?) on duplicate key update crawl_id = ?, raw_text = ?, clean_text = ?,"
+                    + "(entry_url, crawl_id, feed_url, raw_text, clean_text, published, crawled, language, title)"
+                    + " values(?, ?, ?, ?, ?, ?, ?, ?, ?) on duplicate key update crawl_id = ?, raw_text = ?, clean_text = ?,"
                     + " published = ?, crawled = ?, language = ?;";
             statement = connection.prepareStatement(query);
             long published = calculatePublishedValue(publishedDate);
@@ -119,12 +113,13 @@ public class MySqlRepository extends AbstractRepository implements IRepository {
             statement.setLong(6, published);
             statement.setLong(7, crawled);
             statement.setString(8, lang);
-            statement.setLong(9, crawlId.getId());
-            statement.setString(10, content.getRawText());
-            statement.setString(11, cleanText);
-            statement.setLong(12, published);
-            statement.setLong(13, crawled);
-            statement.setString(14, lang);
+            statement.setString(9, title);
+            statement.setLong(10, crawlId.getId());
+            statement.setString(11, content.getRawText());
+            statement.setString(12, cleanText);
+            statement.setLong(13, published);
+            statement.setLong(14, crawled);
+            statement.setString(15, lang);
 
             statement.execute();
         } catch (SQLException e) {
@@ -245,7 +240,7 @@ public class MySqlRepository extends AbstractRepository implements IRepository {
         ResultSet resultSet = null;
         try {
             connection = connectionPool.getConnection();
-            String query = "select entry_url, feed_url, crawl_id, raw_text, clean_text, published, crawled, language from " + databaseName + "."
+            String query = "select entry_url, feed_url, crawl_id, raw_text, clean_text, published, crawled, language, title from " + databaseName + "."
                     + crawlerStrategy.crawlType() + "_articles where entry_url = ?";
             statement = connection.prepareStatement(query);
             statement.setString(1, entryUrl);
@@ -260,6 +255,7 @@ public class MySqlRepository extends AbstractRepository implements IRepository {
                 results.add(resultSet.getString("crawled"));
                 results.add(resultSet.getString("published"));
                 results.add(resultSet.getString("language"));
+                results.add(resultSet.getString("title"));
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);

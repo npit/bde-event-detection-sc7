@@ -148,6 +148,7 @@ CREATE TABLE bde.news_articles (
     clean_text text,
     crawled bigint,
     language varchar,
+    title varchar,
     primary key ((reversed_host), entry_url)
 );
 
@@ -165,6 +166,7 @@ CREATE TABLE bde.news_articles_per_published_date (
     clean_text text,
     crawled bigint,
     language varchar,
+    title varchar,
     primary key ((year_month_day_literal), published, entry_url)
 ) WITH CLUSTERING ORDER BY (published DESC, entry_url ASC);
 
@@ -182,6 +184,7 @@ CREATE TABLE bde.news_articles_per_crawled_date (
     clean_text text,
     published bigint,
     language varchar,
+    title varchar,
     primary key ((year_month_day_literal), crawled, entry_url)
 ) WITH CLUSTERING ORDER BY (crawled DESC, entry_url ASC);
 
@@ -199,6 +202,7 @@ CREATE TABLE bde.news_articles_per_place (
     clean_text text,
     crawled bigint,
     language varchar,
+    title varchar,
     primary key ((place_literal), entry_url)
 ) WITH CLUSTERING ORDER BY (entry_url ASC);
 

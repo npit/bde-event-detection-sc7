@@ -259,7 +259,6 @@ public class Cassandra {
             // we implicitly place news_articles tables names here, though news_crawler
             // uses a different way to call the table name, in order to be consistent with
             // the other modules. 
-
             NEWS_ARTICLES("news_articles"),
             NEWS_ARTICLES_PER_PUBLISHED_DATE("news_articles_per_published_date"),
             NEWS_ARTICLES_PER_CRAWLED_DATE("news_articles_per_crawled_date"),
@@ -289,7 +288,8 @@ public class Cassandra {
             FLD_RAW_TEXT("raw_text"),
             FLD_CLEAN_TEXT("clean_text"),
             FLD_CRAWLED("crawled"),
-            FLD_LANGUAGE("language");
+            FLD_LANGUAGE("language"),
+            FLD_TITLE("title");
 
             private final String columnn;
 
@@ -313,7 +313,8 @@ public class Cassandra {
             FLD_RAW_TEXT("raw_text"),
             FLD_CLEAN_TEXT("clean_text"),
             FLD_CRAWLED("crawled"),
-            FLD_LANGUAGE("language");
+            FLD_LANGUAGE("language"),
+            FLD_TITLE("title");
 
             private final String columnn;
 
@@ -337,7 +338,8 @@ public class Cassandra {
             FLD_RAW_TEXT("raw_text"),
             FLD_CLEAN_TEXT("clean_text"),
             FLD_CRAWLED("crawled"),
-            FLD_LANGUAGE("language");
+            FLD_LANGUAGE("language"),
+            FLD_TITLE("title");
 
             private final String columnn;
 
