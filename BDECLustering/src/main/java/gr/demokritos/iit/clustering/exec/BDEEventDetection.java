@@ -17,6 +17,7 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.VoidFunction;
 import scala.Tuple2;
 import scala.Tuple3;
+import scala.Tuple4;
 
 /**
  *
@@ -49,7 +50,7 @@ public class BDEEventDetection {
         long timestamp = repo.getLatestTimestamp("event_detection_log"); // TODO: add table.
         System.out.println(new Date(timestamp).toString());
 
-        JavaRDD<Tuple3<String, String, Long>> RDDbatch = repo.loadArticlesPublishedLaterThan(timestamp);
+        JavaRDD<Tuple4<String, String, String, Long>> RDDbatch = repo.loadArticlesPublishedLaterThan(timestamp);
 
 //        List<Tuple3<String, String, Long>> collect = RDDbatch.collect();
 //        for (Tuple3<String, String, Long> collect1 : collect) {
@@ -68,14 +69,7 @@ public class BDEEventDetection {
         
         
         final List<Tuple2<Tuple2<String, String>, Tuple2<String, String>>> pairs = new ArrayList();
-        
-        RDDbatch.foreach(new VoidFunction<Tuple3<String, String, Long>>() {
 
-            @Override
-            public void call(Tuple3<String, String, Long> arg0) throws Exception {
-                
-            }
-        });
 
     }
 

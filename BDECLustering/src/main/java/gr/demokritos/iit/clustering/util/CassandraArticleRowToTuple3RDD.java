@@ -13,13 +13,13 @@ import scala.Tuple3;
  *
  * @author George K. <gkiom@iit.demokritos.gr>
  */
-public class CassandraRowToTuple3RDD implements Function<CassandraRow, Tuple3<String, String, Long>> {
+public class CassandraArticleRowToTuple3RDD implements Function<CassandraRow, Tuple3<String, String, Long>> {
 
     private final String string_row_1_field;
     private final String string_row_2_field;
     private final String long_row_3_field;
 
-    public CassandraRowToTuple3RDD(String string_row_1_field, String string_row_2_field, String long_row_3_field) {
+    public CassandraArticleRowToTuple3RDD(String string_row_1_field, String string_row_2_field, String long_row_3_field) {
         this.string_row_1_field = string_row_1_field;
         this.string_row_2_field = string_row_2_field;
         this.long_row_3_field = long_row_3_field;

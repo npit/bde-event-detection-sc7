@@ -18,10 +18,9 @@ import java.util.List;
 import org.apache.spark.api.java.*;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.function.FlatMapFunction;
-import org.apache.spark.ml.feature.HashingTF;
+import org.apache.spark.mllib.feature.HashingTF;
 import org.apache.spark.mllib.linalg.Vector;
-import org.apache.spark.sql.DataFrame;
-import scala.Tuple3;
+import scala.Tuple4;
 
 public class LDAExample {
 
@@ -39,7 +38,7 @@ public class LDAExample {
         long timestamp = repo.getLatestTimestamp("event_detection_log"); // TODO: add table.
         System.out.println(new Date(timestamp).toString());
 
-        JavaRDD<Tuple3<String, String, Long>> data = repo.loadArticlesPublishedLaterThan(timestamp);
+        JavaRDD<Tuple4<String, String, String, Long>> data = repo.loadArticlesPublishedLaterThan(timestamp);
         System.out.println("data: " + data.count());
 //        SparkConf conf = new SparkConf().setAppName("LDA Example");
 //        JavaSparkContext sc = new JavaSparkContext(conf);
@@ -48,26 +47,27 @@ public class LDAExample {
         // TODO: we need wordcount vectors that represent our data
 //        JavaRDD<String> data = sc.textFile(path);
 
-        JavaRDD<String> flatMap = data.flatMap(new FlatMapFunction<Tuple3<String, String, Long>, String>() {
+        Iterable<String> flatMap = (Iterable<String>) data.flatMap(new FlatMapFunction<Tuple4<String, String, String, Long>, String>() { // TODO: check isCorrect
 
             @Override
-            public Iterable<String> call(Tuple3<String, String, Long> t) throws Exception {
-                Tuple3<String, String, Long> copy = t.copy(t._1(), t._2(), t._3());
-                String clean = copy._2();
+            public Iterable<String> call(Tuple4<String, String, String, Long> t) throws Exception {
+                Tuple4<String, String, String, Long> copy = t.copy(t._1(), t._2(), t._3(), t._4());
+                String clean = copy._3();
                 String[] c = clean.trim().replaceAll("[.,:;!?@'\"<>\\|]", " ").split("\\s+");
                 List<String> asList = Arrays.asList(c);
                 return new ArrayList(asList);
             }
         });
-        flatMap.collect();
-        System.out.println("count:" + flatMap.count());
-        List<String> take = flatMap.take(20);
-        System.out.println(take.toString());
+//        flatMap.collect();
+//        System.out.println("count:" + flatMap.count());
+//        List<String> take = flatMap.take(20);
+//        System.out.println(take.toString());
 
-//        DataFrame d = new DataFrame
+        HashingTF htf = new HashingTF();
+        Vector transformed = htf.transform(flatMap);
         
-//        HashingTF htf = new HashingTF();
-//        JavaRDD<Vector> parsedData = htf.transform(
+//        transformed.
+
 //        JavaRDD<Vector> parsedData = htf.transform(flatMap);
 //        System.out.println(parsedData.take(10).toString());
 //        // Index documents with unique IDs

@@ -9,12 +9,12 @@ import com.datastax.spark.connector.japi.CassandraJavaUtil;
 import com.datastax.spark.connector.japi.CassandraRow;
 import com.datastax.spark.connector.japi.SparkContextJavaFunctions;
 import gr.demokritos.iit.base.repository.views.Cassandra;
-import gr.demokritos.iit.clustering.util.CassandraRowToTuple3RDD;
+import gr.demokritos.iit.clustering.util.CassandraArticleRowToTuple4RDD;
 import gr.demokritos.iit.clustering.util.FilterByAfterTimeStamp;
 import java.util.Calendar;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaRDD;
-import scala.Tuple3;
+import scala.Tuple4;
 
 /**
  *
@@ -41,12 +41,13 @@ public class CassandraSparkRepository {
     }
 
     /**
-     * load articles in a tuple3 format
+     * load articles in a tuple4 format <br> CAUTION: clean_text contains title,
+     * we need title for allocating it in clusters
      *
      * @param timestamp from epoch
-     * @return <entry_url, clean_text, timestamp>
+     * @return <entry_url, title, clean_text, timestamp>
      */
-    public JavaRDD<Tuple3<String, String, Long>> loadArticlesPublishedLaterThan(long timestamp) {
+    public JavaRDD<Tuple4<String, String, String, Long>> loadArticlesPublishedLaterThan(long timestamp) {
         JavaRDD<CassandraRow> filter = scjf
                 .cassandraTable(keyspace, Cassandra.RSS.Tables.NEWS_ARTICLES_PER_PUBLISHED_DATE.getTableName())
                 .select(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName(),
@@ -54,10 +55,12 @@ public class CassandraSparkRepository {
                         Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CLEAN_TEXT.getColumnName())
                 //                .limit(20l);
                 .filter(new FilterByAfterTimeStamp(timestamp));
-        JavaRDD<Tuple3<String, String, Long>> extracted = filter.map(
-                new CassandraRowToTuple3RDD(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName(),
+        JavaRDD<Tuple4<String, String, String, Long>> extracted = filter.map(new CassandraArticleRowToTuple4RDD(
+                        Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName(),
+                        Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_TITLE.getColumnName(),
                         Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CLEAN_TEXT.getColumnName(),
-                        Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PUBLISHED.getColumnName()));
+                        Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PUBLISHED.getColumnName())
+        );
         return extracted;
     }
 }
