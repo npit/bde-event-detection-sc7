@@ -16,6 +16,8 @@ package gr.demokritos.iit.crawlers.twitter.structures;
 
 import com.datastax.driver.mapping.annotations.Field;
 import com.datastax.driver.mapping.annotations.UDT;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Objects;
 import twitter4j.GeoLocation;
 import twitter4j.Place;
@@ -68,7 +70,7 @@ public class TPlace {
         this.URL = place.getURL() == null ? "" : place.getURL();
         this.boundingBoxType = place.getBoundingBoxType() == null ? "" : place.getBoundingBoxType();
         this.geometryType = place.getGeometryType() == null ? "" : place.getGeometryType();
-        this.bounding_box = place.getBoundingBoxCoordinates() == null ? "" : boundingBoxToString(place.getBoundingBoxCoordinates());
+        this.bounding_box = place.getBoundingBoxCoordinates() == null ? "" : boundingBoxToString(boundingBoxType, place.getBoundingBoxCoordinates());
     }
 
     /**
@@ -225,16 +227,35 @@ public class TPlace {
      * @param boundingBoxCoordinates
      * @return
      */
-    private String boundingBoxToString(GeoLocation[][] boundingBoxCoordinates) {
+    private String boundingBoxToString(String type, GeoLocation[][] boundingBoxCoordinates) {
+//        StringBuilder sb = new StringBuilder();
+//        sb.append("POLYGON((");
+//        for (GeoLocation[] boundingBoxCoordinate : boundingBoxCoordinates) {
+//            for (GeoLocation boundingBoxCoordinate1 : boundingBoxCoordinate) {
+//                sb.append(boundingBoxCoordinate1.getLongitude()).append(" ").append(boundingBoxCoordinate1.getLatitude()).append(", ");
+//            }
+//        }
+//        sb.deleteCharAt(sb.lastIndexOf(", "));
+//        sb.append("))");
+//        return sb.toString();
+        // polygon representation format change from: efi karra mail: 'change detection service instructions' 26/2/2016
+        // {"type":"Polygon","coordinates":[[[35.31,25.3],[35.31,19.25],[41.09,19.25],[41.09,25.3],[35.31,25.3]]]}
+        // lng, lat
         StringBuilder sb = new StringBuilder();
-        sb.append("POLYGON((");
+        sb.append("{\"type\": \"").append(type == null ? "Polygon" : type).append("\", \"coordinates\":");
         for (GeoLocation[] boundingBoxCoordinate : boundingBoxCoordinates) {
-            for (GeoLocation boundingBoxCoordinate1 : boundingBoxCoordinate) {
-                sb.append(boundingBoxCoordinate1.getLongitude()).append(" ").append(boundingBoxCoordinate1.getLatitude()).append(", ");
+            sb.append("[");
+            Iterator<GeoLocation> gl = Arrays.asList(boundingBoxCoordinate).iterator();
+            while (gl.hasNext()) {
+                GeoLocation gCur = gl.next();
+                sb.append("[").append(gCur.getLongitude()).append(", ").append(gCur.getLatitude()).append("]");
+                if (gl.hasNext()) {
+                    sb.append(", ");
+                }
             }
+            sb.append("]");
         }
-        sb.deleteCharAt(sb.lastIndexOf(", "));
-        sb.append("))");
+        sb.append("}");
         return sb.toString();
     }
 }

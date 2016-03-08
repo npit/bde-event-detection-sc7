@@ -1,11 +1,22 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/* Copyright 2016 NCSR Demokritos
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 package gr.demokritos.iit.clustering.util;
 
-import java.util.Objects;
+import gr.demokritos.iit.clustering.model.DPair;
+import java.util.HashSet;
+import java.util.Set;
 import org.apache.spark.api.java.function.Function;
 import scala.Tuple2;
 import scala.Tuple4;
@@ -16,35 +27,16 @@ import scala.Tuple4;
  */
 public class DocumentPairGenerationFilterFunction implements Function<Tuple2<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>>, Boolean> {
 
-    // TODO: keep a hash reference in RAM of each pair, and return item if the hash of each other is not equal or the pair does  not exist.
-    
+    // keep a hash reference in RAM of each pair, and return item if the hash of each other is not equal or the pair does not exist
+    private final Set<Integer> hash_cache;
+
+    public DocumentPairGenerationFilterFunction() {
+        this.hash_cache = new HashSet();
+    }
+    // expects the full combination list of n articles (n*n). Filters the same instances of (i,j) - i.e where i=j and the 
+    // around ones i.e. i, j = j, i
     @Override
     public Boolean call(Tuple2<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>> v1) throws Exception {
-        new TwoWayPair(String a, String b)
-    }
-    
-    class TwoWayPair<ObjTypeFirst, ObjTypeSecond> extends Pair {
-
-    public TwoWayPair(Object oFirst, Object oSecond) {
-        super(oFirst, oSecond);
-    }
-
-    @Override
-    public final int hashCode() {
-        int hash = 3;
-        hash = 43 * hash + Objects.hashCode(this.first) + Objects.hashCode(this.second);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final TwoWayPair other = (TwoWayPair) obj;
-        return this.hashCode() == other.hashCode();
+        return !v1._1._1().equals(v1._2._1()) && hash_cache.add(new DPair(v1._1._1(), v1._2._1()).hashCode());
     }
 }

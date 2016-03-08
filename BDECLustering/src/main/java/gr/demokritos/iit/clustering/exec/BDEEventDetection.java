@@ -1,7 +1,16 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/* Copyright 2016 NCSR Demokritos
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 package gr.demokritos.iit.clustering.exec;
 
@@ -9,22 +18,15 @@ import gr.demokritos.iit.clustering.config.BDESpark;
 import gr.demokritos.iit.clustering.config.BDESparkConf;
 import gr.demokritos.iit.clustering.config.ISparkConf;
 import gr.demokritos.iit.clustering.repository.CassandraSparkRepository;
+import gr.demokritos.iit.clustering.util.DocumentPairGenerationFilterFunction;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import org.apache.spark.Partition;
 import org.apache.spark.SparkContext;
-import org.apache.spark.TaskContext;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.function.Function;
-import org.apache.spark.api.java.function.VoidFunction;
-import org.apache.spark.rdd.RDD;
 import scala.Tuple2;
-import scala.Tuple3;
 import scala.Tuple4;
-import scala.collection.Iterator;
-import scala.collection.Seq;
 
 /**
  *
@@ -43,7 +45,34 @@ public class BDEEventDetection {
         return sp.getContext();
     }
 
-    public JavaPairRDD<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>> combinations(JavaRDD<Tuple4<String, String, String, Long>> original) {
+    public static void main(String[] args) {
+//        ISparkConf conf = new BDESparkConf("spark.properties");
+        ISparkConf conf = new BDESparkConf();
+        BDESpark bdes = new BDESpark(conf);
+
+        BDEEventDetection bdedet = new BDEEventDetection(bdes);
+
+        SparkContext sc = bdedet.getContext();
+
+        CassandraSparkRepository repo = new CassandraSparkRepository(sc, conf.getCassandraKeyspace());
+
+        long timestamp = repo.getLatestTimestamp("event_detection_log"); // TODO: add table.
+        System.out.println(new Date(timestamp).toString());
+
+        // load batch. The tuple4 shall be <entry_url, title, clean_text, timestamp>
+        JavaRDD<Tuple4<String, String, String, Long>> RDDbatch = repo.loadArticlesPublishedLaterThan(timestamp);
+
+        JavaPairRDD<
+        Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>> RDDPairs
+                = combinations(RDDbatch);
+        // implement algorithm from NewSum.
+        // create pairs from original articles
+        // get matching mappings
+        // generate clusters
+
+    }
+
+    public static JavaPairRDD<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>> combinations(JavaRDD<Tuple4<String, String, String, Long>> original) {
 //        // example scala code.
 //        //        def combs(rdd:RDD[String]):RDD[(String,String)] = {
 //        //    val count = rdd.count
@@ -70,44 +99,7 @@ public class BDEEventDetection {
 //        }
         // simpler (more expensive?)
         // rdd.cartesian(rdd).filter{ case (a,b) => a < b }`.
-
-        original.cartesian(original).filter(new Function<Tuple2<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>>, Boolean>() {
-
-            @Override
-            public Boolean call(Tuple2<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>> v1) throws Exception {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            }
-        });
-        
-    }
-
-    public static void main(String[] args) {
-//        ISparkConf conf = new BDESparkConf("spark.properties");
-        ISparkConf conf = new BDESparkConf();
-        BDESpark bdes = new BDESpark(conf);
-
-        BDEEventDetection bdedet = new BDEEventDetection(bdes);
-
-        SparkContext sc = bdedet.getContext();
-
-        CassandraSparkRepository repo = new CassandraSparkRepository(sc, conf.getCassandraKeyspace());
-
-        long timestamp = repo.getLatestTimestamp("event_detection_log"); // TODO: add table.
-        System.out.println(new Date(timestamp).toString());
-
-        JavaRDD<Tuple4<String, String, String, Long>> RDDbatch = repo.loadArticlesPublishedLaterThan(timestamp);
-
-//        List<Tuple3<String, String, Long>> collect = RDDbatch.collect();
-//        for (Tuple3<String, String, Long> collect1 : collect) {
-//            System.out.println(collect1._1());
-//            System.out.println(collect1._3());
-//        }
-        // implement algorithm from NewSum.
-        // create pairs from original articles
-            // get matching mappings
-            // generate clusters
-        final List<Tuple2<Tuple2<String, String>, Tuple2<String, String>>> pairs = new ArrayList();
-
+        return original.cartesian(original).filter(new DocumentPairGenerationFilterFunction());
     }
 
 }

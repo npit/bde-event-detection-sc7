@@ -14,6 +14,9 @@
  */
 package gr.demokritos.iit.location.mapping;
 
+import java.util.Collection;
+import java.util.Map;
+
 /**
  *
  * @author George K. <gkiom@iit.demokritos.gr>
@@ -21,5 +24,7 @@ package gr.demokritos.iit.location.mapping;
 public interface IPolygonExtraction {
 
     String extractPolygon(String locationEntity);
-    
+
+    Map<String, String> extractPolygon(Collection<String> locationEntities);
+
 }

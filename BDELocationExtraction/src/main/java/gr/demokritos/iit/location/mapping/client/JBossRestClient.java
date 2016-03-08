@@ -16,6 +16,7 @@ package gr.demokritos.iit.location.mapping.client;
 
 import java.util.HashMap;
 import java.util.Map;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import org.jboss.resteasy.client.ClientRequest;
@@ -55,11 +56,29 @@ public class JBossRestClient implements IRestClient {
         return req;
     }
 
+    @Override
+    public Response execJSONPost(String url, String json_data, Class response_entity_class) throws Exception {
+        ClientRequestFactory crf = new ClientRequestFactory();
+        ClientRequest req = crf.createRequest(url);
+        req.accept(MediaType.APPLICATION_JSON);
+        req.body(MediaType.APPLICATION_JSON, json_data);
+        ClientResponse<String> post = req.post(response_entity_class);
+        return post;
+    }
+
     public static void main(String[] args) throws Exception {
         Map<String, String> params = new HashMap();
 //        params.put("lang", null)
         IRestClient cl = new JBossRestClient();
-        ClientResponse execGet = (ClientResponse) cl.execGet("http://143.233.226.97:60091/InfoAssetService/categories/getCategories", null, String.class);
-        System.out.println(execGet.getEntity());
+//        ClientResponse execGet = (ClientResponse) cl.execGet("http://143.233.226.97:60091/InfoAssetService/categories/getCategories", null, String.class);
+        ClientResponse execPost = (ClientResponse) cl.execJSONPost("http://83.212.114.19:8084/InfoAssetService/sources/insert", "{\n"
+                + "\"source_type\":\"RSS\",\n"
+                + "\"source_url\":\"http://www.test/feed=rss\",\n"
+                + "\"source_label\": \"source_label_1\",\n"
+                + "\"source_category\":\"category_1\",\n"
+                + "\"refresh_time\": 30,\n"
+                + "\"source_lang\": \"en\"\n"
+                + "}", String.class);
+        System.out.println(execPost.getEntity());
     }
 }

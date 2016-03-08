@@ -80,7 +80,8 @@ public class LocationExtractionSchedule {
                 String clean_text = (String) article.get(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CLEAN_TEXT.getColumnName());
                 Set<String> locationsFound = locExtractor.extractLocation(clean_text);
                 if (!locationsFound.isEmpty()) {
-                    Map<String, String> places_polygons = extractPolygons(locationsFound, poly);
+//                    Map<String, String> places_polygons = extractPolygons(locationsFound, poly);
+                    Map<String, String> places_polygons = poly.extractPolygon(locationsFound);
                     // update entry
                     repos.updateArticleWithPlaceMetadata(permalink, places_polygons);
                     i++;
@@ -102,6 +103,12 @@ public class LocationExtractionSchedule {
         }
     }
 
+    /**
+     * @deprecated 
+     * @param locationsFound
+     * @param poly
+     * @return 
+     */
     private static Map<String, String> extractPolygons(Set<String> locationsFound, IPolygonExtraction poly) {
         Map<String, String> res = new HashMap();
         for (String loc : locationsFound) {
