@@ -16,10 +16,17 @@ public interface ISparkConf extends IBaseConf {
     String SPARK_EXECUTOR_MEMORY = "spark.executor.memory";
     String SPARK_CASSANDRA_CONNECTION_HOST = "spark.cassandra.connection.host";
     String SPARK_CASSANDRA_CONNECTION_PORT = "spark.cassandra.connection.port";
+    String BATCH_NUM_OF_DAYS = "batch_days_limit";
 
     String getMaster();
 
     String getAppName();
 
     String getClusterExecutorMemory();
+
+    /**
+     *
+     * @return days back to load articles batch from now
+     */
+    int getNumDaysBatch();
 }

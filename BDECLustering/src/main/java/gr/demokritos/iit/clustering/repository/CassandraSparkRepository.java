@@ -18,6 +18,7 @@ import com.datastax.spark.connector.japi.CassandraJavaUtil;
 import com.datastax.spark.connector.japi.CassandraRow;
 import com.datastax.spark.connector.japi.SparkContextJavaFunctions;
 import gr.demokritos.iit.base.repository.views.Cassandra;
+import gr.demokritos.iit.clustering.config.ISparkConf;
 import gr.demokritos.iit.clustering.util.CassandraArticleRowToTuple4RDD;
 import gr.demokritos.iit.clustering.util.FilterByAfterTimeStamp;
 import java.util.Calendar;
@@ -33,10 +34,14 @@ public class CassandraSparkRepository {
 
     private final SparkContextJavaFunctions scjf;
     private final String keyspace;
+    private final SparkContext sc;
+    private final int numDaysBatch;
 
-    public CassandraSparkRepository(SparkContext sc, String keyspaceArg) {
-        this.scjf = CassandraJavaUtil.javaFunctions(sc);
-        this.keyspace = keyspaceArg;
+    public CassandraSparkRepository(SparkContext scArg, ISparkConf conf) {
+        this.scjf = CassandraJavaUtil.javaFunctions(scArg);
+        this.keyspace = conf.getCassandraKeyspace();
+        this.sc = scArg;
+        this.numDaysBatch = conf.getNumDaysBatch();
     }
 
     public long getLatestTimestamp(String table) {
@@ -45,7 +50,7 @@ public class CassandraSparkRepository {
 //        return collect.get(0).getLong("last_parsed");
         // dummy.
         Calendar now = Calendar.getInstance();
-        now.set(Calendar.DAY_OF_YEAR, now.get(Calendar.DAY_OF_YEAR) - 7);
+        now.set(Calendar.DAY_OF_YEAR, now.get(Calendar.DAY_OF_YEAR) - numDaysBatch);
         return now.getTimeInMillis();
     }
 
@@ -57,6 +62,7 @@ public class CassandraSparkRepository {
      * @return <entry_url, title, clean_text, timestamp>
      */
     public JavaRDD<Tuple4<String, String, String, Long>> loadArticlesPublishedLaterThan(long timestamp) {
+        // TODO improve query: load specific articles, not all and filter afterwards
         JavaRDD<CassandraRow> filter = scjf
                 .cassandraTable(keyspace, Cassandra.RSS.Tables.NEWS_ARTICLES_PER_PUBLISHED_DATE.getTableName())
                 .select(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName(),
@@ -65,10 +71,10 @@ public class CassandraSparkRepository {
                 //                .limit(20l);
                 .filter(new FilterByAfterTimeStamp(timestamp));
         JavaRDD<Tuple4<String, String, String, Long>> extracted = filter.map(new CassandraArticleRowToTuple4RDD(
-                        Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName(),
-                        Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_TITLE.getColumnName(),
-                        Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CLEAN_TEXT.getColumnName(),
-                        Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PUBLISHED.getColumnName())
+                Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName(),
+                Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_TITLE.getColumnName(),
+                Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CLEAN_TEXT.getColumnName(),
+                Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PUBLISHED.getColumnName())
         );
         return extracted;
     }

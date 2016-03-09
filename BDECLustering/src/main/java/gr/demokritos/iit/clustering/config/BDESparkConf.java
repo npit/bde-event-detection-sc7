@@ -42,4 +42,9 @@ public class BDESparkConf extends BaseConfiguration implements ISparkConf {
         return properties.getProperty(SPARK_EXECUTOR_MEMORY, "1g");
     }
 
+    @Override
+    public int getNumDaysBatch() {
+        return Integer.valueOf(properties.getProperty(BATCH_NUM_OF_DAYS, "2"));
+    }
+
 }

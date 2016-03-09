@@ -54,25 +54,25 @@ public class BDEEventDetection {
 
         SparkContext sc = bdedet.getContext();
 
-        CassandraSparkRepository repo = new CassandraSparkRepository(sc, conf.getCassandraKeyspace());
+        CassandraSparkRepository repo = new CassandraSparkRepository(sc, conf);
 
         long timestamp = repo.getLatestTimestamp("event_detection_log"); // TODO: add table.
         System.out.println(new Date(timestamp).toString());
 
-        // load batch. The tuple4 shall be <entry_url, title, clean_text, timestamp>
+        // load batch. The quadruple represents <entry_url, title, clean_text, timestamp>
         JavaRDD<Tuple4<String, String, String, Long>> RDDbatch = repo.loadArticlesPublishedLaterThan(timestamp);
-
+        // get pairs of articles
         JavaPairRDD<
         Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>> RDDPairs
-                = combinations(RDDbatch);
-        // implement algorithm from NewSum.
-        // create pairs from original articles
+                = getPairs(RDDbatch);
+        // implement algorithm from NewSum
+        
         // get matching mappings
         // generate clusters
 
     }
 
-    public static JavaPairRDD<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>> combinations(JavaRDD<Tuple4<String, String, String, Long>> original) {
+    public static JavaPairRDD<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>> getPairs(JavaRDD<Tuple4<String, String, String, Long>> original) {
 //        // example scala code.
 //        //        def combs(rdd:RDD[String]):RDD[(String,String)] = {
 //        //    val count = rdd.count
