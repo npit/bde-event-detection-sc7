@@ -9,7 +9,6 @@ import gr.demokritos.iit.clustering.config.BDESpark;
 import gr.demokritos.iit.clustering.config.BDESparkConf;
 import gr.demokritos.iit.clustering.config.ISparkConf;
 import org.apache.spark.SparkContext;
-import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.rdd.RDD;
 
 /**
@@ -30,7 +29,8 @@ public class TestParallelNGG {
         RDD<String> s2 = sc.textFile("/home/gkioumis/Programming/scala/ParallelNGGFork/res/test2", 3);
         
         
-//        new NGramGraphCreator
+        
+                
         
         
         
