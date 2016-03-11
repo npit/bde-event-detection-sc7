@@ -20,6 +20,7 @@ import gr.demokritos.iit.crawlers.rss.factory.conf.RSSConf;
 import static gr.demokritos.iit.crawlers.rss.factory.RSSCrawlFactory.log;
 import gr.demokritos.iit.crawlers.rss.repository.IRepository;
 import java.beans.PropertyVetoException;
+import java.io.File;
 
 /**
  * User: ade
@@ -42,7 +43,11 @@ public class NewsCrawler extends AbstractCrawler {
     }
 
     public static void main(String[] args) {
-        IRSSConf configuration = new RSSConf(DEFAULT_NEWS_CONFIGURATION);
+        if (args.length == 0) {
+            throw new IllegalArgumentException(USAGE);
+        }
+        System.out.println("working from " + new File(".").getAbsolutePath());
+        IRSSConf configuration = new RSSConf(args[0]);
         RSSCrawlFactory factory = null; 
         try {
             factory = new RSSCrawlFactory(configuration);
@@ -57,4 +62,7 @@ public class NewsCrawler extends AbstractCrawler {
             }
         }
     }
+
+    private static final String USAGE = String.format("Usage: %s 'path_to_configuration_file'", NewsCrawler.class.getName());
+
 }

@@ -22,6 +22,8 @@ import gr.demokritos.iit.clustering.util.DocumentPairGenerationFilterFunction;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import gr.demokritos.iit.clustering.util.StructUtils;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
@@ -56,49 +58,28 @@ public class BDEEventDetection {
 
         CassandraSparkRepository repo = new CassandraSparkRepository(sc, conf);
 
-        long timestamp = repo.getLatestTimestamp("event_detection_log"); // TODO: add table.
+        long timestamp = repo.getLatestTimestamp("event_detection_log"); // TODO: add table(?) or use parameter days_back.
         System.out.println(new Date(timestamp).toString());
-
+        System.out.println("LOADING ARTICLES");
         // load batch. The quadruple represents <entry_url, title, clean_text, timestamp>
         JavaRDD<Tuple4<String, String, String, Long>> RDDbatch = repo.loadArticlesPublishedLaterThan(timestamp);
+        System.out.println("EXTRACTING PAIRS");
         // get pairs of articles
-        JavaPairRDD<
-        Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>> RDDPairs
+        JavaPairRDD<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>> RDDPairs
                 = getPairs(RDDbatch);
-        // implement algorithm from NewSum
-        
+        // debug
+        StructUtils.printArticlePairs(RDDPairs, 5);
+        // debug
+
         // get matching mappings
+
+
         // generate clusters
 
+        // save clusters
     }
 
     public static JavaPairRDD<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>> getPairs(JavaRDD<Tuple4<String, String, String, Long>> original) {
-//        // example scala code.
-//        //        def combs(rdd:RDD[String]):RDD[(String,String)] = {
-//        //    val count = rdd.count
-//        //    if (rdd.count < 2) { 
-//        //        sc.makeRDD[(String,String)](Seq.empty)
-//        //    } else if (rdd.count == 2) {
-//        //        val values = rdd.collect
-//        //        sc.makeRDD[(String,String)](Seq((values(0), values(1))))
-//        //    } else {
-//        //        val elem = rdd.take(1)
-//        //        val elemRdd = sc.makeRDD(elem)
-//        //        val subtracted = rdd.subtract(elemRdd)  
-//        //        val comb = subtracted.map(e  => (elem(0),e))
-//        //        comb.union(combs(subtracted))
-//        //    } 
-//        // }
-//        JavaPairRDD<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>> res;
-//        SparkContext sc = getContext();
-//        long items = original.count();
-//        if (items < 2) {
-//            return null;
-//        } else if (items == 2l) {
-//            res = new JavaPairRDD()
-//        }
-        // simpler (more expensive?)
-        // rdd.cartesian(rdd).filter{ case (a,b) => a < b }`.
         return original.cartesian(original).filter(new DocumentPairGenerationFilterFunction());
     }
 
