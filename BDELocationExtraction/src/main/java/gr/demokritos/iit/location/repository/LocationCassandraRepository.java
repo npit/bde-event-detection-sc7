@@ -24,29 +24,32 @@ import static com.datastax.driver.core.querybuilder.QueryBuilder.set;
 import gr.demokritos.iit.base.repository.BaseCassandraRepository;
 import gr.demokritos.iit.base.repository.views.Cassandra;
 import gr.demokritos.iit.base.util.Utils;
+import gr.demokritos.iit.location.mode.OperationMode;
 import gr.demokritos.iit.location.structs.LocSched;
 import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
 /**
+ * handles the persistence of items (i.e. articles/tweets) updated with referrals to places.
  *
  * @author George K. <gkiom@iit.demokritos.gr>
  */
 public class LocationCassandraRepository extends BaseCassandraRepository implements ILocationRepository {
 
-    private static final String SCHEDULE_TYPE = "location_extraction";
+    private static final String SCHEDULE_TYPE_BASE = "location_extraction";
 
     public LocationCassandraRepository(Session session) {
         super(session);
     }
 
     @Override
-    public LocSched scheduleInitialized() {
+    public LocSched scheduleInitialized(OperationMode mode) {
+        String schedule_type = new StringBuilder().append(SCHEDULE_TYPE_BASE).append("_").append(mode.getMode()).toString();
         Statement select = QueryBuilder
                 .select(Cassandra.Location.TBL_LOCATION_LOG.FLD_SCHEDULE_ID.getColumnName(), Cassandra.Location.TBL_LOCATION_LOG.FLD_LAST_PARSED.getColumnName())
                 .from(session.getLoggedKeyspace(), Cassandra.Location.Table.LOCATION_LOG.getTableName())
-                .where(eq(Cassandra.Location.TBL_LOCATION_LOG.FLD_SCHEDULE_TYPE.getColumnName(), SCHEDULE_TYPE)).limit(1);
+                .where(eq(Cassandra.Location.TBL_LOCATION_LOG.FLD_SCHEDULE_TYPE.getColumnName(), schedule_type)).limit(1);
         ResultSet results = session.execute(select);
 
         long max_existing = 0l;
@@ -58,11 +61,11 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
             last_parsed = one.getLong(Cassandra.Location.TBL_LOCATION_LOG.FLD_LAST_PARSED.getColumnName());
         }
         long current = max_existing + 1;
-        LocSched curSched = new LocSched(current, last_parsed);
+        LocSched curSched = new LocSched(mode, current, last_parsed);
 
         Statement insert = QueryBuilder
                 .insertInto(session.getLoggedKeyspace(), Cassandra.Location.Table.LOCATION_LOG.getTableName())
-                .value(Cassandra.Location.TBL_LOCATION_LOG.FLD_SCHEDULE_TYPE.getColumnName(), SCHEDULE_TYPE)
+                .value(Cassandra.Location.TBL_LOCATION_LOG.FLD_SCHEDULE_TYPE.getColumnName(), schedule_type)
                 .value(Cassandra.Location.TBL_LOCATION_LOG.FLD_SCHEDULE_ID.getColumnName(), current)
                 .value(Cassandra.Location.TBL_LOCATION_LOG.FLD_END.getColumnName(), 0l) // avoid nulls
                 .value(Cassandra.Location.TBL_LOCATION_LOG.FLD_ITEMS_UPDATED.getColumnName(), 0l) // avoid nulls
@@ -74,18 +77,19 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
 
     @Override
     public void scheduleFinalized(LocSched sched) {
+        String schedule_type = new StringBuilder().append(SCHEDULE_TYPE_BASE).append("_").append(sched.getOperationMode().getMode()).toString();
         Statement update = QueryBuilder
                 .update(session.getLoggedKeyspace(), Cassandra.Location.Table.LOCATION_LOG.getTableName())
                 .with(set(Cassandra.Location.TBL_LOCATION_LOG.FLD_END.getColumnName(), new Date().getTime()))
                 .and(set(Cassandra.Location.TBL_LOCATION_LOG.FLD_LAST_PARSED.getColumnName(), sched.getLastParsed()))
                 .and(set(Cassandra.Location.TBL_LOCATION_LOG.FLD_ITEMS_UPDATED.getColumnName(), sched.getItemsUpdated()))
-                .where(eq(Cassandra.Location.TBL_LOCATION_LOG.FLD_SCHEDULE_TYPE.getColumnName(), SCHEDULE_TYPE))
+                .where(eq(Cassandra.Location.TBL_LOCATION_LOG.FLD_SCHEDULE_TYPE.getColumnName(), schedule_type))
                 .and(eq(Cassandra.Location.TBL_LOCATION_LOG.FLD_SCHEDULE_ID.getColumnName(), sched.getScheduleID()));
         session.execute(update);
     }
 
     @Override
-    public void updateArticleWithPlaceMetadata(String permalink, Map<String, String> places_polygons) {
+    public void updateArticlesWithPlaceMetadata(String permalink, Map<String, String> places_polygons) {
         System.out.println(String.format("updating %s with places: %s", permalink, places_polygons.keySet().toString()));
         // load metadata
         Map<String, Object> article = loadArticle(permalink);
@@ -135,5 +139,60 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
                     .value(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_TITLE.getColumnName(), (String) article.get(Cassandra.RSS.TBL_ARTICLES.FLD_TITLE.getColumnName()));
             session.execute(insert);
         }
+    }
+
+    @Override
+    public void updateTweetsWithPlaceMetadata(String permalink, Map<String, String> places_polygons) {
+        // TODO implement changes in twitter repository
+        System.out.println("updating: " + permalink + ", with: " + places_polygons.keySet().toString());
+//        System.out.println(String.format("updating %s with places: %s", permalink, places_polygons.keySet().toString()));
+//        // load metadata
+//        Map<String, Object> article = loadArticle(permalink);
+//        long published = (long) article.get(Cassandra.RSS.TBL_ARTICLES.FLD_PUBLISHED.getColumnName());
+//        String ymdl = Utils.extractYearMonthDayLiteral(published);
+//        String reversed_host = (String) article.get(Cassandra.RSS.TBL_ARTICLES.FLD_REVERSED_HOST.getColumnName());
+//        Set<String> places = places_polygons.keySet();
+//        // update news_articles
+//        Statement upsert = QueryBuilder
+//                .update(session.getLoggedKeyspace(), Cassandra.RSS.Tables.NEWS_ARTICLES.getTableName())
+//                .with(set(Cassandra.RSS.TBL_ARTICLES.FLD_PLACE_LITERAL.getColumnName(), places))
+//                .where(eq(Cassandra.RSS.TBL_ARTICLES.FLD_ENTRY_URL.getColumnName(), permalink))
+//                .and(eq(Cassandra.RSS.TBL_ARTICLES.FLD_REVERSED_HOST.getColumnName(), reversed_host));
+//        session.execute(upsert);
+//        // update news_articles_per_published_date
+//        upsert = QueryBuilder
+//                .update(session.getLoggedKeyspace(), Cassandra.RSS.Tables.NEWS_ARTICLES_PER_PUBLISHED_DATE.getTableName())
+//                .with(set(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PLACE_LITERAL.getColumnName(), places))
+//                .where(eq(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName(), permalink))
+//                .and(eq(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.getColumnName(), ymdl))
+//                .and(eq(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PUBLISHED.getColumnName(), published));
+//        session.execute(upsert);
+//        // update news_articles_per_crawled_date
+//        long crawled = (long) article.get(Cassandra.RSS.TBL_ARTICLES.FLD_CRAWLED.getColumnName());
+//        upsert = QueryBuilder
+//                .update(session.getLoggedKeyspace(), Cassandra.RSS.Tables.NEWS_ARTICLES_PER_CRAWLED_DATE.getTableName())
+//                .with(set(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PLACE_LITERAL.getColumnName(), places))
+//                .where(eq(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName(), permalink))
+//                .and(eq(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.getColumnName(),
+//                        Utils.extractYearMonthDayLiteral(crawled)))
+//                .and(eq(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CRAWLED.getColumnName(), crawled));
+//        session.execute(upsert);
+//        Statement insert;
+//        for (String place : places) {
+//            insert = QueryBuilder
+//                    .insertInto(session.getLoggedKeyspace(), Cassandra.RSS.Tables.NEWS_ARTICLES_PER_PLACE.getTableName())
+//                    .value(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_PLACE_LITERAL.getColumnName(), place)
+//                    .value(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_ENTRY_URL.getColumnName(), permalink)
+//                    .value(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_PUBLISHED.getColumnName(), published)
+//                    .value(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_BOUNDING_BOX.getColumnName(), places_polygons.get(place))
+//                    .value(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_FEED_URL.getColumnName(), (String) article.get(Cassandra.RSS.TBL_ARTICLES.FLD_FEED_URL.getColumnName()))
+//                    .value(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_CRAWL_ID.getColumnName(), (long) article.get(Cassandra.RSS.TBL_ARTICLES.FLD_CRAWL_ID.getColumnName()))
+//                    .value(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_RAW_TEXT.getColumnName(), (String) article.get(Cassandra.RSS.TBL_ARTICLES.FLD_RAW_TEXT.getColumnName()))
+//                    .value(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_CLEAN_TEXT.getColumnName(), (String) article.get(Cassandra.RSS.TBL_ARTICLES.FLD_CLEAN_TEXT.getColumnName()))
+//                    .value(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_CRAWLED.getColumnName(), (long) article.get(Cassandra.RSS.TBL_ARTICLES.FLD_CRAWLED.getColumnName()))
+//                    .value(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_LANGUAGE.getColumnName(), (String) article.get(Cassandra.RSS.TBL_ARTICLES.FLD_LANGUAGE.getColumnName()))
+//                    .value(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_TITLE.getColumnName(), (String) article.get(Cassandra.RSS.TBL_ARTICLES.FLD_TITLE.getColumnName()));
+//            session.execute(insert);
+//        }
     }
 }

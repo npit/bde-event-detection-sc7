@@ -58,14 +58,25 @@ public class BaseCassandraRepository implements IBaseRepository {
         Statement select;
         ResultSet results;
         Collection<Map<String, Object>> out = new ArrayList();
+        boolean got_first = false;
         for (String each_key : ymdLitRange) {
-            select
-                    = QueryBuilder
-                    .select()
-                    .all()
-                    .from(session.getLoggedKeyspace(), Cassandra.Twitter.Tables.TWITTER_POSTS_PER_DATE.getTableName())
-                    .where(eq(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.getColumnName(), each_key))
-                    .and(gte(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_CREATED_AT.getColumnName(), from));
+            if (got_first) {
+                select
+                        = QueryBuilder
+                        .select()
+                        .all()
+                        .from(session.getLoggedKeyspace(), Cassandra.Twitter.Tables.TWITTER_POSTS_PER_DATE.getTableName())
+                        .where(eq(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.getColumnName(), each_key));
+            } else {
+                select
+                        = QueryBuilder
+                        .select()
+                        .all()
+                        .from(session.getLoggedKeyspace(), Cassandra.Twitter.Tables.TWITTER_POSTS_PER_DATE.getTableName())
+                        .where(eq(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.getColumnName(), each_key))
+                        .and(gte(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_CREATED_AT.getColumnName(), from));
+                got_first = true;
+            }
             results = session.execute(select);
             for (Row row : results) {
                 Map<String, Object> res = new HashMap();
@@ -84,6 +95,7 @@ public class BaseCassandraRepository implements IBaseRepository {
                 String permalink = row.getString(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_PERMALINK.getColumnName());
                 res.put(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_PERMALINK.getColumnName(), permalink);
                 // append
+                assert (created_at >= from) : String.format("query totally wrong: created_at=%d < from=%d", created_at, from);
                 out.add(res);
             }
         }
@@ -150,6 +162,7 @@ public class BaseCassandraRepository implements IBaseRepository {
                 String title = row.getString(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_TITLE.getColumnName());
                 res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_TITLE.getColumnName(), title);
                 // append
+                assert (published >= from) : String.format("query totally wrong: published=%d < from=%d", published, from);
                 out.add(res);
             }
         }
@@ -159,6 +172,9 @@ public class BaseCassandraRepository implements IBaseRepository {
         return Collections.unmodifiableCollection(out);
     }
 
+    /**
+     * try a more generic way of loading data
+     */
     private static final Map<String, Class> MAPPINGS = new HashMap();
 
     static {
@@ -214,11 +230,19 @@ public class BaseCassandraRepository implements IBaseRepository {
         BaseFactory bf = new BaseFactory(co);
         IBaseRepository re = bf.createBaseCassandraRepository();
         Calendar now = Calendar.getInstance();
-        now.set(Calendar.DAY_OF_YEAR, Calendar.DAY_OF_YEAR - 10);
-        Collection<Map<String, Object>> loadArticles = re.loadArticles(now.getTimeInMillis());
-        for (Map<String, Object> loadArticle : loadArticles) {
-            System.out.println(loadArticle.get("title"));
-        }
+        now.set(Calendar.DAY_OF_YEAR, Calendar.DAY_OF_YEAR - 20);
+//        Collection<Map<String, Object>> loadArticles = re.loadArticles(now.getTimeInMillis());
+//        for (Map<String, Object> loadArticle : loadArticles) {
+//            System.out.println(loadArticle.get("title"));
+//        }
+        Collection<Map<String, Object>> tweets = re.loadTweets(now.getTimeInMillis());
+        int limit = 10;
+        for (Map<String, Object> each : tweets) {
+            System.out.println(each.get("created_at") + ": " + each.get("tweet") + ", " + each.get("account_name") + ", " + each.get("language"));
 
+            if (limit-- == 0) {
+                break;
+            }
+        }
     }
 }

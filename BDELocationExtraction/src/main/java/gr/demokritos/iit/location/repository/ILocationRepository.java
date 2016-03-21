@@ -15,6 +15,7 @@
 package gr.demokritos.iit.location.repository;
 
 import gr.demokritos.iit.base.repository.IBaseRepository;
+import gr.demokritos.iit.location.mode.OperationMode;
 import gr.demokritos.iit.location.structs.LocSched;
 import java.util.Map;
 
@@ -24,14 +25,26 @@ import java.util.Map;
  */
 public interface ILocationRepository extends IBaseRepository {
 
-    void updateArticleWithPlaceMetadata(String permalink, Map<String, String> places_polygons);
+    /**
+     *
+     * @param permalink the URL of the article
+     * @param places_polygons the places found for this article
+     */
+    void updateArticlesWithPlaceMetadata(String permalink, Map<String, String> places_polygons);
+
+    /**
+     *
+     * @param permalink the permalink of the tweet
+     * @param places_polygons the places that this tweet found to refer to
+     */
+    void updateTweetsWithPlaceMetadata(String permalink, Map<String, String> places_polygons);
 
     /**
      *
      * @return the timestamp of the last article parsed in the previous
      * execution
      */
-    LocSched scheduleInitialized();
+    LocSched scheduleInitialized(OperationMode mode);
 
     /**
      * register schedule completed

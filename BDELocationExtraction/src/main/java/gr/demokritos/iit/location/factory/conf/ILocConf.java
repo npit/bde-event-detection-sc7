@@ -26,4 +26,6 @@ public interface ILocConf extends IBaseConf {
     String getNEModelsDirPath();
 
     double getNEConfidenceCutOffThreshold();
+
+    String getOperationMode();
 }

@@ -52,6 +52,11 @@ public class LocConf extends BaseConfiguration implements ILocConf {
     }
 
     @Override
+    public String getOperationMode() {
+        return properties.getProperty("operation_mode");
+    }
+
+    @Override
     public String getLocationExtractionImpl() {
         return properties.getProperty("location_extraction_impl");
     }

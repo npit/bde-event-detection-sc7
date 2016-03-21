@@ -5,6 +5,8 @@
  */
 package gr.demokritos.iit.location.structs;
 
+import gr.demokritos.iit.location.mode.OperationMode;
+
 /**
  *
  * @author George K. <gkiom@iit.demokritos.gr>
@@ -12,20 +14,22 @@ package gr.demokritos.iit.location.structs;
 public class LocSched {
 
     private final long schedule_id;
+    private final OperationMode operation_mode;
     private long last_parsed;
-    private long items_updated; 
-    
-    public LocSched(long schedule_id) {
-        this.schedule_id = schedule_id;
-    }
+    private long items_updated;
 
-    public LocSched(long schedule_id, long last_parsed) {
+    public LocSched(OperationMode operation_mode, long schedule_id, long last_parsed) {
+        this.operation_mode = operation_mode;
         this.schedule_id = schedule_id;
         this.last_parsed = last_parsed;
     }
 
     public long getLastParsed() {
         return last_parsed;
+    }
+
+    public OperationMode getOperationMode() {
+        return operation_mode;
     }
 
     public void setLastParsed(long last_parsed) {

@@ -61,8 +61,6 @@ public class OpenNLPSentenceSplitter implements ISentenceSplitter {
 
     /**
      * Initializes the sentence splitter model for a specific language.
-     *
-     * @param sLang the language of importance.
      */
     private void initSplitter() {
         // Check whether splitter model already exists

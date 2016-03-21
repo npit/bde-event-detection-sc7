@@ -25,7 +25,7 @@ import java.util.Map;
 public interface IBaseRepository {
 
     /**
-     * load tweets that occured after a specified timestamp
+     * load tweets that occurred after a specified timestamp
      *
      * @param from
      * @return

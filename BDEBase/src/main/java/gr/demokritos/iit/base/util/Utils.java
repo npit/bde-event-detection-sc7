@@ -113,4 +113,42 @@ public class Utils {
         }
         return res;
     }
+
+    public static String cleanTweet(String tweet) {
+        // apart from noise removal, do we need anything else?
+        return removeNoise(tweet);
+    }
+
+    private static String removeNoise(String target) {
+        target = target.replaceAll("((https?|ftp|gopher|telnet|file|Unsure|http):((//)|(\\\\))+[\\w\\d:#@%/;$()~_?\\+-=\\\\\\.&]*)", ""); // links
+        target = target.replaceAll("(((RT )|(MT ))?@([\\w]|[^\\s])*([\\s]|$))+", "");                                                     //RT MT @someone (response to)
+        target = target.replaceAll("@([\\w]|[^\\s])*([\\s]|$)", " ");                                                                     //@someone
+        target = target.replaceAll("&[\\w:]+;", "");                                                                                      //&gt; etc
+        target = target.replaceAll("[^#$\\w\\s]+", " ");                                                                                  //'...,,,**^^^()'
+        target = target.replaceAll("[\\s]http([\\s]|$)", " ");                                                                            //' http '
+        return target;
+    }
+// a few test cases
+//    public static void main(String[] args) {
+//        String tweet1 = "This is from Petaflop Choreography - a poem handed to me by Shirley Sampson in Glasgow, Saturday... #WorldPoetryDay ";
+//        String tweet2 = "Powa failure - @BBCRoryCJ on how a UK start-up that claimed to have \"trumped\" Apple fell to earth ";
+//        String tweet3 = "Obama is the first U.S. president to visit Cuba since Calvin Coolidge arrived by sea in 1928 http://usat.ly/25fcS6Z  ";
+//        String tweet4 = "Thousands of mentally ill Indonesians are living in shackles, a new report says http://ti.me/1ZjdPqL  ";
+//        String tweet5 = "Novak Djokovic controversially said male tennis players should be paid more than women http://trib.al/M9v9Nh5  ";
+//        String tweet6 = "@SkyNews Some men need to know when to keep their mouths SHUT!!!!";
+//        List<String> tweets = new ArrayList();
+//        tweets.add(tweet1);
+//        tweets.add(tweet2);
+//        tweets.add(tweet3);
+//        tweets.add(tweet4);
+//        tweets.add(tweet5);
+//        tweets.add(tweet6);
+//
+//        for (String tw :
+//                tweets) {
+//            System.out.println(tw);
+//            System.out.println(cleanTweet(tw));
+//        }
+//
+//    }
 }

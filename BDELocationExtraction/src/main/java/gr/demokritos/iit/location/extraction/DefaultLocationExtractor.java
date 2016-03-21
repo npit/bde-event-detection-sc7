@@ -182,6 +182,11 @@ public class DefaultLocationExtractor implements ILocationExtractor {
         return clean(token_provider.getLocationTokens(document));
     }
 
+    /**
+     *  for testing purposes alone
+     * @param args
+     * @throws IOException
+     */
     public static void main(String[] args) throws IOException {
 
         ITokenProvider tp = new EnhancedOpenNLPTokenProvider("../../NewSumV3/NewSumV3/dataEN/Tools/ne_models/", new OpenNLPSentenceSplitter("../../NewSumV3/NewSumV3/dataEN/Tools/en-sent.bin"), 0.8);
