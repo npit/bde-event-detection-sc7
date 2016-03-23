@@ -46,4 +46,12 @@ public interface IBaseRepository {
      * @return
      */
     Map<String, Object> loadArticle(String permalink);
+
+    /**
+     * load tweet by post ID
+     *
+     * @param post_id the unique key of the tweet
+     * @return
+     */
+    Map<String, Object> loadTweet(long post_id);
 }

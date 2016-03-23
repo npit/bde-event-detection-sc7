@@ -14,10 +14,7 @@
  */
 package gr.demokritos.iit.base.repository;
 
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.*;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.gte;
@@ -28,14 +25,7 @@ import gr.demokritos.iit.base.repository.views.Cassandra;
 import gr.demokritos.iit.base.util.TableUtil;
 import gr.demokritos.iit.base.util.Utils;
 import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -129,15 +119,6 @@ public class BaseCassandraRepository implements IBaseRepository {
             }
             results = session.execute(select);
             for (Row row : results) {
-//                ColumnDefinitions defs = row.getColumnDefinitions();
-//                for (ColumnDefinitions.Definition def : defs) {
-//                    String name = def.getName();
-//                    DataType type = def.getType();
-//                    DataType.Name name1 = type.getName();
-//                    System.out.println("definition name: " + name + ", type.name: " + name1);
-//                    res.put(name, row.get(name, MAPPINGS.get(name1)));
-//                    out.add(res);
-//                }
                 Map<String, Object> res = new HashMap();
                 String year_month_day_bucket = row.getString(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.getColumnName());
                 res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.getColumnName(), year_month_day_bucket);
@@ -173,14 +154,21 @@ public class BaseCassandraRepository implements IBaseRepository {
     }
 
     /**
-     * try a more generic way of loading data
+     * a more generic way of loading data
      */
-    private static final Map<String, Class> MAPPINGS = new HashMap();
+    private static final Map<DataType.Name, Class> PLAIN_MAPPINGS = new HashMap();
 
     static {
-        MAPPINGS.put("varchar", String.class);
-        MAPPINGS.put("bigint", Long.class);
-        MAPPINGS.put("set", Set.class);
+        PLAIN_MAPPINGS.put(DataType.Name.VARCHAR, String.class);
+        PLAIN_MAPPINGS.put(DataType.Name.TEXT, String.class);
+        PLAIN_MAPPINGS.put(DataType.Name.BIGINT, Long.class);
+        PLAIN_MAPPINGS.put(DataType.Name.FLOAT, Float.class);
+        PLAIN_MAPPINGS.put(DataType.Name.DOUBLE, Double.class);
+        PLAIN_MAPPINGS.put(DataType.Name.TIMESTAMP, Date.class);
+//        PLAIN_MAPPINGS.put(DataType.Name.SET, Set.class); // Codec not found for requested operation: [set<varchar> <-> java.util.Set]
+                                                            // need to explicitly set with TypeToken
+//        PLAIN_MAPPINGS.put(DataType.Name.LIST, List.class);
+//        PLAIN_MAPPINGS.put(DataType.Name.MAP, Map.class);
     }
 
     @Override
@@ -225,6 +213,55 @@ public class BaseCassandraRepository implements IBaseRepository {
         return res;
     }
 
+    @Override
+    public Map<String, Object> loadTweet(long post_id) {
+        // TODO: implement!
+        Map<String, Object> res = new HashMap();
+        Statement select;
+        try {
+            select = QueryBuilder
+                    .select()
+                    .all()
+                    .from(session.getLoggedKeyspace(), Cassandra.Twitter.Tables.TWITTER_POST.getTableName())
+                    .where(eq(Cassandra.Twitter.TBL_TWITTER_POST.FLD_POST_ID.getColumnName(), post_id))
+                    .limit(1);
+            ResultSet results = session.execute(select);
+            Row row = results.one();
+            if (row != null) {
+                res = extractPlainColumns(row);
+            }
+        } finally {
+
+        }
+        return res;
+    }
+
+    /**
+     * extract the plain colums from a row. This method ignores collections or frozen types
+     *
+     * @param row
+     * @return
+     */
+    private Map<String,Object> extractPlainColumns(Row row) {
+        if (row == null) {
+            return Collections.EMPTY_MAP;
+        }
+        Map<String, Object> res = new HashMap();
+        ColumnDefinitions defs = row.getColumnDefinitions();
+        for (ColumnDefinitions.Definition def : defs) {
+            String name = def.getName();
+            DataType type = def.getType();
+            if (!type.isCollection() && !type.isFrozen()) {
+                DataType.Name name1 = type.getName();
+//                System.out.println("definition name: " + name + ", type.name: " + name1);
+                Class name_class = PLAIN_MAPPINGS.get(name1);
+                Object o = row.get(name, name_class);
+                res.put(name, o);
+            }
+        }
+        return res;
+    }
+
     public static void main(String[] args) {
         IBaseConf co = new BaseConfiguration("../BDELocationExtraction/res/location_extraction.properties");
         BaseFactory bf = new BaseFactory(co);
@@ -235,14 +272,18 @@ public class BaseCassandraRepository implements IBaseRepository {
 //        for (Map<String, Object> loadArticle : loadArticles) {
 //            System.out.println(loadArticle.get("title"));
 //        }
-        Collection<Map<String, Object>> tweets = re.loadTweets(now.getTimeInMillis());
-        int limit = 10;
-        for (Map<String, Object> each : tweets) {
-            System.out.println(each.get("created_at") + ": " + each.get("tweet") + ", " + each.get("account_name") + ", " + each.get("language"));
-
-            if (limit-- == 0) {
-                break;
-            }
+//        Collection<Map<String, Object>> tweets = re.loadTweets(now.getTimeInMillis());
+//        int limit = 10;
+//        for (Map<String, Object> each : tweets) {
+//            System.out.println(each.get("created_at") + ": " + each.get("tweet") + ", " + each.get("account_name") + ", " + each.get("language"));
+//
+//            if (limit-- == 0) {
+//                break;
+//            }
+//        }
+        Map<String, Object> tweet = re.loadTweet(707195717048119296l);
+        for (Map.Entry<String, Object> each : tweet.entrySet()) {
+            System.out.println(each.getKey() + ": " + each.getValue());
         }
     }
 }

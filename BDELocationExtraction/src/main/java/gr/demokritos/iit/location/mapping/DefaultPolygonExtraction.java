@@ -16,6 +16,9 @@ package gr.demokritos.iit.location.mapping;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+import com.google.gson.internal.ObjectConstructor;
+import com.google.gson.reflect.TypeToken;
+import gr.demokritos.iit.location.mapping.client.DebugRestClient;
 import gr.demokritos.iit.location.mapping.client.IRestClient;
 import gr.demokritos.iit.location.mapping.client.JBossRestClient;
 import java.util.Collection;
@@ -36,18 +39,18 @@ public class DefaultPolygonExtraction implements IPolygonExtraction {
     private final String polURL;
     private final IRestClient client;
 
-    private Gson gs;
+    private final Gson gs = new Gson();
 
     public DefaultPolygonExtraction(String locURL) {
         this.polURL = locURL;
         this.client = new JBossRestClient();
-        this.gs = new Gson();
+        // for debugging purposes
+//        this.client = new DebugRestClient();
     }
 
     public DefaultPolygonExtraction(String locURL, IRestClient clientImpl) {
         this.polURL = locURL;
         this.client = clientImpl;
-        this.gs = new Gson();
     }
 
     @Override
@@ -69,7 +72,10 @@ public class DefaultPolygonExtraction implements IPolygonExtraction {
             // coords are supposed to arrive in the same index.
             int ind = 0;
             for (String locEnt : locationEntities) {
-                res.put(locEnt, unwrapped.get(ind++).toJSON());
+                GeocodeResponse gr = unwrapped.get(ind++);
+                if (gr != null) {
+                    res.put(locEnt, gr.toJSON());
+                }
             }
 
         } catch (Exception ex) {
@@ -80,10 +86,10 @@ public class DefaultPolygonExtraction implements IPolygonExtraction {
 
     private List<GeocodeResponse> extractGeoCodes(String ent) {
         try {
-            return gs.fromJson(ent, List.class);
+            TypeToken type_token = new TypeToken<List<GeocodeResponse>>() {};
+            return gs.fromJson(ent, type_token.getType());
         } catch (JsonSyntaxException ex) {
             Logger.getLogger(DefaultPolygonExtraction.class.getName()).log(Level.SEVERE, null, ex);
-            // TODO: parse?
             return Collections.EMPTY_LIST;
         }
     }
@@ -91,15 +97,15 @@ public class DefaultPolygonExtraction implements IPolygonExtraction {
     class GeocodeResponse {
 
         private final String type;
-        private final GeoLoc[][] coordinates;
+        private final Object coordinates;
 
-        public GeocodeResponse(String type, GeoLoc[][] coordinates) {
+        public GeocodeResponse(String type, Object coordinates) {
             this.type = type;
             this.coordinates = coordinates;
         }
 
         public String toJSON() {
-            return gs.toJson(this);
+            return new Gson().toJson(this, GeocodeResponse.class);
         }
     }
 

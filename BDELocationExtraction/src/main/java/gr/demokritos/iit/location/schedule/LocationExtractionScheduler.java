@@ -104,7 +104,7 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                     if (!locationsFound.isEmpty()) {
                         Map<String, String> places_polygons = poly.extractPolygon(locationsFound);
                         // update entry
-                        repos.updateArticlesWithPlaceMetadata(permalink, places_polygons);
+                        repos.updateArticlesWithReferredPlaceMetadata(permalink, places_polygons);
                         i++;
                     }
                 }
@@ -115,7 +115,7 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                     long published = (long) item.get(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_CREATED_AT.getColumnName());
                     max_published = Math.max(max_published, published);
 
-                    String permalink = (String) item.get(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_PERMALINK.getColumnName());
+                    long post_id = (long) item.get(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_POST_ID.getColumnName());
                     String tweet = (String) item.get(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_TWEET.getColumnName());
                     // clean tweet
                     String clean_tweet = Utils.cleanTweet(tweet);
@@ -124,7 +124,7 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                     if (!locationsFound.isEmpty()) {
                         Map<String, String> places_polygons = poly.extractPolygon(locationsFound);
                         // update entry
-                        repos.updateTweetsWithPlaceMetadata(permalink, places_polygons);
+                        repos.updateTweetsWithReferredPlaceMetadata(post_id, places_polygons);
                         i++;
                     }
                 }

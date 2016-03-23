@@ -106,11 +106,26 @@ CREATE TYPE bde.tplace (
     bounding_box varchar,
 );
 
+-- this place is the place of the registered user
 CREATE TABLE bde.twitter_posts_per_place (
     place_literal varchar,
     created_at bigint,
     post_id bigint,
     place frozen<tplace>,
+    tweet text,
+    language text,
+    url text,
+    account_name text,
+    primary key ((place_literal), created_at, post_id)
+) WITH CLUSTERING ORDER BY (created_at DESC, post_id DESC);
+
+-- this place is the referred place of the tweet, if any referral is found
+-- by the location extraction module
+CREATE TABLE bde.twitter_posts_per_referred_place (
+    place_literal varchar, -- the place name, i.e. Athens
+    created_at bigint,
+    post_id bigint,
+    location varchar, -- the coordinates, in string format, i.e. {"type":"Polygon","coordinates":[[[35.31,25.3],[35.31,19.25],[41.09,19.25],[41.09,25.3],[35.31,25.3]]]} // lng,lat []
     tweet text,
     language text,
     url text,

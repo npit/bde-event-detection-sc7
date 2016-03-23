@@ -30,14 +30,14 @@ public interface ILocationRepository extends IBaseRepository {
      * @param permalink the URL of the article
      * @param places_polygons the places found for this article
      */
-    void updateArticlesWithPlaceMetadata(String permalink, Map<String, String> places_polygons);
+    void updateArticlesWithReferredPlaceMetadata(String permalink, Map<String, String> places_polygons);
 
     /**
      *
-     * @param permalink the permalink of the tweet
+     * @param post_id the unique ID of the tweet
      * @param places_polygons the places that this tweet found to refer to
      */
-    void updateTweetsWithPlaceMetadata(String permalink, Map<String, String> places_polygons);
+    void updateTweetsWithReferredPlaceMetadata(long post_id, Map<String, String> places_polygons);
 
     /**
      *
@@ -52,5 +52,4 @@ public interface ILocationRepository extends IBaseRepository {
      * @param schedule
      */
     void scheduleFinalized(LocSched schedule);
-
 }

@@ -33,6 +33,7 @@ public class Cassandra {
             TWITTER_POSTS_PER_EXTERNAL_URL("twitter_posts_per_external_url"),
             TWITTER_POSTS_PER_COORDINATES("twitter_posts_per_coordinates"),
             TWITTER_POSTS_PER_PLACE("twitter_posts_per_place"),
+            TWITTER_POSTS_PER_REFERRED_PLACE("twitter_posts_per_referred_place"),
             TWITTER_POSTS_PER_ENGINE("twitter_posts_per_engine"),
             TWITTER_LOG("twitter_log");
             private final String table_name;
@@ -207,6 +208,28 @@ public class Cassandra {
             private final String column;
 
             private TBL_TWITTER_POSTS_PER_PLACE(String columnn) {
+                this.column = columnn;
+            }
+
+            public String getColumnName() {
+                return column;
+            }
+        }
+
+        public enum TBL_TWITTER_POSTS_PER_REFERRED_PLACE {
+
+            FLD_PLACE_LITERAL("place_literal"),
+            FLD_CREATED_AT("created_at"),
+            FLD_POST_ID("post_id"),
+            FLD_LOCATION("location"),
+            FLD_TWEET("tweet"),
+            FLD_LANGUAGE("language"),
+            FLD_PERMALINK("url"),
+            FLD_ACCOUNT_NAME("account_name");
+
+            private final String column;
+
+            private TBL_TWITTER_POSTS_PER_REFERRED_PLACE(String columnn) {
                 this.column = columnn;
             }
 
