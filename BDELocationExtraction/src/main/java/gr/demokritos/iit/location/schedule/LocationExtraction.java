@@ -14,12 +14,11 @@
  */
 package gr.demokritos.iit.location.schedule;
 
+import gr.demokritos.iit.location.extraction.ILocationExtractor;
 import gr.demokritos.iit.location.factory.ILocFactory;
-import static gr.demokritos.iit.location.factory.ILocFactory.LOG;
+import gr.demokritos.iit.location.factory.LocationFactory;
 import gr.demokritos.iit.location.factory.conf.ILocConf;
 import gr.demokritos.iit.location.factory.conf.LocConf;
-import gr.demokritos.iit.location.factory.LocationFactory;
-import gr.demokritos.iit.location.extraction.ILocationExtractor;
 import gr.demokritos.iit.location.mapping.IPolygonExtraction;
 import gr.demokritos.iit.location.mode.OperationMode;
 import gr.demokritos.iit.location.repository.ILocationRepository;
@@ -27,6 +26,8 @@ import gr.demokritos.iit.location.repository.ILocationRepository;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
+
+import static gr.demokritos.iit.location.factory.ILocFactory.LOG;
 
 /**
  *
@@ -70,8 +71,6 @@ public class LocationExtraction {
             }
         }
     }
-
-
 
     private static final String USAGE = String.format("%nexample usage: java -cp $CP %s /path/to/properties_file"
             + "%nIf no arguments provided, will use the properties file in ./res/ catalog.%n", LocationExtraction.class.getName());

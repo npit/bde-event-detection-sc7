@@ -16,18 +16,14 @@ package gr.demokritos.iit.location.extraction.provider;
 
 import gr.demokritos.iit.location.sentsplit.ISentenceSplitter;
 import gr.demokritos.iit.location.sentsplit.OpenNLPSentenceSplitter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.namefind.TokenNameFinderModel;
 import opennlp.tools.util.Span;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.*;
 
 /**
  *
@@ -106,7 +102,7 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
             if (sentence.charAt(sentence.length() - 1) == '.') {
                 String[] words = sentence.split(" ");
                 String lastWord = words[words.length - 1];
-                if (lastWord.substring(0, lastWord.length() - 1).contains(".") == false) {
+                if (!lastWord.substring(0, lastWord.length() - 1).contains(".")) {
                     sentence = sentence.substring(0, sentence.length() - 1);
                 }
             }

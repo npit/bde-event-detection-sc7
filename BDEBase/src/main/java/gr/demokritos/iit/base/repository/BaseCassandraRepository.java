@@ -16,18 +16,19 @@ package gr.demokritos.iit.base.repository;
 
 import com.datastax.driver.core.*;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.gte;
 import gr.demokritos.iit.base.conf.BaseConfiguration;
 import gr.demokritos.iit.base.conf.IBaseConf;
 import gr.demokritos.iit.base.factory.BaseFactory;
 import gr.demokritos.iit.base.repository.views.Cassandra;
 import gr.demokritos.iit.base.util.TableUtil;
 import gr.demokritos.iit.base.util.Utils;
-import java.net.MalformedURLException;
+
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.gte;
 
 /**
  *
@@ -207,7 +208,7 @@ public class BaseCassandraRepository implements IBaseRepository {
                 String lang = row.getString(Cassandra.RSS.TBL_ARTICLES.FLD_LANGUAGE.getColumnName());
                 res.put(Cassandra.RSS.TBL_ARTICLES.FLD_LANGUAGE.getColumnName(), lang);
             }
-        } catch (MalformedURLException ex) {
+        } catch (Exception ex) {
             Logger.getLogger(BaseCassandraRepository.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
         }
         return res;
@@ -215,7 +216,6 @@ public class BaseCassandraRepository implements IBaseRepository {
 
     @Override
     public Map<String, Object> loadTweet(long post_id) {
-        // TODO: implement!
         Map<String, Object> res = new HashMap();
         Statement select;
         try {
@@ -230,14 +230,14 @@ public class BaseCassandraRepository implements IBaseRepository {
             if (row != null) {
                 res = extractPlainColumns(row);
             }
-        } finally {
-
+        } catch (Exception ex){
+            Logger.getLogger(BaseCassandraRepository.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
         }
         return res;
     }
 
     /**
-     * extract the plain colums from a row. This method ignores collections or frozen types
+     * extract the plain columns from a row. This method ignores collections or frozen types
      *
      * @param row
      * @return

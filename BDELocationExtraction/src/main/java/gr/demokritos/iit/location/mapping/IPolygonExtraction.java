@@ -23,8 +23,20 @@ import java.util.Map;
  */
 public interface IPolygonExtraction {
 
+    /**
+     * extract polygon for a location entry
+     *
+     * @param locationEntity
+     * @return
+     */
     String extractPolygon(String locationEntity);
 
+    /**
+     * extract polygon for a series of entries
+     *
+     * @param locationEntities
+     * @return
+     */
     Map<String, String> extractPolygon(Collection<String> locationEntities);
 
 }

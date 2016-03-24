@@ -17,12 +17,13 @@ package gr.demokritos.iit.location.extraction;
 import gr.demokritos.iit.location.extraction.provider.EnhancedOpenNLPTokenProvider;
 import gr.demokritos.iit.location.extraction.provider.ITokenProvider;
 import gr.demokritos.iit.location.sentsplit.OpenNLPSentenceSplitter;
+import org.apache.commons.lang3.text.WordUtils;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import org.apache.commons.lang3.text.WordUtils;
 
 /**
  *
@@ -62,7 +63,7 @@ public class DefaultLocationExtractor implements ILocationExtractor {
             }
 
             if (cleaned.charAt(cleaned.length() - 1) == '.') {
-                if (cleaned.substring(0, cleaned.length() - 2).contains(".") == false) {
+                if (!cleaned.substring(0, cleaned.length() - 2).contains(".")) {
                     cleaned = cleaned.substring(0, cleaned.length() - 1);
                 }
             }

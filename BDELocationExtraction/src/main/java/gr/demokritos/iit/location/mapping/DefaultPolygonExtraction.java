@@ -16,19 +16,14 @@ package gr.demokritos.iit.location.mapping;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
-import com.google.gson.internal.ObjectConstructor;
 import com.google.gson.reflect.TypeToken;
-import gr.demokritos.iit.location.mapping.client.DebugRestClient;
 import gr.demokritos.iit.location.mapping.client.IRestClient;
 import gr.demokritos.iit.location.mapping.client.JBossRestClient;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
+import javax.ws.rs.core.Response;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ws.rs.core.Response;
 
 /**
  *
@@ -85,6 +80,7 @@ public class DefaultPolygonExtraction implements IPolygonExtraction {
     }
 
     private List<GeocodeResponse> extractGeoCodes(String ent) {
+        // TODO : test with real DATA
         try {
             TypeToken type_token = new TypeToken<List<GeocodeResponse>>() {};
             return gs.fromJson(ent, type_token.getType());
@@ -106,43 +102,6 @@ public class DefaultPolygonExtraction implements IPolygonExtraction {
 
         public String toJSON() {
             return new Gson().toJson(this, GeocodeResponse.class);
-        }
-    }
-
-    class GeoLoc {
-
-        private double lng;
-        private double lat;
-
-        public GeoLoc(double lng, double lat) {
-            this.lng = lng;
-            this.lat = lat;
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 3;
-            hash = 29 * hash + (int) (Double.doubleToLongBits(this.lng) ^ (Double.doubleToLongBits(this.lng) >>> 32));
-            hash = 29 * hash + (int) (Double.doubleToLongBits(this.lat) ^ (Double.doubleToLongBits(this.lat) >>> 32));
-            return hash;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final GeoLoc other = (GeoLoc) obj;
-            if (Double.doubleToLongBits(this.lng) != Double.doubleToLongBits(other.lng)) {
-                return false;
-            }
-            if (Double.doubleToLongBits(this.lat) != Double.doubleToLongBits(other.lat)) {
-                return false;
-            }
-            return true;
         }
     }
 }

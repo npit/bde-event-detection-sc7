@@ -14,14 +14,15 @@
  */
 package gr.demokritos.iit.location.mapping.client;
 
-import java.util.HashMap;
-import java.util.Map;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
 import org.jboss.resteasy.client.ClientRequest;
 import org.jboss.resteasy.client.ClientRequestFactory;
 import org.jboss.resteasy.client.ClientResponse;
+
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -52,8 +53,7 @@ public class JBossRestClient implements IRestClient {
         }
         System.out.println(url);
         ClientRequestFactory crf = new ClientRequestFactory(UriBuilder.fromUri(base_url).build());
-        ClientRequest req = crf.createRelativeRequest(url);
-        return req;
+        return crf.createRelativeRequest(url);
     }
 
     @Override
@@ -62,8 +62,7 @@ public class JBossRestClient implements IRestClient {
         ClientRequest req = crf.createRequest(url);
         req.accept(MediaType.APPLICATION_JSON);
         req.body(MediaType.APPLICATION_JSON, json_data);
-        ClientResponse<String> post = req.post(response_entity_class);
-        return post;
+        return req.post(response_entity_class);
     }
 
     public static void main(String[] args) throws Exception {
