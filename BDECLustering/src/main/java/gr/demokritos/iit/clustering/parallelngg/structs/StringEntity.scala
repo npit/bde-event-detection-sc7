@@ -25,8 +25,19 @@ class StringEntity extends Entity {
   }
 
   /**
+    * Sets the value of dataString, creating a corresponding RDD to support parallelization.
+    *
+    * @param value of dataString
+    */
+  def setString(sc: SparkContext, value: String) = {
+    this.singleString = value
+    this.dataStringRDD = sc.makeRDD(value :: Nil);
+  }
+
+  /**
     * Sets the value of dataString
- *
+    * TODO: If only setString is called, then getGraph results in NullPointer exception.
+    *
     * @param value of dataString
     */
   def setString(value: String) = {

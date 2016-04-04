@@ -43,10 +43,12 @@ public class TestParallelNGG {
         long start = System.currentTimeMillis();
 
         StringEntity en1 = new StringEntity();
-        en1.readFile(sc, "/home/gkioumis/Programming/scala/ParallelNGGFork/res/test1", 3);
+        en1.setString(sc, "This is an extremely short test...");
+//        en1.readFile(sc, "/home/gkioumis/Programming/scala/ParallelNGGFork/res/test1", 3);
 
         StringEntity en2 = new StringEntity();
-        en2.readFile(sc, "/home/gkioumis/Programming/scala/ParallelNGGFork/res/test2", 3);
+        en2.setString(sc, "This is another, not extremely short, test... Or should I say something else?");
+//        en2.readFile(sc, "/home/gkioumis/Programming/scala/ParallelNGGFork/res/test2", 3);
 
         NGramGraphCreator ngc1 = new NGramGraphCreator(sc, 4, 3, 3);
         Graph<String, Object> ngg1 = ngc1.getGraph(en1);
@@ -59,7 +61,17 @@ public class TestParallelNGG {
         Similarity gs = gsc.getSimilarity(ngg1, ngg2);
 
 
-        System.out.println("overall similarity: " + gs.getOverallSimilarity());
+        System.out.println("***\noverall similarity: " + gs.getOverallSimilarity());
+        System.out.println("size similarity: " + gs.getSimilarityComponents().get("size"));
+        System.out.println("value similarity: " + gs.getSimilarityComponents().get("value"));
+        System.out.println("containment similarity: " + gs.getSimilarityComponents().get("containment"));
+        System.out.println("normalized similarity: " + gs.getSimilarityComponents().get("normalized"));
+
+        // Try self-similarity
+        gs = gsc.getSimilarity(ngg1, ngg1);
+
+
+        System.out.println("***\noverall similarity: " + gs.getOverallSimilarity());
         System.out.println("size similarity: " + gs.getSimilarityComponents().get("size"));
         System.out.println("value similarity: " + gs.getSimilarityComponents().get("value"));
         System.out.println("containment similarity: " + gs.getSimilarityComponents().get("containment"));

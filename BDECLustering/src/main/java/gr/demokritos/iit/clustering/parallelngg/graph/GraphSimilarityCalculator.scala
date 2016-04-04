@@ -5,6 +5,7 @@ import org.apache.spark.graphx.{Edge, Graph}
 
 /**
  * @author Kontopoulos Ioannis
+ * @author George Giannakopoulos
  */
 class GraphSimilarityCalculator extends SimilarityCalculator with Serializable {
 
@@ -41,7 +42,7 @@ class GraphSimilarityCalculator extends SimilarityCalculator with Serializable {
     }
     commonEdges.unpersist()
     //for each common edge add (minimum edge weight/maximum edge weight)/maximum graph size to a sum
-    val vSimil = minEdgeWeight/maxEdgeWeight/Math.max(g1EdgeCount, g2EdgeCount)*c
+    val vSimil = (minEdgeWeight/maxEdgeWeight)/Math.max(g1EdgeCount, g2EdgeCount)*c
     //for each common edge add 1/min to a sum
     val cSimil = (1.toDouble/Math.min(g1EdgeCount, g2EdgeCount))*c
     val gs = new GraphSimilarity(sSimil, vSimil, cSimil)
