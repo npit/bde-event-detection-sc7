@@ -23,6 +23,7 @@ class GraphSimilarityCalculator extends SimilarityCalculator with Serializable {
     val g2EdgeCount = g2.edges.distinct.count
     //calculate size similarity
     val sSimil = Math.min(g1EdgeCount, g2EdgeCount).toDouble/Math.max(g1EdgeCount, g2EdgeCount)
+    // TODO: We should hash same vertex strings to same vertex Id
     //pair edges so the common edges are the ones with same vertices pair
     def edgeToPair (e: Edge[Double]) = ((e.srcId, e.dstId), e.attr)
     val pairs1 = g1.edges.map(edgeToPair)
@@ -34,15 +35,16 @@ class GraphSimilarityCalculator extends SimilarityCalculator with Serializable {
     var minEdgeWeight = 1.0
     var maxEdgeWeight = 1.0
     //if there are common edges
+    // TODO: Fix. Works over ALL edges. Not individually.
+    var vSimil = 0.0;
+
     if (c != 0) {
-      //minimum edge weight of the common edges
-      minEdgeWeight = commonEdges.map(e => Math.min(e._2._1, e._2._2)).min
-      //maximum edge weight of the common edges
-      maxEdgeWeight = commonEdges.map(e => Math.max(e._2._1, e._2._2)).max
+      //edge ratio of the common edges
+      vSimil = commonEdges.map(e => Math.min(e._2._1, e._2._2) / Math.min(e._2._1, e._2._2)).sum / c
     }
     commonEdges.unpersist()
     //for each common edge add (minimum edge weight/maximum edge weight)/maximum graph size to a sum
-    val vSimil = (minEdgeWeight/maxEdgeWeight)/Math.max(g1EdgeCount, g2EdgeCount)*c
+
     //for each common edge add 1/min to a sum
     val cSimil = (1.toDouble/Math.min(g1EdgeCount, g2EdgeCount))*c
     val gs = new GraphSimilarity(sSimil, vSimil, cSimil)

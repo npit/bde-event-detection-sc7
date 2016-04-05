@@ -37,13 +37,15 @@ class StringEntityTokenizer extends EntityTokenizer with Serializable {
     * characters long, the loss in assurance should be negligible.
     * The main benefit here is that each partition can be executed in parallel
     *
+    *
     * @param e entity to be tokenized
     * @param ngram size of ngram
     * @return array of string atoms
     */
+  // TODO: Fix the lost part of the neighbours
   def getCharacterNGrams(e: Entity, ngram: Int): RDD[Atom] = {
     val en = e.asInstanceOf[StringEntity]
-    en.dataStringRDD.mapPartitions(_.toList.mkString(" ").sliding(ngram))
+    en.dataStringRDD.mapPartitions(_.toList.mkString("").sliding(ngram)) // GGIANNA: Removed space
       .map(atom => new StringAtom(("_" + atom).hashCode, "_" + atom))
   }
 
