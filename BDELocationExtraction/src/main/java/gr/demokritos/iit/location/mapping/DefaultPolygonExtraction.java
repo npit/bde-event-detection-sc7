@@ -22,6 +22,7 @@ import gr.demokritos.iit.location.mapping.client.JBossRestClient;
 
 import javax.ws.rs.core.Response;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -59,10 +60,22 @@ public class DefaultPolygonExtraction implements IPolygonExtraction {
         // TODO: test!
         Map<String, String> res = new HashMap();
         try {
+            long b = System.nanoTime();
             Response response = client.execJSONPost(polURL, gs.toJson(locationEntities, Collection.class), String.class);
             String ent = (String) response.getEntity();
+            long a = System.nanoTime();
+            System.out.println(TimeUnit.MILLISECONDS.convert((a - b), TimeUnit.NANOSECONDS));
 
             List<GeocodeResponse> unwrapped = extractGeoCodes(ent);
+
+            if (unwrapped.size() == 0) {
+                return res;
+            }
+            if (unwrapped.size() <  locationEntities.size()) {
+                // smth bad has happened
+                // is the response in the proper index?
+                unwrapped = unwrapped.subList(0, locationEntities.size());
+            }
 
             // coords are supposed to arrive in the same index.
             int ind = 0;
@@ -80,12 +93,18 @@ public class DefaultPolygonExtraction implements IPolygonExtraction {
     }
 
     private List<GeocodeResponse> extractGeoCodes(String ent) {
-        // TODO : test with real DATA
+//        if (ent.contains("exception")) {
+//            return Collections.EMPTY_LIST;
+//        }
         try {
             TypeToken type_token = new TypeToken<List<GeocodeResponse>>() {};
             return gs.fromJson(ent, type_token.getType());
         } catch (JsonSyntaxException ex) {
             Logger.getLogger(DefaultPolygonExtraction.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.print("ENTITY: ");
+            System.out.println(ent);
+            // TODO: we somehow have to parse the JSON manually to ignore the exception cases.
+            // OR we should ask for alike responses, i.e. code:200, message:"", data:{}
             return Collections.EMPTY_LIST;
         }
     }
