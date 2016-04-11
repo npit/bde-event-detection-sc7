@@ -44,14 +44,6 @@ public class DefaultLocationExtractor implements ILocationExtractor {
         this.token_provider = token_provider;
     }
 
-    @Override
-    public Set<String> extractTokens(String document) {
-        if (document == null || document.isEmpty()) {
-            return Collections.EMPTY_SET;
-        }
-        return clean(token_provider.getTokens(document));
-    }
-
     private Set<String> clean(Set<String> s) {
         Set<String> ret = new HashSet();
         Iterator<String> iter = s.iterator();
@@ -177,7 +169,7 @@ public class DefaultLocationExtractor implements ILocationExtractor {
 
     @Override
     public Set<String> extractLocation(String document) {
-        if (document == null || document.isEmpty()) {
+        if (document == null || document.trim().isEmpty()) {
             return Collections.EMPTY_SET;
         }
         return clean(token_provider.getLocationTokens(document));

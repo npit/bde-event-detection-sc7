@@ -121,9 +121,10 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                     String clean_tweet = Utils.cleanTweet(tweet);
                     // extract location entities
                     Set<String> locationsFound = locExtractor.extractLocation(clean_tweet);
+                    // extract coordinates for each entity
                     if (!locationsFound.isEmpty()) {
                         Map<String, String> places_polygons = poly.extractPolygon(locationsFound);
-                        // update entry
+                        // update entry (tweets_per_referred_place)
                         repos.updateTweetsWithReferredPlaceMetadata(post_id, places_polygons);
                         i++;
                     }

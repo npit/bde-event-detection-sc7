@@ -23,13 +23,6 @@ import java.util.Set;
 public interface ILocationExtractor {
 
     /**
-     *
-     * @param document
-     * @return the tokens found in the doc
-     */
-    Set<String> extractTokens(String document);
-
-    /**
      * extract location entities from text.
      *
      * @param document

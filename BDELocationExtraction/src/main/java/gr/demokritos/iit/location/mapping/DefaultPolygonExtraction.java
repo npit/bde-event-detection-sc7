@@ -14,6 +14,8 @@
  */
 package gr.demokritos.iit.location.mapping;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
@@ -37,61 +39,76 @@ public class DefaultPolygonExtraction implements IPolygonExtraction {
 
     private final Gson gs = new Gson();
 
+    /**
+     * cache location items for an hour
+     */
+    private static final long MAX_CACHE_DURATION_MINUTES = 60l;
+
+    // each call to the API lasts ~1.5 seconds, so use a simple caching mechanism to avoid redundant calls
+    private final Cache<String, String> location_cache;
+
     public DefaultPolygonExtraction(String locURL) {
         this.polURL = locURL;
         this.client = new JBossRestClient();
-        // for debugging purposes
-//        this.client = new DebugRestClient();
+        this.location_cache  = CacheBuilder.newBuilder()
+                .initialCapacity(100)
+                .maximumSize(1000l)
+                .expireAfterWrite(MAX_CACHE_DURATION_MINUTES, TimeUnit.MINUTES)
+                .build();
     }
 
-    public DefaultPolygonExtraction(String locURL, IRestClient clientImpl) {
+    public DefaultPolygonExtraction(String locURL, long max_cache_size, IRestClient clientImpl) {
         this.polURL = locURL;
         this.client = clientImpl;
+        this.location_cache  = CacheBuilder.newBuilder()
+                .initialCapacity(1)
+                .maximumSize(max_cache_size)
+                .expireAfterWrite(MAX_CACHE_DURATION_MINUTES, TimeUnit.MINUTES)
+                .build();
     }
 
     @Override
-    public String extractPolygon(String locationEntity) {
-        throw new UnsupportedOperationException("not supported (yet?)");
-    }
-
-    @Override
-    public Map<String, String> extractPolygon(Collection<String> locationEntities) {
-        // TODO: implement API call to get polygon
-        // TODO: test!
-        Map<String, String> res = new HashMap();
+    public String extractPolygon(final String locationEntity) {
+        if (locationEntity == null || locationEntity.trim().isEmpty()) {
+            return "";
+        }
+        // ask cache
+        String geoloc = location_cache.getIfPresent(locationEntity);
+        if (geoloc != null) {
+            return geoloc;
+        }
+        String res = "";
+        // API accepts only JsonArray
+        final Collection<String> input = new ArrayList() {{add(locationEntity);}};
         try {
-            long b = System.nanoTime();
-            Response response = client.execJSONPost(polURL, gs.toJson(locationEntities, Collection.class), String.class);
+            Response response = client.execJSONPost(polURL, gs.toJson(input, Collection.class), String.class);
             String ent = (String) response.getEntity();
-            long a = System.nanoTime();
-            System.out.println(TimeUnit.MILLISECONDS.convert((a - b), TimeUnit.NANOSECONDS));
-
-            List<GeocodeResponse> unwrapped = extractGeoCodes(ent);
-
-            if (unwrapped.size() == 0) {
-                return res;
+            System.out.println(ent);
+            // responses from the API: when smth wrong: 'null', when error in call (?) 'code:400, message:exception"
+            if (ent != null && !ent.contains("null") && !ent.equals("{\"code\":400,\"message\":\"exception\"}")) {
+                // add to cache
+                location_cache.put(locationEntity, ent);
+                res = ent;
             }
-            if (unwrapped.size() <  locationEntities.size()) {
-                // smth bad has happened
-                // is the response in the proper index?
-                unwrapped = unwrapped.subList(0, locationEntities.size());
-            }
-
-            // coords are supposed to arrive in the same index.
-            int ind = 0;
-            for (String locEnt : locationEntities) {
-                GeocodeResponse gr = unwrapped.get(ind++);
-                if (gr != null) {
-                    res.put(locEnt, gr.toJSON());
-                }
-            }
-
         } catch (Exception ex) {
             Logger.getLogger(DefaultPolygonExtraction.class.getName()).log(Level.SEVERE, null, ex);
         }
         return res;
     }
 
+    @Override
+    public Map<String, String> extractPolygon(Collection<String> locationEntities) {
+        Map<String, String> res = new HashMap();
+
+        for (String loc : locationEntities) {
+            String poly = extractPolygon(loc);
+            if (poly != null && !poly.isEmpty()) {
+                res.put(loc, poly);
+            }
+        }
+        return res;
+    }
+    // we do not use this to avoid extra costs; instead we save as a string and let whoever who uses it just parse the string
     private List<GeocodeResponse> extractGeoCodes(String ent) {
 //        if (ent.contains("exception")) {
 //            return Collections.EMPTY_LIST;

@@ -35,6 +35,7 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
 
     private final NameFinderME[] models;
     private final double prob_cutoff;
+
     protected static final double DEFAULT_PROB_CUTOFF = 0.80;
     protected static String DEFAULT_NE_MODELS_PATH = "./res/ne_models/";
     protected static String DEFAULT_SENT_SPLIT_MODEL_PATH = "./res/en-sent.bin";
@@ -87,7 +88,6 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
      */
     public EnhancedOpenNLPTokenProvider() throws IOException {
         this(DEFAULT_NE_MODELS_PATH, new OpenNLPSentenceSplitter(DEFAULT_SENT_SPLIT_MODEL_PATH), DEFAULT_PROB_CUTOFF);
-
     }
 
     @Override
