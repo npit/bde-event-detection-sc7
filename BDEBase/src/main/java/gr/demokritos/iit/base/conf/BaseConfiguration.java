@@ -133,4 +133,9 @@ public class BaseConfiguration implements IBaseConf {
     public int getDataSourceMaxStatements() {
         return Integer.parseInt(properties.getProperty("max_statements", "180"));
     }
+
+    @Override
+    public String getSentenceSplitterModelPath() {
+        return properties.getProperty("sentence_splitter_model", "./res/en-sent.bin");
+    }
 }

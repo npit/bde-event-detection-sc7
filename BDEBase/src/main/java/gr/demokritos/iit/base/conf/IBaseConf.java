@@ -20,8 +20,7 @@ package gr.demokritos.iit.base.conf;
  */
 public interface IBaseConf {
 
-    String FILE_SEPARATOR = System.getProperty("file.separator");
-    String UTF8 = "UTF-8";
+    String DATE_FORMAT_ISO_8601 = "yyyy-MM-dd'T'HH:mmZ";
 
     int getCacheSize();
 
@@ -92,6 +91,6 @@ public interface IBaseConf {
     int getDataSourceMaxPoolSize();
 
     int getDataSourceMaxStatements();
-    
-    
+
+    String getSentenceSplitterModelPath();
 }

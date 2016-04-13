@@ -14,11 +14,9 @@
  */
 package gr.demokritos.iit.base.util;
 
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  *
@@ -118,6 +116,20 @@ public class Utils {
         // apart from noise removal, do we need anything else?
         return removeNoise(tweet);
     }
+
+
+    public static String toTimezoneFormattedStr(Calendar date, String timezoneID, String outputDateFormat) {
+        Date dDate = new Date(date.getTimeInMillis());
+        return toTimezoneFormattedStr(dDate, timezoneID, outputDateFormat);
+    }
+
+    public static String toTimezoneFormattedStr(Date date, String timezoneID, String outputDateFormat) {
+        TimeZone tz = TimeZone.getTimeZone(timezoneID);
+        DateFormat df = new SimpleDateFormat(outputDateFormat);
+        df.setTimeZone(tz);
+        return df.format(date);
+    }
+
 
     private static String removeNoise(String target) {
         target = target.replaceAll("((https?|ftp|gopher|telnet|file|Unsure|http):((//)|(\\\\))+[\\w\\d:#@%/;$()~_?\\+-=\\\\\\.&]*)", ""); // links
