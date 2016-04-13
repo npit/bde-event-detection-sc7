@@ -22,6 +22,7 @@ for each in `find $1 -iname 'BDE*' -type d`; do
 	fname="${each##*/}"
 	echo $fname
 	mkdir $fname && cd $fname
+	echo "currently in `pwd`"
 	cp $CURDIR/$fname/target/*.jar .
 	mkdir lib
 	cp $CURDIR/$fname/target/dependency/*.jar lib/

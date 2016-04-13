@@ -44,11 +44,9 @@ public class TestParallelNGG {
 
         StringEntity en1 = new StringEntity();
         en1.setString(sc, "This is an extremely short test...");
-//        en1.readFile(sc, "/home/gkioumis/Programming/scala/ParallelNGGFork/res/test1", 3);
 
         StringEntity en2 = new StringEntity();
         en2.setString(sc, "This is another, not extremely short, test... Or should I say something else?");
-//        en2.readFile(sc, "/home/gkioumis/Programming/scala/ParallelNGGFork/res/test2", 3);
 
         NGramGraphCreator ngc1 = new NGramGraphCreator(sc, 4, 3, 3);
         Graph<String, Object> ngg1 = ngc1.getGraph(en1);

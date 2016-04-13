@@ -1,7 +1,7 @@
 DROP KEYSPACE IF EXISTS bde;
 
 CREATE KEYSPACE bde WITH replication = {'class' : 'SimpleStrategy', 'replication_factor' : 1};
--- CREATE KEYSPACE bde WITH replication = {'class' : 'NetworkTopologyStrategy', 'replication_factor' : 3}; // prod
+-- CREATE KEYSPACE bde WITH replication = {'class' : 'NetworkTopologyStrategy', 'replication_factor' : 2}; // prod
 
 CREATE TABLE bde.twitter_source (
   account_name text,
