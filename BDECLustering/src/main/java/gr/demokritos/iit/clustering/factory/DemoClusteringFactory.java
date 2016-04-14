@@ -8,6 +8,17 @@ import gr.demokritos.iit.base.conf.IBaseConf;
 import gr.demokritos.iit.base.repository.BaseCassandraRepository;
 import gr.demokritos.iit.base.repository.IBaseRepository;
 import gr.demokritos.iit.clustering.repository.DemoCassandraRepository;
+import org.scify.asset.server.model.datacollections.CleanResultCollection;
+import org.scify.asset.server.model.structures.social.TwitterResult;
+import org.scify.asset.social.classification.IClassifier;
+import org.scify.asset.social.classification.SocialMediaClassifier;
+import org.scify.asset.social.clustering.SocialMediaClusterer;
+import org.scify.asset.social.data.preprocessing.IStemmer;
+import org.scify.newsum.server.clustering.IArticleClusterer;
+import org.scify.newsum.server.model.structures.Topic;
+
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * @author George K.<gkiom@iit.demokritos.gr>
@@ -50,4 +61,31 @@ public class DemoClusteringFactory {
         return repository;
     }
 
+    public IArticleClusterer getSocialMediaClustererForTwitter(SocialMediaClusterer.Mode metrics_mode, CleanResultCollection<TwitterResult> tweets) {
+        if (tweets == null) {
+            return null;
+        }
+        SocialMediaClusterer.SocialMediaClustererBuilder builder
+                = new SocialMediaClusterer.SocialMediaClustererBuilder()
+                // set mode for clusterer
+                .withMode(metrics_mode)
+                .withDefaultSimilarityThreshold()
+                .withDefaultSizeThreshold()
+                .withTweets(tweets);
+        // create clusterer
+        return builder.build();
+    }
+
+    public IClassifier getSocialMediaClassifierForTwitter(
+            Map<String, String> plainSummaries,
+            Collection<Topic> clusters,
+            IStemmer stemmer
+    ) {
+        // use Default Thresholds
+        return new SocialMediaClassifier(plainSummaries, clusters, stemmer);
+    }
+
+    public void releaseResources() {
+        if (cluster !=null) { cluster.close(); }
+    }
 }

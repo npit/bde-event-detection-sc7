@@ -413,12 +413,12 @@ public class Cassandra {
 
     public static class Location {
 
-        public enum Table {
+        public enum Tables {
 
             LOCATION_LOG("location_extraction_log");
             private String table_name;
 
-            private Table(String name) {
+            private Tables(String name) {
                 this.table_name = name;
             }
 
@@ -447,5 +447,62 @@ public class Cassandra {
 
         }
 
+    }
+    public static class Event {
+
+        public enum Tables {
+
+            EVENTS("events"),
+            EVENTS_PER_PLACE("events_per_place_literal");
+
+            private String table_name;
+
+            private Tables(String name) {
+                this.table_name = name;
+            }
+
+            public String getTableName() {
+                return table_name;
+            }
+        }
+
+        public enum TBL_EVENTS {
+            FLD_EVENT_ID("event_id"),
+            FLD_TITLE("title"),
+            FLD_DESCRIPTION("description"),
+            FLD_DATE_LITERAL("event_date"),
+            FLD_PLACE_MAPPINGS("place_mappings"),
+            FLD_TWEET_IDS("tweet_post_ids");
+            private String column;
+
+            private TBL_EVENTS(String column) {
+                this.column = column;
+            }
+
+            public String getColumnName() {
+                return column;
+            }
+
+        }
+        public enum TBL_EVENTS_PER_PLACE {
+
+            FLD_PLACE_LITERAL("place_literal"),
+            FLD_EVENT_ID("event_id"),
+            FLD_TITLE("title"),
+            FLD_DESCRIPTION("description"),
+            FLD_DATE_LITERAL("event_date"),
+            FLD_PLACE_POLYGON("place_polygon"),
+            FLD_TWEET_IDS("tweet_post_ids");
+            private String column;
+
+            private TBL_EVENTS_PER_PLACE(String column) {
+                this.column = column;
+            }
+
+            public String getColumnName() {
+                return column;
+            }
+
+        }
     }
 }

@@ -21,6 +21,7 @@ package gr.demokritos.iit.base.conf;
 public interface IBaseConf {
 
     String DATE_FORMAT_ISO_8601 = "yyyy-MM-dd'T'HH:mmZ";
+    String TIMEZONE_ID_UTC = "UTC";
 
     int getCacheSize();
 
@@ -45,8 +46,6 @@ public interface IBaseConf {
     int getCassandraPort();
 
     /**
-     * used by the {@link HttpGet} implementation for shutting down inactive
-     * hosts
      *
      * @return
      */
@@ -93,4 +92,6 @@ public interface IBaseConf {
     int getDataSourceMaxStatements();
 
     String getSentenceSplitterModelPath();
+
+    String getStopwordsFilePath();
 }

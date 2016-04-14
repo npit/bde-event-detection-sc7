@@ -19,6 +19,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
+import gr.demokritos.iit.location.mapping.client.DebugRestClient;
 import gr.demokritos.iit.location.mapping.client.IRestClient;
 import gr.demokritos.iit.location.mapping.client.JBossRestClient;
 

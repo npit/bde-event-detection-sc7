@@ -20,6 +20,7 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.gte;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.set;
 import gr.demokritos.iit.base.repository.BaseCassandraRepository;
 import gr.demokritos.iit.base.repository.views.Cassandra;
@@ -27,10 +28,7 @@ import gr.demokritos.iit.base.util.Utils;
 import gr.demokritos.iit.location.mode.OperationMode;
 import gr.demokritos.iit.location.structs.LocSched;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * handles the persistence of items (i.e. articles/tweets) updated with referrals to places.
@@ -50,15 +48,15 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
         String schedule_type = new StringBuilder().append(SCHEDULE_TYPE_BASE).append("_").append(mode.getMode()).toString();
         Statement select = QueryBuilder
                 .select(Cassandra.Location.TBL_LOCATION_LOG.FLD_SCHEDULE_ID.getColumnName(), Cassandra.Location.TBL_LOCATION_LOG.FLD_LAST_PARSED.getColumnName())
-                .from(session.getLoggedKeyspace(), Cassandra.Location.Table.LOCATION_LOG.getTableName())
+                .from(session.getLoggedKeyspace(), Cassandra.Location.Tables.LOCATION_LOG.getTableName())
                 .where(eq(Cassandra.Location.TBL_LOCATION_LOG.FLD_SCHEDULE_TYPE.getColumnName(), schedule_type)).limit(1);
         ResultSet results = session.execute(select);
 
         long max_existing = 0l;
-        // set initial last parsed 1 year ago
-        Calendar one_year_ago = Calendar.getInstance();
-        one_year_ago.set(Calendar.YEAR, one_year_ago.get(Calendar.YEAR) - 1);
-        long last_parsed = one_year_ago.getTimeInMillis();
+        // set initial last 2 months ago
+        Calendar two_months_ago = Calendar.getInstance();
+        two_months_ago.set(Calendar.MONTH, two_months_ago.get(Calendar.MONTH) - 2);
+        long last_parsed = two_months_ago.getTimeInMillis();
 
         Row one = results.one();
         if (one != null) {
@@ -69,7 +67,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
         LocSched curSched = new LocSched(mode, current, last_parsed);
 
         Statement insert = QueryBuilder
-                .insertInto(session.getLoggedKeyspace(), Cassandra.Location.Table.LOCATION_LOG.getTableName())
+                .insertInto(session.getLoggedKeyspace(), Cassandra.Location.Tables.LOCATION_LOG.getTableName())
                 .value(Cassandra.Location.TBL_LOCATION_LOG.FLD_SCHEDULE_TYPE.getColumnName(), schedule_type)
                 .value(Cassandra.Location.TBL_LOCATION_LOG.FLD_SCHEDULE_ID.getColumnName(), current)
                 .value(Cassandra.Location.TBL_LOCATION_LOG.FLD_END.getColumnName(), 0l) // avoid nulls
@@ -84,7 +82,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
     public void scheduleFinalized(LocSched sched) {
         String schedule_type = new StringBuilder().append(SCHEDULE_TYPE_BASE).append("_").append(sched.getOperationMode().getMode()).toString();
         Statement update = QueryBuilder
-                .update(session.getLoggedKeyspace(), Cassandra.Location.Table.LOCATION_LOG.getTableName())
+                .update(session.getLoggedKeyspace(), Cassandra.Location.Tables.LOCATION_LOG.getTableName())
                 .with(set(Cassandra.Location.TBL_LOCATION_LOG.FLD_END.getColumnName(), new Date().getTime()))
                 .and(set(Cassandra.Location.TBL_LOCATION_LOG.FLD_LAST_PARSED.getColumnName(), sched.getLastParsed()))
                 .and(set(Cassandra.Location.TBL_LOCATION_LOG.FLD_ITEMS_UPDATED.getColumnName(), sched.getItemsUpdated()))
@@ -92,6 +90,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
                 .and(eq(Cassandra.Location.TBL_LOCATION_LOG.FLD_SCHEDULE_ID.getColumnName(), sched.getScheduleID()));
         session.execute(update);
     }
+
 
     @Override
     public void updateArticlesWithReferredPlaceMetadata(String permalink, Map<String, String> places_polygons) {
@@ -148,6 +147,9 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
 
     @Override
     public void updateTweetsWithReferredPlaceMetadata(long post_id, Map<String, String> places_polygons) {
+        if (places_polygons == null || places_polygons.isEmpty()) {
+            return;
+        }
         System.out.println("updating: " + post_id + ", with: " + places_polygons.keySet().toString());
         // load tweet from repository
         Map<String, Object> tweet = loadTweet(post_id);
@@ -169,5 +171,46 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
                     .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_REFERRED_PLACE.FLD_ACCOUNT_NAME.getColumnName(), tweet.get(Cassandra.Twitter.TBL_TWITTER_POST.FLD_ACCOUNT_NAME.getColumnName()));
             session.execute(insert);
         }
+    }
+
+
+    @Override
+    public Map<String, Object> loadArticlePerPlace(String place_literal, String entry_url) {
+        ResultSet results;
+        Statement select = QueryBuilder
+            .select()
+            .all()
+            .from(session.getLoggedKeyspace(), Cassandra.RSS.Tables.NEWS_ARTICLES_PER_PLACE.getTableName())
+            .where(eq(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_PLACE_LITERAL.getColumnName(), place_literal))
+            .and(eq(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_ENTRY_URL.getColumnName(), entry_url))
+            // we expect only one entry
+            .limit(1);
+        results = session.execute(select);
+        Map<String, Object> res = new HashMap();
+        for (Row row : results) {
+            String place = row.getString(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_PLACE_LITERAL.getColumnName());
+            res.put(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_PLACE_LITERAL.getColumnName(), place);
+            String url = row.getString(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_ENTRY_URL.getColumnName());
+            res.put(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_ENTRY_URL.getColumnName(), url);
+            long published = row.getLong(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_PUBLISHED.getColumnName());
+            res.put(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_PUBLISHED.getColumnName(), published);
+            String bounding_box = row.getString(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_BOUNDING_BOX.getColumnName());
+            res.put(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_BOUNDING_BOX.getColumnName(), bounding_box);
+            String feed_url = row.getString(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_FEED_URL.getColumnName());
+            res.put(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_FEED_URL.getColumnName(), feed_url);
+            long crawl_id = row.getLong(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_CRAWL_ID.getColumnName());
+            res.put(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_CRAWL_ID.getColumnName(), crawl_id);
+            String raw_text = row.getString(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_RAW_TEXT.getColumnName());
+            res.put(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_RAW_TEXT.getColumnName(), raw_text);
+            String clean_text = row.getString(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_CLEAN_TEXT.getColumnName());
+            res.put(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_CLEAN_TEXT.getColumnName(), clean_text);
+            long crawled = row.getLong(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_CRAWLED.getColumnName());
+            res.put(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_CRAWLED.getColumnName(), crawled);
+            String lang = row.getString(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_LANGUAGE.getColumnName());
+            res.put(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_LANGUAGE.getColumnName(), lang);
+            String title = row.getString(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_TITLE.getColumnName());
+            res.put(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_TITLE.getColumnName(), title);
+        }
+        return Collections.unmodifiableMap(res);
     }
 }

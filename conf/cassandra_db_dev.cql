@@ -251,3 +251,27 @@ CREATE TABLE IF NOT EXISTS bde.location_extraction_log (
     last_parsed bigint,
     primary key ((schedule_type), schedule_id)
 )WITH CLUSTERING ORDER BY (schedule_id DESC);
+
+-- event detection tables
+
+CREATE TABLE IF NOT EXISTS bde.events (
+    event_id varchar,
+    title text,
+    description text,
+    event_date varchar,
+    place_mappings Map<text, text>,
+    tweet_post_ids set<bigint>,
+    primary key (event_id)
+);
+
+-- save events per location
+CREATE TABLE IF NOT EXISTS bde.events_per_place_literal (
+    place_literal varchar,
+    event_id varchar,
+    title text,
+    description text,
+    event_date varchar,
+    place_polygon text,
+    tweet_post_ids set<bigint>,
+    primary key ((place_literal), event_id)
+) WITH CLUSTERING ORDER BY (event_id DESC);

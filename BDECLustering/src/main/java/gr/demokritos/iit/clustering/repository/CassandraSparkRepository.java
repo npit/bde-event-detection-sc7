@@ -55,7 +55,8 @@ public class CassandraSparkRepository {
     }
 
     /**
-     * load articles in a tuple4 format <br> CAUTION: clean_text contains title,
+     * load articles in a tuple4 format
+     * <br>
      * we need title for allocating it in clusters
      *
      * @param timestamp from epoch
