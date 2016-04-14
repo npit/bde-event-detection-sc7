@@ -17,6 +17,8 @@ package gr.demokritos.iit.location.repository;
 import gr.demokritos.iit.base.repository.IBaseRepository;
 import gr.demokritos.iit.location.mode.OperationMode;
 import gr.demokritos.iit.location.structs.LocSched;
+
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -52,4 +54,7 @@ public interface ILocationRepository extends IBaseRepository {
      * @param schedule
      */
     void scheduleFinalized(LocSched schedule);
+
+    Map<String, Object> loadArticlePerPlace(String place_literal, String entry_url);
+
 }

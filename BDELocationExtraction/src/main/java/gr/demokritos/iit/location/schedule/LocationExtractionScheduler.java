@@ -76,7 +76,7 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
         }
         ExecRes er;
         // get location
-        er = extractLocation(items);
+        er = extractLocation(items, mode);
         // schedule updated
         sched.setItemsUpdated(er.getItemsFound());
         // update last timestamp parsed
@@ -86,11 +86,11 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
         repos.scheduleFinalized(sched);
     }
 
-    private ExecRes extractLocation(Collection<Map<String, Object>> items) {
+    private ExecRes extractLocation(Collection<Map<String, Object>> items, OperationMode mode) {
         // keep most recent published for reference
         long max_published = Long.MIN_VALUE;
         int i = 0;
-        switch (opMode) {
+        switch (mode) {
             case ARTICLES:
                 // for each article
                 for (Map<String, Object> article : items) {

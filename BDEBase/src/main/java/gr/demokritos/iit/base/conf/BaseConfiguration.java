@@ -138,4 +138,9 @@ public class BaseConfiguration implements IBaseConf {
     public String getSentenceSplitterModelPath() {
         return properties.getProperty("sentence_splitter_model", "./res/en-sent.bin");
     }
+
+    @Override
+    public String getStopwordsFilePath() {
+        return properties.getProperty("stopwords_file_path", "./res/stopwords_en.txt");
+    }
 }
