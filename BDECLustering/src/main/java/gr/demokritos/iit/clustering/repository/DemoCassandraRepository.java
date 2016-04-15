@@ -75,7 +75,8 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
                 .and(set(Cassandra.Event.TBL_EVENTS.FLD_DESCRIPTION.getColumnName(), description))
                 .and(set(Cassandra.Event.TBL_EVENTS.FLD_DATE_LITERAL.getColumnName(), sUTCEventDate))
                 .and(set(Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName(), place_mappings))
-                .and(set(Cassandra.Event.TBL_EVENTS.FLD_TWEET_IDS.getColumnName(), tweetIDs))
+                .and(set(Cassandra.Event.TBL_EVENTS.FLD_TWEET_IDS.getColumnName(),
+                        tweetIDs == null ? Collections.EMPTY_SET : tweetIDs))
                 .where(eq(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName(), topicID));
         session.execute(upsert);
         for (Map.Entry<String, String> entry : place_mappings.entrySet()) {
@@ -88,7 +89,8 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
                     .and(set(Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_DESCRIPTION.getColumnName(), description))
                     .and(set(Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_DATE_LITERAL.getColumnName(), sUTCEventDate))
                     .and(set(Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_PLACE_POLYGON.getColumnName(), polygon))
-                    .and(set(Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_TWEET_IDS.getColumnName(), tweetIDs))
+                    .and(set(Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_TWEET_IDS.getColumnName(),
+                            tweetIDs == null ? Collections.EMPTY_SET : tweetIDs))
                     .where(eq(Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_PLACE_LITERAL.getColumnName(), place_literal))
                     .and(eq(Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_EVENT_ID.getColumnName(), topicID));
             session.execute(upsert);
