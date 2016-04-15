@@ -60,17 +60,17 @@
         <dependency>
             <groupId>org.scify</groupId>
             <artifactId>NewSumClusterer</artifactId>
-            <version>0.5-BDE-20160414.105904-1</version>
+            <version>0.5-BDE-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.scify</groupId>
             <artifactId>NewSumSummarizer</artifactId>
-            <version>1.2-BDE-20160413.130728-1</version>
+            <version>1.2-BDE-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.scify</groupId>
             <artifactId>SocialMediaEvaluator</artifactId>
-            <version>0.4.1-BDE-20160414.122352-1</version>
+            <version>0.4.1-BDE-SNAPSHOT</version>
         </dependency>
     </dependencies>
 
