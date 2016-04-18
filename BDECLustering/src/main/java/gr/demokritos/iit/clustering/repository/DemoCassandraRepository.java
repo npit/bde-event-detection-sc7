@@ -1,5 +1,7 @@
 package gr.demokritos.iit.clustering.repository;
 
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
@@ -13,6 +15,8 @@ import org.scify.newsum.server.model.structures.Summary;
 import org.scify.newsum.server.model.structures.Topic;
 
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.set;
@@ -171,6 +175,45 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
         return res;
     }
 
+    public Collection<Map<String, Object>> loadEvents(int limit) {
+        Collection<Map<String, Object>> result = new ArrayList();
+        // load items from cassandra
+        Statement select;
+        ResultSet results;
+        try {
+            select = QueryBuilder
+                    .select()
+                    .all()
+                    .from(session.getLoggedKeyspace(), Cassandra.Event.Tables.EVENTS.getTableName())
+                    .limit(limit);
+            results = session.execute(select);
+            for (Row row : results) {
+                if (row != null) {
+                    Map<String, Object> res = new HashMap();
+                    String eventID = row.getString(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName());
+                    res.put(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName(), eventID);
+                    String title = row.getString(Cassandra.Event.TBL_EVENTS.FLD_TITLE.getColumnName());
+                    res.put(Cassandra.Event.TBL_EVENTS.FLD_TITLE.getColumnName(), title);
+                    String description = row.getString(Cassandra.Event.TBL_EVENTS.FLD_DESCRIPTION.getColumnName());
+                    res.put(Cassandra.Event.TBL_EVENTS.FLD_DESCRIPTION.getColumnName(), description);
+                    String date_literal = row.getString(Cassandra.Event.TBL_EVENTS.FLD_DATE_LITERAL.getColumnName());
+                    res.put(Cassandra.Event.TBL_EVENTS.FLD_DATE_LITERAL.getColumnName(), date_literal);
+                    Map<String, String> place_mappings = row.getMap(Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName(), String.class, String.class);
+                    res.put(Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName(), place_mappings);
+                    Set<Long> tweetIDs = row.getSet(Cassandra.Event.TBL_EVENTS.FLD_TWEET_IDS.getColumnName(), Long.class);
+                    res.put(Cassandra.Event.TBL_EVENTS.FLD_TWEET_IDS.getColumnName(), tweetIDs);
+                    Set<String> sourceURLs = row.getSet(Cassandra.Event.TBL_EVENTS.FLD_EVENT_SOURCE_URLS.getColumnName(), String.class);
+                    res.put(Cassandra.Event.TBL_EVENTS.FLD_EVENT_SOURCE_URLS.getColumnName(), sourceURLs);
+                    // append to result
+                    result.add(res);
+                }
+            }
+        }catch(Exception ex){
+            Logger.getLogger(DemoCassandraRepository.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
+        }
+        return result;
+    }
+
     private Set<String> extractSourceURLs(Topic t) {
         Set<String> res = new HashSet();
         for (Article article : t) {
@@ -178,5 +221,4 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
         }
         return res;
     }
-
 }
