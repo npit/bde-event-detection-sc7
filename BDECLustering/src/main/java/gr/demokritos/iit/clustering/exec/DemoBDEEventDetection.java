@@ -21,8 +21,6 @@ import org.scify.newsum.server.model.structures.Summary;
 import org.scify.newsum.server.model.structures.Topic;
 import org.scify.newsum.server.nlp.sentsplit.DefaultSentenceSplitter;
 import org.scify.newsum.server.nlp.sentsplit.ISentenceSplitter;
-import org.scify.newsum.server.nlp.sentsplit.OpenNLPSentenceSplitter;
-import org.scify.newsum.server.summarization.BaseSummariser;
 import org.scify.newsum.server.summarization.ISummarizer;
 import org.scify.newsum.server.summarization.Summarizer;
 
@@ -33,9 +31,9 @@ import java.util.logging.Logger;
 /**
  * @author George K.<gkiom@iit.demokritos.gr>
  */
-public class DemoDBEEventDetection {
+public class DemoBDEEventDetection {
 
-    private static final Logger LOGGER = Logger.getLogger(DemoDBEEventDetection.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(DemoBDEEventDetection.class.getName());
 
     /**
      * @param args provide the .properties file (with cassandra credentials, etc).
@@ -103,6 +101,7 @@ public class DemoDBEEventDetection {
             LOGGER.info("saving events...");
 
             repository.saveEvents(clusters, summaries, related, place_mappings, tweetURLtoPostIDMapping, 2);
+            LOGGER.info("Done");
         } finally {
             if (factory != null) {
                 factory.releaseResources();

@@ -68,6 +68,8 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
         // get all tweet IDs for the topic related
         Set<Long> tweetIDs = tweetIDsPerTopicID.get(topicID);
 
+        Set<String> topicSourceURLs = extractSourceURLs(t);
+
         // update events
         Statement upsert = QueryBuilder
                 .update(session.getLoggedKeyspace(), Cassandra.Event.Tables.EVENTS.getTableName())
@@ -77,6 +79,7 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
                 .and(set(Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName(), place_mappings))
                 .and(set(Cassandra.Event.TBL_EVENTS.FLD_TWEET_IDS.getColumnName(),
                         tweetIDs == null ? Collections.EMPTY_SET : tweetIDs))
+                .and(set(Cassandra.Event.TBL_EVENTS.FLD_EVENT_SOURCE_URLS.getColumnName(), topicSourceURLs))
                 .where(eq(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName(), topicID));
         session.execute(upsert);
         for (Map.Entry<String, String> entry : place_mappings.entrySet()) {
@@ -91,6 +94,7 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
                     .and(set(Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_PLACE_POLYGON.getColumnName(), polygon))
                     .and(set(Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_TWEET_IDS.getColumnName(),
                             tweetIDs == null ? Collections.EMPTY_SET : tweetIDs))
+                    .and(set(Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_EVENT_SOURCE_URLS.getColumnName(), topicSourceURLs))
                     .where(eq(Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_PLACE_LITERAL.getColumnName(), place_literal))
                     .and(eq(Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_EVENT_ID.getColumnName(), topicID));
             session.execute(upsert);
@@ -166,4 +170,13 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
         }
         return res;
     }
+
+    private Set<String> extractSourceURLs(Topic t) {
+        Set<String> res = new HashSet();
+        for (Article article : t) {
+            res.add(article.getSource());
+        }
+        return res;
+    }
+
 }

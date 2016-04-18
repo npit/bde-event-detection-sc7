@@ -261,6 +261,7 @@ CREATE TABLE IF NOT EXISTS bde.events (
     event_date varchar,
     place_mappings Map<text, text>,
     tweet_post_ids set<bigint>,
+    event_source_urls set<varchar>,
     primary key (event_id)
 );
 
@@ -273,5 +274,6 @@ CREATE TABLE IF NOT EXISTS bde.events_per_place_literal (
     event_date varchar,
     place_polygon text,
     tweet_post_ids set<bigint>,
+    event_source_urls set<varchar>,
     primary key ((place_literal), event_id)
 ) WITH CLUSTERING ORDER BY (event_id DESC);

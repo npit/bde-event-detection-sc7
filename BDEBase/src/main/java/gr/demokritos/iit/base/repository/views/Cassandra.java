@@ -472,7 +472,9 @@ public class Cassandra {
             FLD_DESCRIPTION("description"),
             FLD_DATE_LITERAL("event_date"),
             FLD_PLACE_MAPPINGS("place_mappings"),
-            FLD_TWEET_IDS("tweet_post_ids");
+            FLD_TWEET_IDS("tweet_post_ids"),
+            FLD_EVENT_SOURCE_URLS("event_source_urls");
+
             private String column;
 
             private TBL_EVENTS(String column) {
@@ -492,7 +494,9 @@ public class Cassandra {
             FLD_DESCRIPTION("description"),
             FLD_DATE_LITERAL("event_date"),
             FLD_PLACE_POLYGON("place_polygon"),
-            FLD_TWEET_IDS("tweet_post_ids");
+            FLD_TWEET_IDS("tweet_post_ids"),
+            FLD_EVENT_SOURCE_URLS("event_source_urls");
+
             private String column;
 
             private TBL_EVENTS_PER_PLACE(String column) {
