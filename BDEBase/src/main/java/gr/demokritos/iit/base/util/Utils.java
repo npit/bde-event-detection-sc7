@@ -131,6 +131,7 @@ public class Utils {
     }
 
 
+    // reused from SocialMediaEvaluator-BDE-SNAPSHOT
     private static String removeNoise(String target) {
         target = target.replaceAll("((https?|ftp|gopher|telnet|file|Unsure|http):((//)|(\\\\))+[\\w\\d:#@%/;$()~_?\\+-=\\\\\\.&]*)", ""); // links
         target = target.replaceAll("(((RT )|(MT ))?@([\\w]|[^\\s])*([\\s]|$))+", "");                                                     //RT MT @someone (response to)
