@@ -30,7 +30,7 @@ object MainExample {
     val e1 = new StringEntity
     val e2 = new StringEntity
 
-    if (args.length > 2) {
+    if (args.length >= 2) {
       val s1 = args(0)
       val s2 = args(1)
       println(s1 + " : " + s2)
