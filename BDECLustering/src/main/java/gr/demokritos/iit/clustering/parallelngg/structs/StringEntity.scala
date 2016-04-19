@@ -1,5 +1,7 @@
 package gr.demokritos.iit.clustering.parallelngg.structs
 
+import java.util.Arrays.ArrayList
+
 import gr.demokritos.iit.clustering.parallelngg.traits.Entity
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -31,7 +33,7 @@ class StringEntity extends Entity {
     */
   def setString(sc: SparkContext, value: String) = {
     this.singleString = value
-    this.dataStringRDD = sc.makeRDD(value :: Nil);
+    this.dataStringRDD = sc.makeRDD(List[String] { value }); // TODO: Check if splitting string makes sense
   }
 
   /**
