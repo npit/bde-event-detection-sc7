@@ -30,17 +30,19 @@ class GraphSimilarityCalculator extends SimilarityCalculator with Serializable {
     val pairs2 = g2.edges.map(edgeToPair)
     val commonEdges = pairs1.join(pairs2)
     commonEdges.cache
-    //c holds the number of common edges
-    val c = commonEdges.count
+    //d holds the max number of edges over the two graphs
+    val d = Math.max(pairs1.count(), pairs2.count())
+    //c holds the number of common edges over the two graphs
+    val c = commonEdges.count()
     var minEdgeWeight = 1.0
     var maxEdgeWeight = 1.0
     //if there are common edges
-    // TODO: Fix. Works over ALL edges. Not individually.
-    var vSimil = 0.0;
+    // DONE: Fix. Works over ALL edges. Not individually.
+    var vSimil = 0.0
 
     if (c != 0) {
       //edge ratio of the common edges
-      vSimil = commonEdges.map(e => Math.min(e._2._1, e._2._2) / Math.min(e._2._1, e._2._2)).sum / c
+      vSimil = commonEdges.map(e => Math.min(e._2._1, e._2._2) / Math.min(e._2._1, e._2._2)).sum / d
     }
     commonEdges.unpersist()
     //for each common edge add (minimum edge weight/maximum edge weight)/maximum graph size to a sum
