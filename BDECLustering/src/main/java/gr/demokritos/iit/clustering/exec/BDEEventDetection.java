@@ -17,6 +17,8 @@ package gr.demokritos.iit.clustering.exec;
 import gr.demokritos.iit.clustering.config.BDESpark;
 import gr.demokritos.iit.clustering.config.BDESparkConf;
 import gr.demokritos.iit.clustering.config.ISparkConf;
+import gr.demokritos.iit.clustering.newsum.IClusterer;
+import gr.demokritos.iit.clustering.newsum.NSClusterer;
 import gr.demokritos.iit.clustering.repository.CassandraSparkRepository;
 import gr.demokritos.iit.clustering.util.DocumentPairGenerationFilterFunction;
 import java.util.ArrayList;
@@ -63,13 +65,10 @@ public class BDEEventDetection {
         System.out.println("LOADING ARTICLES");
         // load batch. The quadruple represents <entry_url, title, clean_text, timestamp>
         JavaRDD<Tuple4<String, String, String, Long>> RDDbatch = repo.loadArticlesPublishedLaterThan(timestamp);
-        System.out.println("EXTRACTING PAIRS");
-        // get pairs of articles
-        JavaPairRDD<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>> RDDPairs
-                = getPairs(RDDbatch);
-        // debug
-        StructUtils.printArticlePairs(RDDPairs, 5);
-        // debug
+
+        IClusterer clusterer = new NSClusterer();
+
+        clusterer.calculateClusters(RDDbatch);
 
         // get matching mappings
 
@@ -78,9 +77,4 @@ public class BDEEventDetection {
 
         // save clusters
     }
-
-    public static JavaPairRDD<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>> getPairs(JavaRDD<Tuple4<String, String, String, Long>> original) {
-        return original.cartesian(original).filter(new DocumentPairGenerationFilterFunction());
-    }
-
 }
