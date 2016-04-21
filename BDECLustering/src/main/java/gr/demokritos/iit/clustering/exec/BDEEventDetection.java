@@ -20,7 +20,9 @@ import gr.demokritos.iit.clustering.config.ISparkConf;
 import gr.demokritos.iit.clustering.newsum.IClusterer;
 import gr.demokritos.iit.clustering.newsum.NSClusterer;
 import gr.demokritos.iit.clustering.repository.CassandraSparkRepository;
+import gr.demokritos.iit.clustering.structs.SimilarityMode;
 import gr.demokritos.iit.clustering.util.DocumentPairGenerationFilterFunction;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -33,12 +35,11 @@ import scala.Tuple2;
 import scala.Tuple4;
 
 /**
- *
  * @author George K. <gkiom@iit.demokritos.gr>
  */
 public class BDEEventDetection {
 
-//    private final SparkContext sc;
+    //    private final SparkContext sc;
     private final BDESpark sp;
 
     public BDEEventDetection(BDESpark bdes) {
@@ -50,24 +51,36 @@ public class BDEEventDetection {
     }
 
     public static void main(String[] args) {
-//        ISparkConf conf = new BDESparkConf("spark.properties");
-        ISparkConf conf = new BDESparkConf();
+
+        // we require one argument, the config file
+        if (args.length < 1 || args.length > 1) {
+            throw new IllegalArgumentException(String.format("USAGE: %s <PATH_TO_CONFIGURATION_FILE>" +
+                    "\n\te.g. %s ./res/clustering.properties", BDEEventDetection.class.getName(), BDEEventDetection.class.getName()));
+        }
+
+        // init configuration
+        ISparkConf conf = new BDESparkConf(args[0]);
+        // init sparkConf (holds the spark context object)
         BDESpark bdes = new BDESpark(conf);
-
+        // instantiate us
         BDEEventDetection bdedet = new BDEEventDetection(bdes);
-
+        // keep context to pass around
         SparkContext sc = bdedet.getContext();
-
+        // get the spark repository class
         CassandraSparkRepository repo = new CassandraSparkRepository(sc, conf);
-
+        // get a timestamp : TODO: FIXME
         long timestamp = repo.getLatestTimestamp("event_detection_log"); // TODO: add table(?) or use parameter days_back.
         System.out.println(new Date(timestamp).toString());
         System.out.println("LOADING ARTICLES");
         // load batch. The quadruple represents <entry_url, title, clean_text, timestamp>
+        // entry URL is supposed to be the unique identifier of an article (though for reuters many articles with same body
+        // are republished under different URLs
         JavaRDD<Tuple4<String, String, String, Long>> RDDbatch = repo.loadArticlesPublishedLaterThan(timestamp);
 
-        IClusterer clusterer = new NSClusterer();
+        // instantiate a clusterer
+        IClusterer clusterer = new NSClusterer(sc, conf.getSimilarityMode(), conf.getCutOffThreshold(), conf.getNumPartitions());
 
+        // TODO: we should return the clusters (e.g. a map RDD of ID, List<Tuple4<>>)
         clusterer.calculateClusters(RDDbatch);
 
         // get matching mappings

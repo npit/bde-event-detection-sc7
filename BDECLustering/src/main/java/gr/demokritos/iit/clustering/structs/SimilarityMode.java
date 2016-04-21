@@ -5,6 +5,17 @@ package gr.demokritos.iit.clustering.structs;
  */
 public enum SimilarityMode {
 
-    // TODO: add similarity metrics from gr.demokritos.iit.clustering.parallelngg.graph.GraphSimilarity
+    /**
+     * map newsum similarity codes to parallelngg codes.
+     */
+    NVS("normalized"), VS("value"), CS("containment"), SS("size");
+    private final String graphsimilarity;
 
+    SimilarityMode(String graphsimilarity) {
+        this.graphsimilarity = graphsimilarity;
+    }
+
+    public String getGraphsimilarity() {
+        return graphsimilarity;
+    }
 }
