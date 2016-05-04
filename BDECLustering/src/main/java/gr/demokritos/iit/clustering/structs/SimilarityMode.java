@@ -9,13 +9,13 @@ public enum SimilarityMode {
      * map newsum similarity codes to parallelngg codes.
      */
     NVS("normalized"), VS("value"), CS("containment"), SS("size");
-    private final String graphsimilarity;
+    private final String graphSim;
 
-    SimilarityMode(String graphsimilarity) {
-        this.graphsimilarity = graphsimilarity;
+    SimilarityMode(String graphSimilarity) {
+        this.graphSim = graphSimilarity;
     }
 
-    public String getGraphsimilarity() {
-        return graphsimilarity;
+    public String getGraphSimilarity() {
+        return graphSim;
     }
 }

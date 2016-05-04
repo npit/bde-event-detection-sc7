@@ -73,5 +73,4 @@ public class BDESparkConf extends BaseConfiguration implements ISparkConf {
     public double getCutOffThreshold() {
         return Double.valueOf(properties.getProperty(CUTOFF_THRESHOLD_PARAM, "0.24"));
     }
-
 }

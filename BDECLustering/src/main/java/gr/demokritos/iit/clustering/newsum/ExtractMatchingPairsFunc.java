@@ -11,6 +11,8 @@ import org.apache.spark.graphx.Graph;
 import scala.Tuple2;
 import scala.Tuple4;
 
+import java.io.Serializable;
+
 /**
  * @author George K.<gkiom@iit.demokritos.gr>
  */
@@ -53,15 +55,15 @@ public class ExtractMatchingPairsFunc implements Function<Tuple2<Tuple4<String, 
         // decide based on mode
         switch (mode) {
             case NVS:
-                return (double) gs.getSimilarityComponents().get(Similarity.Similarities$.MODULE$.NORMALIZED_SIMILARITY()).get() >= simCutOff;
+                return (double) gs.getSimilarityComponents().get(SimilarityMode.NVS.getGraphSimilarity()).get() >= simCutOff;
             case VS:
-                return (double) gs.getSimilarityComponents().get(Similarity.Similarities$.MODULE$.VALUE_SIMILARITY()).get() >= simCutOff;
+                return (double) gs.getSimilarityComponents().get(SimilarityMode.VS.getGraphSimilarity()).get() >= simCutOff;
             case CS:
-                return (double) gs.getSimilarityComponents().get(Similarity.Similarities$.MODULE$.CONTAINMENT_SIMILARITY()).get() >= simCutOff;
+                return (double) gs.getSimilarityComponents().get(SimilarityMode.CS.getGraphSimilarity()).get() >= simCutOff;
             case SS:
-                return (double) gs.getSimilarityComponents().get(Similarity.Similarities$.MODULE$.SIZE_SIMILARITY()).get() >= simCutOff;
+                return (double) gs.getSimilarityComponents().get(SimilarityMode.SS.getGraphSimilarity()).get() >= simCutOff;
             default:
-                return (double) gs.getSimilarityComponents().get(Similarity.Similarities$.MODULE$.NORMALIZED_SIMILARITY()).get() >= simCutOff;
+                return (double) gs.getSimilarityComponents().get(SimilarityMode.NVS.getGraphSimilarity()).get() >= simCutOff;
         }
     }
 }
