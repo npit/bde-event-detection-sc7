@@ -6,10 +6,10 @@ package gr.demokritos.iit.clustering.parallelngg.traits
 trait Similarity {
 
   object Similarities {
-    val SIZE_SIMILARITY = "size";
-    val CONTAINMENT_SIMILARITY = "containment";
-    val VALUE_SIMILARITY = "value";
-    val NORMALIZED_SIMILARITY = "normalized";
+    val SIZE_SIMILARITY = "size"
+    val CONTAINMENT_SIMILARITY = "containment"
+    val VALUE_SIMILARITY = "value"
+    val NORMALIZED_SIMILARITY = "normalized"
   }
 
   //@return overall similarity

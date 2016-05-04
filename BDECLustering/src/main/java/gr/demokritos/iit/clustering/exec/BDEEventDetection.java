@@ -17,6 +17,7 @@ package gr.demokritos.iit.clustering.exec;
 import gr.demokritos.iit.clustering.config.BDESpark;
 import gr.demokritos.iit.clustering.config.BDESparkConf;
 import gr.demokritos.iit.clustering.config.ISparkConf;
+import gr.demokritos.iit.clustering.newsum.ExtractMatchingPairsFunc;
 import gr.demokritos.iit.clustering.newsum.IClusterer;
 import gr.demokritos.iit.clustering.newsum.NSClusterer;
 import gr.demokritos.iit.clustering.repository.CassandraSparkRepository;
@@ -74,14 +75,29 @@ public class BDEEventDetection {
         System.out.println("LOADING ARTICLES");
         // load batch. The quadruple represents <entry_url, title, clean_text, timestamp>
         // entry URL is supposed to be the unique identifier of an article (though for reuters many articles with same body
-        // are republished under different URLs
+        // are republished under different URLs)
         JavaRDD<Tuple4<String, String, String, Long>> RDDbatch = repo.loadArticlesPublishedLaterThan(timestamp);
 
-        // instantiate a clusterer
-        IClusterer clusterer = new NSClusterer(sc, conf.getSimilarityMode(), conf.getCutOffThreshold(), conf.getNumPartitions());
+//        // instantiate a clusterer
+//        IClusterer clusterer = new NSClusterer(sc, conf.getSimilarityMode(), conf.getCutOffThreshold(), conf.getNumPartitions());
+//
+//        // TODO: we should return the clusters (e.g. a map RDD of ID, List<Tuple4<>>)
+//        clusterer.calculateClusters(RDDbatch);
 
-        // TODO: we should return the clusters (e.g. a map RDD of ID, List<Tuple4<>>)
-        clusterer.calculateClusters(RDDbatch);
+        // create pairs
+        System.out.println("EXTRACTING PAIRS");
+        // get pairs of articles
+        JavaPairRDD<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>> RDDPairs
+                = RDDbatch.cartesian(RDDbatch).filter(new DocumentPairGenerationFilterFunction());
+        // debug
+        StructUtils.printArticlePairs(RDDPairs, 5);
+        // get matching mapping
+
+        // TODO: use flatMap?? we want for the full pairs rdd, each item mapped to a boolean value.
+        JavaRDD<Boolean> map = RDDPairs.map(new ExtractMatchingPairsFunc(sc, conf.getSimilarityMode(), conf.getCutOffThreshold(), conf.getNumPartitions()));
+        // generate clusters
+
+        // TODO: change method signature: return smth (not void)
 
         // get matching mappings
 
