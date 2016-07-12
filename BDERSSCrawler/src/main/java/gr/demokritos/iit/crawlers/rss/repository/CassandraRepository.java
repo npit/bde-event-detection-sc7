@@ -18,6 +18,9 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.exceptions.NoHostAvailableException;
+import com.datastax.driver.core.exceptions.QueryExecutionException;
+import com.datastax.driver.core.exceptions.QueryValidationException;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.set;
@@ -155,7 +158,33 @@ public class CassandraRepository extends AbstractRepository implements IReposito
                 .from(session.getLoggedKeyspace(), crawlerStrategy.TableCrawls())
                 .where(eq(key, crawlerStrategy.crawlType()))
                 .limit(1);
-        ResultSet results = session.execute(select);
+        ResultSet results = null;
+        // npit added exception catching @ query execution
+        try {
+            results = session.execute(select);
+        }
+        catch(QueryExecutionException ex)
+        {
+            String errorMessage = ex.getMessage();
+            ex.printStackTrace();
+            System.err.println("QueryExecutionException : " + errorMessage);
+            return null;
+        }
+        catch(QueryValidationException ex)
+        {
+            String errorMessage = ex.getMessage();
+            ex.printStackTrace();
+            System.err.println("QueryValidation : " + errorMessage);
+            return null;
+        }
+        catch(NoHostAvailableException ex)
+        {
+            String errorMessage = ex.getMessage();
+            ex.printStackTrace();
+            System.err.println("NoHostAvailableException : " + errorMessage);
+            return null;
+        }
+
         Row one = results.one();
 
         if (one != null) {
@@ -178,7 +207,34 @@ public class CassandraRepository extends AbstractRepository implements IReposito
                 .with(set(start, crawlId.getStartTimestamp())).and(set(end, crawlId.getEndTimestamp()))
                 .where(eq(key, crawlerStrategy.crawlType()))
                 .and(eq(id, crawlId.getId()));
-        session.execute(upsert);
+        // npit added exception catching @ query execution
+        try
+        {
+            session.execute(upsert);
+        }
+        catch(QueryExecutionException ex)
+        {
+            String errorMessage = ex.getMessage();
+            System.err.println("QueryExecutionException : " + errorMessage);
+            return;
+        }
+        catch(QueryValidationException ex)
+        {
+            String errorMessage = ex.getMessage();
+            System.err.println("QueryValidation : " + errorMessage);
+            try {
+                Thread.sleep(4000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return;
+        }
+        catch(NoHostAvailableException ex)
+        {
+            String errorMessage = ex.getMessage();
+            System.err.println("NoHostExc : " + errorMessage);
+            return;
+        }
     }
 
     @Override

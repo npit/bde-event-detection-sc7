@@ -65,13 +65,14 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
         sched = repos.scheduleInitialized(mode);
         System.out.println("last parsed: " + new Date(sched.getLastParsed()).toString());
         Collection<Map<String, Object>> items = null;
+        // npit switched loadArticles/loadTweets to loadAllArticles/loadAllTweets
         switch (mode) {
             case ARTICLES:
                 // load items to process from last_parsed indicator.
-                items = repos.loadArticles(sched.getLastParsed());
+                items = repos.loadAllArticles(sched.getLastParsed());
                 break;
             case TWEETS:
-                items = repos.loadTweets(sched.getLastParsed());
+                items = repos.loadAllTweets(sched.getLastParsed());
                 break;
         }
         ExecRes er;

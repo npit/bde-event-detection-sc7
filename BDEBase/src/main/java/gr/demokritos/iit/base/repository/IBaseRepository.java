@@ -24,6 +24,26 @@ import java.util.Map;
  */
 public interface IBaseRepository {
 
+    // npit : Added load All Tweets/Articles interface methods
+    /**
+     * load all tweets
+     *
+     * @param from
+     * @return
+     */
+    Collection<Map<String, Object>> loadAllTweets(long from);
+
+
+    /**
+     * load all articles
+     *
+     * @param from
+     * @return
+     */
+    Collection<Map<String, Object>> loadAllArticles(long from);
+
+
+
     /**
      * load tweets that occurred after a specified timestamp
      *

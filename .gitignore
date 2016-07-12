@@ -34,3 +34,7 @@ nb*.xml
 # intellij idea
 .idea/
 *.iml
+
+# data files
+*.csv
+*.csv#
