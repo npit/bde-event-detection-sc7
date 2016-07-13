@@ -167,8 +167,9 @@ public class TwitterListenerFactory implements ITwitterFactory {
             InvocationTargetException,
             PropertyVetoException {
         ITwitterRestConsumer crawler;
+
         Class sourceClass = Class.forName(BaseTwitterRestConsumer.class.getName());
-        Constructor class_constructor = sourceClass.getConstructor(ITwitterConf.class, IRepository.class, ICrawlPolicy.class);
+        Constructor class_constructor = sourceClass.getConstructor(TConfig.class, IRepository.class, ICrawlPolicy.class);
         IRepository repository = getRepository();
         ICrawlPolicy policy = getCrawlPolicy(repository);
         crawler = (ITwitterRestConsumer) class_constructor.newInstance(conf, repository, policy);

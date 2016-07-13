@@ -33,7 +33,6 @@ public class ExtractMatchingPairsFunc implements Function<Tuple2<Tuple4<String, 
     // <entry_url, title, clean_text, timestamp>, <entry_url, title, clean_text, timestamp>
     @Override
     public Boolean call(Tuple2<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>> v1) throws Exception {
-
         // get text from first item
         StringEntity ent1 = new StringEntity();
         // concatenate title and clean text together
