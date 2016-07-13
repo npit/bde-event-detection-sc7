@@ -18,7 +18,7 @@ import java.io.Serializable;
  */
 public class ExtractMatchingPairsFunc implements Function<Tuple2<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>>, Boolean> {
 
-    private final SparkContext sc;
+    private final transient SparkContext sc;
     private final SimilarityMode mode;
     private final double simCutOff;
     private final int numPartitions;
@@ -33,6 +33,7 @@ public class ExtractMatchingPairsFunc implements Function<Tuple2<Tuple4<String, 
     // <entry_url, title, clean_text, timestamp>, <entry_url, title, clean_text, timestamp>
     @Override
     public Boolean call(Tuple2<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>> v1) throws Exception {
+        // spark-context
         // get text from first item
         StringEntity ent1 = new StringEntity();
         // concatenate title and clean text together

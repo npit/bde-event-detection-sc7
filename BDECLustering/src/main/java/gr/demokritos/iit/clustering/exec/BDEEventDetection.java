@@ -94,7 +94,9 @@ public class BDEEventDetection {
         // get matching mapping
 
         // TODO: use flatMap?? we want for the full pairs rdd, each item mapped to a boolean value.
-        JavaRDD<Boolean> map = RDDPairs.map(new ExtractMatchingPairsFunc(sc, conf.getSimilarityMode(), conf.getCutOffThreshold(), conf.getNumPartitions()));
+
+        JavaRDD<Boolean> map = RDDPairs.map(new ExtractMatchingPairsFunc(sc, conf.getSimilarityMode(),
+                conf.getCutOffThreshold(), conf.getNumPartitions()));
         // generate clusters
 
         // TODO: change method signature: return smth (not void)
