@@ -21,6 +21,7 @@ import gr.demokritos.iit.location.mapping.IPolygonExtraction;
 import gr.demokritos.iit.location.mode.OperationMode;
 import gr.demokritos.iit.location.repository.ILocationRepository;
 import gr.demokritos.iit.location.structs.LocSched;
+import gr.demokritos.iit.location.util.GeometryFormatTransformer;
 
 import java.util.Collection;
 import java.util.Date;
@@ -69,9 +70,13 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
         switch (mode) {
             case ARTICLES:
                 // load items to process from last_parsed indicator.
+                //items = repos.loadArticles(sched.getLastParsed()); // TODO
+                System.err.println("*****Suspending article resuming - loading ALL for debuggery.");
                 items = repos.loadAllArticles(sched.getLastParsed());
                 break;
             case TWEETS:
+                //items = repos.loadTweets(sched.getLastParsed());
+                System.err.println("*****Suspending twitter esuming - loading ALL debuggery.");
                 items = repos.loadAllTweets(sched.getLastParsed());
                 break;
         }
@@ -105,6 +110,8 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                     if (!locationsFound.isEmpty()) {
                         Map<String, String> places_polygons = poly.extractPolygon(locationsFound);
                         // update entry
+                        // edit geometry
+                        places_polygons = GeometryFormatTransformer.ToJSON(places_polygons);
                         repos.updateArticlesWithReferredPlaceMetadata(permalink, places_polygons);
                         i++;
                     }

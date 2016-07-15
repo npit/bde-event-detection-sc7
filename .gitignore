@@ -1,0 +1,38 @@
+# ant specific
+dist/
+build/
+ 
+# netbeans specific
+core
+nbproject/*
+!nbproject/project.properties
+!nbproject/project.xml
+
+# maven
+.classpath
+.project
+.settings/
+target/
+ 
+# java specific
+*.class
+ 
+# general swap/backup/script files
+*.so
+*.log
+*.out
+*~
+*.swp
+*.DS_Store
+*.lock
+*.txt.*
+
+#project specific
+/BDETwitterListener/creds.properties
+nb*.xml
+
+# intellij idea
+.idea/
+*.iml
+
+

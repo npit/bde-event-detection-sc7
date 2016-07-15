@@ -27,6 +27,7 @@ import java.util.Map;
  */
 public interface ILocationRepository extends IBaseRepository {
 
+
     /**
      *
      * @param permalink the URL of the article

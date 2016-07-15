@@ -22,9 +22,12 @@ import gr.demokritos.iit.location.factory.conf.LocConf;
 import gr.demokritos.iit.location.mapping.IPolygonExtraction;
 import gr.demokritos.iit.location.mode.OperationMode;
 import gr.demokritos.iit.location.repository.ILocationRepository;
+import gr.demokritos.iit.location.util.GeometryFormatTransformer;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 
 import static gr.demokritos.iit.location.factory.ILocFactory.LOG;
@@ -36,6 +39,7 @@ import static gr.demokritos.iit.location.factory.ILocFactory.LOG;
 public class LocationExtraction {
 
     public static void main(String[] args) throws IOException {
+
         String path = "./res/location_extraction.properties";
         if (args.length == 0) {
             System.out.println(USAGE);

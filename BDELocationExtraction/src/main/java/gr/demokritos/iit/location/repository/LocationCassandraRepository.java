@@ -14,10 +14,7 @@
  */
 package gr.demokritos.iit.location.repository;
 
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.*;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.gte;
@@ -27,6 +24,7 @@ import gr.demokritos.iit.base.repository.views.Cassandra;
 import gr.demokritos.iit.base.util.Utils;
 import gr.demokritos.iit.location.mode.OperationMode;
 import gr.demokritos.iit.location.structs.LocSched;
+import gr.demokritos.iit.location.util.GeometryFormatTransformer;
 
 import java.util.*;
 
@@ -142,7 +140,9 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
                     .value(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_LANGUAGE.getColumnName(), article.get(Cassandra.RSS.TBL_ARTICLES.FLD_LANGUAGE.getColumnName()))
                     .value(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_TITLE.getColumnName(), article.get(Cassandra.RSS.TBL_ARTICLES.FLD_TITLE.getColumnName()));
             session.execute(insert);
+
         }
+        updateEventsWithArticleLocationPolygonPairs(places_polygons, permalink);
     }
 
     @Override
@@ -171,6 +171,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
                     .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_REFERRED_PLACE.FLD_ACCOUNT_NAME.getColumnName(), tweet.get(Cassandra.Twitter.TBL_TWITTER_POST.FLD_ACCOUNT_NAME.getColumnName()));
             session.execute(insert);
         }
+        updateEventsWithTweetLocationPolygonPairs(places_polygons,post_id);
     }
 
 
@@ -212,5 +213,141 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
             res.put(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_TITLE.getColumnName(), title);
         }
         return Collections.unmodifiableMap(res);
+    }
+
+
+    void updateEventsWithArticleLocationPolygonPairs(Map<String,String> places_polygons, String permalink)
+    {
+        System.out.println("*** Update events, article permalink: " + permalink);
+        long startTime = System.currentTimeMillis();
+        Set<String> places = places_polygons.keySet();
+        // this is an ugly workaround. a table events per article would be superb
+
+        // cheaper to go per article ? per place ? per event?
+        // probably per event.
+
+        // get all events
+        Statement query = QueryBuilder
+                .select(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName())
+                .from(session.getLoggedKeyspace(),Cassandra.Event.Tables.EVENTS.getTableName());
+        ResultSet results = session.execute(query);
+        Set<String> eventIDs = new HashSet<String>();
+        for(Row row : results)
+        {
+
+            eventIDs.add(row.getString(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName()));
+        }
+        String payload = GeometryFormatTransformer.LocatonPolygonsToCQLString(places_polygons);
+
+        PreparedStatement pstatement = session.prepare(
+                "UPDATE " + session.getLoggedKeyspace() +"." + Cassandra.Event.Tables.EVENTS.getTableName()
+                +" SET " + Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName() + " = " + Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName() + " + "
+                + payload + " WHERE " + Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName() + " = ? "
+        );
+        BoundStatement bstatement = new BoundStatement(pstatement);
+
+
+        // for each event
+        for(String event  : eventIDs)
+        {
+            // get its source urls with a cql query
+            query = QueryBuilder
+                    .select(Cassandra.Event.TBL_EVENTS.FLD_EVENT_SOURCE_URLS.getColumnName())
+                    .from(session.getLoggedKeyspace(),Cassandra.Event.Tables.EVENTS.getTableName())
+                    .where(eq(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName(),event));
+            results = session.execute(query);
+
+            // for each article url
+            for(Row row : results)
+            {
+
+                Set<String> articleURLs = row.getSet(Cassandra.Event.TBL_EVENTS.FLD_EVENT_SOURCE_URLS.getColumnName(),String.class);
+                if (!articleURLs.contains(permalink)) continue;
+
+                else
+                {
+                    // insert the place mappings in that event
+                    System.out.println(">>> Inserting to event " + event + " , places :" + places.toString());
+                    session.execute(bstatement.bind(event));
+                    break;
+                }
+
+
+
+            }
+        }
+
+        long endTime = System.currentTimeMillis();
+        long duration = (endTime - startTime);  //divide by 1000000 to get milliseconds.
+        System.out.println("### Done with article permalink: " + permalink + " in " + Long.toString(duration) + " msec");
+
+    }
+    void updateEventsWithTweetLocationPolygonPairs(Map<String,String> places_polygons, long post_id)
+    {
+        String strpostid = Long.toString(post_id);
+        System.out.println("*** Update events, tweet post id: " + strpostid);
+
+        long startTime = System.currentTimeMillis();
+        Set<String> places = places_polygons.keySet();
+        // this is an ugly workaround. a table events per article would be superb
+
+        // cheaper to go per article ? per place ? per event?
+        // probably per event.
+
+        // get all events
+        Statement query = QueryBuilder
+                .select(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName())
+                .from(session.getLoggedKeyspace(),Cassandra.Event.Tables.EVENTS.getTableName());
+        ResultSet results = session.execute(query);
+        Set<String> eventIDs = new HashSet<String>();
+        for(Row row : results)
+        {
+
+            eventIDs.add(row.getString(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName()));
+        }
+        String payload = GeometryFormatTransformer.LocatonPolygonsToCQLString(places_polygons);
+
+        PreparedStatement pstatement = session.prepare(
+                "UPDATE " + session.getLoggedKeyspace() +"." + Cassandra.Event.Tables.EVENTS.getTableName()
+                        +" SET " + Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName() + " = " + Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName() + " + "
+                        + payload + " WHERE " + Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName() + " = ? "
+        );
+        BoundStatement bstatement = new BoundStatement(pstatement);
+
+
+        // for each event
+        for(String event_id  : eventIDs)
+        {
+            // get its source urls with a cql query
+            query = QueryBuilder
+                    .select(Cassandra.Event.TBL_EVENTS.FLD_TWEET_IDS.getColumnName())
+                    .from(session.getLoggedKeyspace(),Cassandra.Event.Tables.EVENTS.getTableName())
+                    .where(eq(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName(),event_id));
+            results = session.execute(query);
+
+            // for each article url
+            for(Row row : results)
+            {
+
+                Set<Long> tweet_ids = row.getSet(Cassandra.Event.TBL_EVENTS.FLD_TWEET_IDS.getColumnName(),Long.class);
+                if (!tweet_ids.contains(post_id)) continue;
+
+                else
+                {
+                    // insert the place mappings in that event
+                    System.out.println(">>> Inserting to event " + event_id + " , places :" + places.toString());
+                    session.execute(bstatement.bind(event_id));
+                    break;
+                }
+
+
+
+            }
+        }
+
+        long endTime = System.currentTimeMillis();
+        long duration = (endTime - startTime);  //divide by 1000000 to get milliseconds.
+        System.out.println("### Done with article permalink: " + strpostid + " in " + Long.toString(duration) + " msec");
+
     }
 }
