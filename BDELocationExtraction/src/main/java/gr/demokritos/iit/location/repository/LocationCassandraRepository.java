@@ -237,7 +237,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
 
             eventIDs.add(row.getString(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName()));
         }
-        String payload = GeometryFormatTransformer.LocatonPolygonsToCQLString(places_polygons);
+        String payload = GeometryFormatTransformer.LocationPolygonsToCQLString(places_polygons);
 
         PreparedStatement pstatement = session.prepare(
                 "UPDATE " + session.getLoggedKeyspace() +"." + Cassandra.Event.Tables.EVENTS.getTableName()
@@ -305,7 +305,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
 
             eventIDs.add(row.getString(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName()));
         }
-        String payload = GeometryFormatTransformer.LocatonPolygonsToCQLString(places_polygons);
+        String payload = GeometryFormatTransformer.LocationPolygonsToCQLString(places_polygons);
 
         PreparedStatement pstatement = session.prepare(
                 "UPDATE " + session.getLoggedKeyspace() +"." + Cassandra.Event.Tables.EVENTS.getTableName()
@@ -349,5 +349,52 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
         long duration = (endTime - startTime);  //divide by 1000000 to get milliseconds.
         System.out.println("### Done with article permalink: " + strpostid + " in " + Long.toString(duration) + " msec");
 
+    }
+    @Override
+    public void storeAndChangeDetectionEvents()
+    {
+        // which events? All?
+        // get all events, fields: id, title, date, placemappings
+        ArrayList<String> entries = new ArrayList<>();
+        Statement query = QueryBuilder
+                .select(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName(),
+                        Cassandra.Event.TBL_EVENTS.FLD_TITLE.getColumnName(),
+                        Cassandra.Event.TBL_EVENTS.FLD_DATE_LITERAL.getColumnName(),
+                        Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName())
+                .from(session.getLoggedKeyspace(),Cassandra.Event.Tables.EVENTS.getTableName());
+        ResultSet results = session.execute(query);
+
+        for(Row row : results)
+        {
+            // id
+            entries.add(row.getString(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName()));
+
+            // place - mappings - get that first. If null, skip the processing
+            Map<String,String> locpoly = row.getMap(Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName(),String.class,String.class);
+            if (locpoly.isEmpty())
+            {
+                System.out.println("Skipping processing event " + entries.get(entries.size()-1) + " due to no geometries." );
+                entries.clear();
+                continue;
+            }
+
+
+
+            // title
+            entries.add(row.getString(Cassandra.Event.TBL_EVENTS.FLD_TITLE.getColumnName()));
+            // date
+            entries.add(row.getString(Cassandra.Event.TBL_EVENTS.FLD_DATE_LITERAL.getColumnName()));
+            // add geometry
+            for(String item : locpoly.keySet())
+            {
+                String val = locpoly.get(item);
+                entries.add(item);
+                entries.add(val);
+            }
+            String payload = GeometryFormatTransformer.EventRowToPopeyeProcess(entries);
+            System.out.println(payload);
+            // send it
+            // http://stackoverflow.com/questions/1359689/how-to-send-http-request-in-java
+        }
     }
 }

@@ -40,6 +40,7 @@ public class LocationExtraction {
 
     public static void main(String[] args) throws IOException {
 
+
         String path = "./res/location_extraction.properties";
         if (args.length == 0) {
             System.out.println(USAGE);

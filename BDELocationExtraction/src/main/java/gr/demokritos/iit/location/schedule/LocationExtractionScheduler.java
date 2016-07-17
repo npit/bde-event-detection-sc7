@@ -70,14 +70,14 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
         switch (mode) {
             case ARTICLES:
                 // load items to process from last_parsed indicator.
-                //items = repos.loadArticles(sched.getLastParsed()); // TODO
+                items = repos.loadArticles(sched.getLastParsed()); // TODO
                 System.err.println("*****Suspending article resuming - loading ALL for debuggery.");
-                items = repos.loadAllArticles(sched.getLastParsed());
+                //items = repos.loadAllArticles(sched.getLastParsed());
                 break;
             case TWEETS:
-                //items = repos.loadTweets(sched.getLastParsed());
-                System.err.println("*****Suspending twitter esuming - loading ALL debuggery.");
-                items = repos.loadAllTweets(sched.getLastParsed());
+                items = repos.loadTweets(sched.getLastParsed());
+                System.err.println("*****Suspending twitter resuming - loading ALL for debuggery.");
+                //items = repos.loadAllTweets(sched.getLastParsed());
                 break;
         }
         ExecRes er;
@@ -139,8 +139,11 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                 }
                 break;
         }
+        repos.storeAndChangeDetectionEvents();
         return new ExecRes(max_published, i);
     }
+
+
 
     /**
      * holds the last_updated timestamp, and items_parsed values
