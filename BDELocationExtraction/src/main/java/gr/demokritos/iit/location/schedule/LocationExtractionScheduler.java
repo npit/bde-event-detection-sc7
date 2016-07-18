@@ -54,7 +54,10 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                 OperationMode m = opModeVals[i];
                 // execute schedule for current mode
                 executeSchedule(m);
+
             }
+            // call popeye.di.uoa.gr - process
+            repos.storeAndChangeDetectionEvents();
         } else {
             executeSchedule(opMode);
         }
@@ -139,7 +142,6 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                 }
                 break;
         }
-        repos.storeAndChangeDetectionEvents();
         return new ExecRes(max_published, i);
     }
 

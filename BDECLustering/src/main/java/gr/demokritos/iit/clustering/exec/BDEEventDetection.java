@@ -93,12 +93,14 @@ public class BDEEventDetection {
         StructUtils.printArticlePairs(RDDPairs, 5);
         // get matching mapping
 
-        // TODO: use flatMap?? we want for the full pairs rdd, each item mapped to a boolean value.
-
+       // TODO: use flatMap?? we want for the full pairs rdd, each item mapped to a boolean value.
+        // the next call returns true on the pairs that are similar enoguh, based on the similarity
+        // cutoff value
         JavaRDD<Boolean> map = RDDPairs.map(new ExtractMatchingPairsFunc(sc, conf.getSimilarityMode(),
                 conf.getCutOffThreshold(), conf.getNumPartitions()));
         // generate clusters
-
+        IClusterer clusterer = new NSClusterer(sc,conf.getSimilarityMode(),conf.getCutOffThreshold(), conf.getNumPartitions());
+        clusterer.calculateClusters(RDDbatch);
         // TODO: change method signature: return smth (not void)
 
         // get matching mappings
@@ -107,5 +109,6 @@ public class BDEEventDetection {
         // generate clusters
 
         // save clusters
+        int a=2;
     }
 }

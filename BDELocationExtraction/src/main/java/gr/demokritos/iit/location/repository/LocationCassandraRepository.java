@@ -102,7 +102,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
 
     @Override
     public void updateArticlesWithReferredPlaceMetadata(String permalink, Map<String, String> places_polygons) {
-        System.out.println(String.format("updating %s with places: %s", permalink, places_polygons.keySet().toString()));
+        System.out.println(String.format("\tupdating news tables, article: %s with places: %s", permalink, places_polygons.keySet().toString()));
         // load metadata
         Map<String, Object> article = loadArticle(permalink);
         long published = (long) article.get(Cassandra.RSS.TBL_ARTICLES.FLD_PUBLISHED.getColumnName());
@@ -160,7 +160,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
         if (places_polygons == null || places_polygons.isEmpty()) {
             return;
         }
-        System.out.println("updating: " + post_id + ", with: " + places_polygons.keySet().toString());
+        System.out.println("\tupdating twitter tables, tweet: " + post_id + ", with: " + places_polygons.keySet().toString());
         // load tweet from repository
         Map<String, Object> tweet = loadTweet(post_id);
         // update twitter post with referred place
@@ -228,7 +228,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
 
     void updateEventsWithArticleLocationPolygonPairs(Map<String,String> places_polygons, String permalink)
     {
-        System.out.println("*** Update events, article permalink: " + permalink);
+        //System.out.println("\t>Updating events with article permalink: " + permalink); //debugprint
         long startTime = System.currentTimeMillis();
         Set<String> places = places_polygons.keySet();
         // this is an ugly workaround. a table events per article would be superb
@@ -277,7 +277,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
                 else
                 {
                     // insert the place mappings in that event
-                    System.out.println(">>> Inserting to event " + event + " , places :" + places.toString());
+                    System.out.println("\t\t>>> Inserting to event " + event + " , places :" + places.toString());
                     session.execute(bstatement.bind(event));
                     break;
                 }
@@ -289,13 +289,13 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
 
         long endTime = System.currentTimeMillis();
         long duration = (endTime - startTime);  //divide by 1000000 to get milliseconds.
-        System.out.println("### Done with article permalink: " + permalink + " in " + Long.toString(duration) + " msec");
+        //System.out.println("### Done with article permalink: " + permalink + " in " + Long.toString(duration) + " msec");
 
     }
     void updateEventsWithTweetLocationPolygonPairs(Map<String,String> places_polygons, long post_id)
     {
-        String strpostid = Long.toString(post_id);
-        System.out.println("*** Update events, tweet post id: " + strpostid);
+        //String strpostid = Long.toString(post_id);
+        //System.out.println("\t>Updating events with tweet post id: " + strpostid); //debugprint
 
         long startTime = System.currentTimeMillis();
         Set<String> places = places_polygons.keySet();
@@ -345,7 +345,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
                 else
                 {
                     // insert the place mappings in that event
-                    System.out.println(">>> Inserting to event " + event_id + " , places :" + places.toString());
+                    System.out.println("\t\t>>> Inserting to event " + event_id + " , places :" + places.toString());
                     session.execute(bstatement.bind(event_id));
                     break;
                 }
@@ -357,7 +357,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
 
         long endTime = System.currentTimeMillis();
         long duration = (endTime - startTime);  //divide by 1000000 to get milliseconds.
-        System.out.println("### Done with article permalink: " + strpostid + " in " + Long.toString(duration) + " msec");
+        //System.out.println("### Done with article permalink: " + strpostid + " in " + Long.toString(duration) + " msec");
 
     }
 
@@ -447,9 +447,15 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
                     response.append(line);
                     response.append('\r');
                 }
+                String resp = response.toString();
                 rd.close();
                 // debugprint
-                System.out.println("popeye response:\n\t" + response.toString());
+                System.out.println("popeye response:\n\t" + resp);
+
+                if (resp.equals("{\"code\":400,\"message\":\"exception\"}"))
+                {
+                    System.err.println("Popeye request failed.");
+                }
             }
             catch(MalformedURLException exc)
             {

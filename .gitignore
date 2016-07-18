@@ -39,3 +39,4 @@ nb*.xml
 *.properties
 *.csv
 BDETwitterListener/placeholder_twitterdevaccount
+*.queries

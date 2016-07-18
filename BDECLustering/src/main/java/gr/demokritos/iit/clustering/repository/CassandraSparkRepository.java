@@ -70,7 +70,7 @@ public class CassandraSparkRepository {
                 Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_TITLE.getColumnName(),
                 Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CLEAN_TEXT.getColumnName(),
                 Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PUBLISHED.getColumnName())
-                // DEBUG // TODO: COMMENT OUT!
+                // DEBUG // TODO: COMMENT OUT! - gets the first 20
                                 .limit(20l);
                 // DEBUG // TODO: UNCOMMENT!
                 //.filter(new FilterByAfterTimeStamp(timestamp));

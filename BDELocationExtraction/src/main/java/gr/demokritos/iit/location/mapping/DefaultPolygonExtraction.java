@@ -85,7 +85,7 @@ public class DefaultPolygonExtraction implements IPolygonExtraction {
             Response response = client.execJSONPost(polURL, gs.toJson(input, Collection.class), String.class);
             String ent = (String) response.getEntity();
             // debug!
-            System.out.println(ent);
+            //System.out.println(ent); //debugprint
             // debug!
             // responses from the API: when smth wrong: 'null', when error in call (?) 'code:400, message:exception"
             if (ent != null && !ent.contains("null") && !ent.equals("{\"code\":400,\"message\":\"exception\"}")) {
