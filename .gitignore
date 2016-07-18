@@ -35,4 +35,7 @@ nb*.xml
 .idea/
 *.iml
 
-
+# config-specific
+*.properties
+*.csv
+BDETwitterListener/placeholder_twitterdevaccount

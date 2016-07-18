@@ -96,49 +96,63 @@ public class GeometryFormatTransformer {
 
     public static String EventRowToPopeyeProcess(ArrayList<String> input)
     {
-        String output="";
-
+        String output = "";
         ArrayList<String> out = new ArrayList<>();
-        int index = 0;
+        try {
 
-        out.add("\"id\":\"" + input.get(index++)+"\"");
-        out.add("\"title\":\"" + input.get(index++)+"\"");
-        //typically, seconds are missing from the date, like 2016-05-23T08:27+0000
-        String date = input.get(index++);
-        final String targetDateFormat = "yyyy-mm-ddThh:mm:ss+zzzz";
 
-        if(date.length() < targetDateFormat.length())
-        {
-            //plug in zero seconds
-            String [] tok = date.split("\\+");
-            date = tok[0] + ":00+" + tok[1];
+
+
+            int index = 0;
+
+            out.add("\"id\":\"" + input.get(index++) + "\"");
+            out.add("\"title\":\"" + input.get(index++) + "\"");
+            //typically, seconds are missing from the date, like 2016-05-23T08:27+0000
+            String date = input.get(index++);
+            final String targetDateFormat = "yyyy-mm-ddThh:mm:ss+zzzz";
+
+            if (date.length() < targetDateFormat.length()) {
+                //plug in zero seconds
+                String[] tok = date.split("\\+");
+                date = tok[0] + ":00+" + tok[1];
+            }
+
+            out.add("\"eventDate\":\"" + date + "\"");
+            out.add("\"referenceDate\":null");
+
+            String areasString = "";
+            int numLocations = 0;
+            while (index < input.size()) {
+                if (numLocations++ > 0)
+                    areasString += ",";
+                areasString += "{"; // start object
+                // loc. name
+                String location = input.get(index++);
+                // loc. coord
+                String coord = input.get(index++);
+                coord = GeometryFormatTransformer.geometryToPointList(coord);
+
+                areasString += "\"name\":" + location + ",\"geometry\":" + "{";
+                areasString += "\"type\":\"Polygon\",\"coordinates\":" + coord;
+                areasString += "}"; // close geometry
+                areasString += "}"; // close location object
+            }
+            out.add("\"areas\":[" + areasString + "]");
+            assert index == input.size() : "Index - input list size mismatch";
         }
-
-        out.add("\"eventDate\":" + date);
-        out.add("\"referenceDate\":null");
-
-        String areasString = "";
-        int numLocations = 0;
-        while(index < input.size())
+        catch(java.lang.IndexOutOfBoundsException exc)
         {
-            if (numLocations++ > 0)
-                areasString +=",";
-            areasString +="{"; // start object
-            // loc. name
-            String location = input.get(index++);
-            // loc. coord
-            String coord = input.get(index++);
-            coord = GeometryFormatTransformer.geometryToPointList(coord);
-
-            areasString +="\"name\":" + location +",\"geometry\":" + "{";
-            areasString += "\"type\":\"polygon\",\"coordinates\":" + coord ;
-            areasString += "}"; // close geometry
-            areasString += "}"; // close location object
+            System.out.println("Malformed input geometry to EventRowToPopeyeProcess.");
+            System.out.println(exc.getMessage());
+            exc.printStackTrace();
+            return "";
         }
-        out.add("\"areas\":["  + areasString +"]");
-        assert index == input.size() : "Index - input list size mismatch";
-
-
+        for (int i=0;i<out.size();++i)
+        {
+            if(i>0 && i < out.size())
+                output += ",";
+            output += out.get(i);
+        }
 
 
         return "{" + output + "}";
@@ -160,7 +174,7 @@ public class GeometryFormatTransformer {
             {
                 // a pair begins
                 out += "[";
-                out += values[s];
+                out += values[s] + ",";
                 startPair = false;
             }
             else {

@@ -26,6 +26,16 @@ import gr.demokritos.iit.location.mode.OperationMode;
 import gr.demokritos.iit.location.structs.LocSched;
 import gr.demokritos.iit.location.util.GeometryFormatTransformer;
 
+import java.io.IOException;
+// dependencies of json POST
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.io.DataOutputStream;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
+
 import java.util.*;
 
 /**
@@ -350,12 +360,17 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
         System.out.println("### Done with article permalink: " + strpostid + " in " + Long.toString(duration) + " msec");
 
     }
+
+    /**
+     * Function to send events to popeye.di.uoa.gr for storage and/or change detection
+     */
     @Override
     public void storeAndChangeDetectionEvents()
     {
-        // which events? All?
         // get all events, fields: id, title, date, placemappings
+        // store each field of interest in an arraylist
         ArrayList<String> entries = new ArrayList<>();
+        // perform the query
         Statement query = QueryBuilder
                 .select(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName(),
                         Cassandra.Event.TBL_EVENTS.FLD_TITLE.getColumnName(),
@@ -363,38 +378,101 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
                         Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName())
                 .from(session.getLoggedKeyspace(),Cassandra.Event.Tables.EVENTS.getTableName());
         ResultSet results = session.execute(query);
-
+        int count = 1;
+        // for each event
         for(Row row : results)
         {
-            // id
+            entries.clear();
+            // get the id
             entries.add(row.getString(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName()));
 
-            // place - mappings - get that first. If null, skip the processing
+            // place-mappings: If null, skip the processing
             Map<String,String> locpoly = row.getMap(Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName(),String.class,String.class);
             if (locpoly.isEmpty())
             {
-                System.out.println("Skipping processing event " + entries.get(entries.size()-1) + " due to no geometries." );
+                System.out.println("Skipping processing event " + count++ + ":" + entries.get(entries.size()-1) + " due to no assigned geometries." );
                 entries.clear();
                 continue;
             }
 
-
-
-            // title
+            // get the title
             entries.add(row.getString(Cassandra.Event.TBL_EVENTS.FLD_TITLE.getColumnName()));
-            // date
+            // get date
             entries.add(row.getString(Cassandra.Event.TBL_EVENTS.FLD_DATE_LITERAL.getColumnName()));
-            // add geometry
+            // get  geometry
             for(String item : locpoly.keySet())
             {
                 String val = locpoly.get(item);
                 entries.add(item);
                 entries.add(val);
             }
+            // reconstruct the entries in the format expected by popeye
             String payload = GeometryFormatTransformer.EventRowToPopeyeProcess(entries);
-            System.out.println(payload);
-            // send it
-            // http://stackoverflow.com/questions/1359689/how-to-send-http-request-in-java
+            System.out.println("payload is:" + payload); // debugprint
+
+            // send http request
+            // TODO: make new connection for each send or make connection out of loop?
+            // TODO: put target url in the properties file on the module this function will
+            // end up in
+            String URLstr = "http://popeye.di.uoa.gr:8080/changeDetection/event/process";
+            URL url;
+            HttpURLConnection connection = null;
+            try
+            {
+                // open connection, set JSONic properties
+                url = new URL(URLstr);
+                connection = (HttpURLConnection)url.openConnection();
+                connection.setRequestMethod("POST");
+                connection.setRequestProperty("Content-Type","application/json");
+                connection.setRequestProperty("Accept","application/json");
+                connection.setRequestProperty("Content-Length",
+                        Integer.toString(payload.getBytes().length));
+                connection.setRequestProperty("Content-Language", "en-US");
+
+                connection.setUseCaches(false);
+                connection.setDoOutput(true);
+
+                //Send request
+                DataOutputStream wr = new DataOutputStream (
+                        connection.getOutputStream());
+                wr.writeBytes(payload);
+                wr.close();
+                //Get Response
+                InputStream is = connection.getInputStream();
+                BufferedReader rd = new BufferedReader(new InputStreamReader(is));
+                // parse to string
+                StringBuilder response = new StringBuilder(); // or StringBuffer if not Java 5+
+                String line;
+                while((line = rd.readLine()) != null) {
+                    response.append(line);
+                    response.append('\r');
+                }
+                rd.close();
+                // debugprint
+                System.out.println("popeye response:\n\t" + response.toString());
+            }
+            catch(MalformedURLException exc)
+            {
+                System.err.println("Malformed event processing URL:\n\t" + URLstr);
+                return;
+            }
+            catch(IOException exc)
+            {
+                System.err.println("IO error during event processing connection initialization:\n");
+                System.err.println(exc.getMessage());
+                System.err.println(exc.toString());
+                exc.printStackTrace();
+                return;
+            }
+            finally
+            {
+                if(connection != null)
+                    connection.disconnect();
+
+            }
+
+
         }
+
     }
 }
