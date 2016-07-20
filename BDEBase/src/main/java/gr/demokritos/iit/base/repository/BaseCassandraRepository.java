@@ -45,16 +45,25 @@ public class BaseCassandraRepository implements IBaseRepository {
 
 
     @Override
-    public Collection<Map<String, Object>> loadAllTweets(long from) {
+    public Collection<Map<String, Object>> loadAllTweets(int atmost) {
         System.out.println("loading tweets...");
-        List<String> ymdLitRange = Utils.extractYearMonthDayLiteralRangeFrom(from);
+
         Statement select;
         ResultSet results;
         Collection<Map<String, Object>> out = new ArrayList();
-        select = QueryBuilder
-                .select()
-                .all()
-                .from(session.getLoggedKeyspace(), Cassandra.Twitter.Tables.TWITTER_POSTS_PER_DATE.getTableName());
+        if (atmost > 0)
+            select = QueryBuilder
+                    .select()
+                    .all()
+                    .from(session.getLoggedKeyspace(), Cassandra.Twitter.Tables.TWITTER_POSTS_PER_DATE.getTableName())
+                    .limit(atmost);
+        else
+            select = QueryBuilder
+                    .select()
+                    .all()
+                    .from(session.getLoggedKeyspace(), Cassandra.Twitter.Tables.TWITTER_POSTS_PER_DATE.getTableName())
+                    ;
+
         results = session.execute(select);
         for (Row row : results) {
             Map<String, Object> res = new HashMap();
@@ -73,7 +82,6 @@ public class BaseCassandraRepository implements IBaseRepository {
             String permalink = row.getString(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_PERMALINK.getColumnName());
             res.put(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_PERMALINK.getColumnName(), permalink);
             // append
-            assert (created_at >= from) : String.format("query totally wrong: created_at=%d < from=%d", created_at, from);
             out.add(res);
         }
         System.out.println(String.format("loaded %d tweets", out.size()));
@@ -82,16 +90,24 @@ public class BaseCassandraRepository implements IBaseRepository {
 
 
     @Override
-    public Collection<Map<String, Object>> loadAllArticles(long from) {
+    public Collection<Map<String, Object>> loadAllArticles(int atmost) {
         System.out.println("loading articles...");
-        List<String> ymdLitRange = Utils.extractYearMonthDayLiteralRangeFrom(from);
         Statement select;
         ResultSet results;
         Collection<Map<String, Object>> out = new ArrayList();
-        select = QueryBuilder
-                .select()
-                .all()
-                .from(session.getLoggedKeyspace(), Cassandra.RSS.Tables.NEWS_ARTICLES_PER_PUBLISHED_DATE.getTableName());
+        if (atmost > 0)
+            select = QueryBuilder
+                    .select()
+                    .all()
+                    .from(session.getLoggedKeyspace(), Cassandra.RSS.Tables.NEWS_ARTICLES_PER_PUBLISHED_DATE.getTableName())
+                    .limit(atmost)
+                    ;
+        else
+            select = QueryBuilder
+                    .select()
+                    .all()
+                    .from(session.getLoggedKeyspace(), Cassandra.RSS.Tables.NEWS_ARTICLES_PER_PUBLISHED_DATE.getTableName())
+                    ;
         results = session.execute(select);
         for (Row row : results) {
             Map<String, Object> res = new HashMap();

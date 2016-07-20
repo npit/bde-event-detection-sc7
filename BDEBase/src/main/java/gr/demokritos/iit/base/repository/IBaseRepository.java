@@ -28,19 +28,19 @@ public interface IBaseRepository {
     /**
      * load all tweets
      *
-     * @param from
+     * @param atmost
      * @return
      */
-    Collection<Map<String, Object>> loadAllTweets(long from);
+    Collection<Map<String, Object>> loadAllTweets(int atmost);
 
 
     /**
      * load all articles
      *
-     * @param from
+     * @param atmost
      * @return
      */
-    Collection<Map<String, Object>> loadAllArticles(long from);
+    Collection<Map<String, Object>> loadAllArticles(int atmost);
 
 
 
@@ -74,4 +74,6 @@ public interface IBaseRepository {
      * @return
      */
     Map<String, Object> loadTweet(long post_id);
+
+
 }

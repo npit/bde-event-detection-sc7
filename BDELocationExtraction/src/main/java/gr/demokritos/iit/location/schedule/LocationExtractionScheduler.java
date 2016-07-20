@@ -75,12 +75,12 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                 // load items to process from last_parsed indicator.
                 //items = repos.loadArticles(sched.getLastParsed()); // TODO
                 System.err.println("*****Suspending article resuming - loading ALL for debuggery.");
-                items = repos.loadAllArticles(sched.getLastParsed());
+                items = repos.loadAllArticles(-1);
                 break;
             case TWEETS:
                 //items = repos.loadTweets(sched.getLastParsed());
                 System.err.println("*****Suspending twitter resuming - loading ALL for debuggery.");
-                items = repos.loadAllTweets(sched.getLastParsed());
+                items = repos.loadAllTweets(-1);
                 break;
         }
         ExecRes er;

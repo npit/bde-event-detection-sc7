@@ -14,24 +14,33 @@
  */
 package gr.demokritos.iit.clustering.exec;
 
+import gr.demokritos.iit.base.conf.BaseConfiguration;
+import gr.demokritos.iit.base.conf.IBaseConf;
+import gr.demokritos.iit.base.repository.BaseCassandraRepository;
+import gr.demokritos.iit.base.repository.IBaseRepository;
 import gr.demokritos.iit.clustering.config.BDESpark;
 import gr.demokritos.iit.clustering.config.BDESparkConf;
 import gr.demokritos.iit.clustering.config.ISparkConf;
+import gr.demokritos.iit.clustering.factory.DemoClusteringFactory;
+import gr.demokritos.iit.clustering.model.BDEArticle;
 import gr.demokritos.iit.clustering.newsum.ExtractMatchingPairsFunc;
 import gr.demokritos.iit.clustering.newsum.IClusterer;
 import gr.demokritos.iit.clustering.newsum.NSClusterer;
 import gr.demokritos.iit.clustering.repository.CassandraSparkRepository;
+import gr.demokritos.iit.clustering.repository.DemoCassandraRepository;
 import gr.demokritos.iit.clustering.structs.SimilarityMode;
 import gr.demokritos.iit.clustering.util.DocumentPairGenerationFilterFunction;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import gr.demokritos.iit.clustering.util.StructUtils;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
+import org.scify.newsum.server.clustering.ArticleMCLClusterer;
+import org.scify.newsum.server.clustering.BaseArticleClusterer;
+import org.scify.newsum.server.clustering.IArticleClusterer;
+import org.scify.newsum.server.model.structures.Topic;
 import scala.Tuple2;
 import scala.Tuple4;
 
@@ -59,6 +68,40 @@ public class BDEEventDetection {
                     "\n\te.g. %s ./res/clustering.properties", BDEEventDetection.class.getName(), BDEEventDetection.class.getName()));
         }
 
+        // call a non-spark event detection method for testing.
+        // copied from demo event detection
+
+        String properties = "./res/clustering.properties";
+        if (args.length == 1) {
+            properties = args[0];
+        }
+        IBaseConf configuration = new BaseConfiguration(properties);
+        DemoClusteringFactory factory = null;
+        DemoCassandraRepository repository;
+        factory = new DemoClusteringFactory(configuration);
+        repository = factory.createDemoCassandraRepository();
+
+        Calendar now = Calendar.getInstance();
+        now.set(Calendar.MONTH, now.get(Calendar.MONTH) - 1);
+
+        long tstamp = now.getTimeInMillis();
+        System.out.println("loading articles");
+        List<BDEArticle> articles = repository.loadArticlesAsDemo(tstamp);
+
+        // clusterer
+        IArticleClusterer cl = new BaseArticleClusterer(articles);
+        System.out.println("clustering articles...");
+        cl.calculateClusters();
+
+        Map<String,Topic> articlesPerCluster = cl.getArticlesPerCluster();
+        //repository.saveEvents(articlesPerCluster,)
+
+
+
+        return;
+
+        /*
+
         // init configuration
         ISparkConf conf = new BDESparkConf(args[0]);
         // init sparkConf (holds the spark context object)
@@ -84,6 +127,7 @@ public class BDEEventDetection {
 //        // TODO: we should return the clusters (e.g. a map RDD of ID, List<Tuple4<>>)
 //        clusterer.calculateClusters(RDDbatch);
 
+        //StructUtils.printArticles(RDDbatch);
         // create pairs
         System.out.println("EXTRACTING PAIRS");
         // get pairs of articles
@@ -94,7 +138,7 @@ public class BDEEventDetection {
         // get matching mapping
 
        // TODO: use flatMap?? we want for the full pairs rdd, each item mapped to a boolean value.
-        // the next call returns true on the pairs that are similar enoguh, based on the similarity
+        // the next call returns true on the pairs that are similar enough, based on the similarity
         // cutoff value
         JavaRDD<Boolean> map = RDDPairs.map(new ExtractMatchingPairsFunc(sc, conf.getSimilarityMode(),
                 conf.getCutOffThreshold(), conf.getNumPartitions()));
@@ -110,5 +154,8 @@ public class BDEEventDetection {
 
         // save clusters
         int a=2;
+
+
+        */
     }
 }

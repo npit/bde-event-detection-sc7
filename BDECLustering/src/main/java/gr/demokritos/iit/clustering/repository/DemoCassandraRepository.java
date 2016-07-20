@@ -136,9 +136,12 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
     }
 
     public List<BDEArticle> loadArticlesAsDemo(long timestamp) {
-        List<BDEArticle> res = new ArrayList();
 
-        Collection<Map<String, Object>> items = loadArticles(timestamp);
+
+        List<BDEArticle> res = new ArrayList();
+        // npit edit : load all articles
+        Collection<Map<String, Object>> items = loadAllArticles(10);
+        //Collection<Map<String, Object>> items = loadArticles(timestamp);
         // wrap to Article instances
         for (Map<String, Object> eachItem : items) {
             String source_url = (String) eachItem.get(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName());

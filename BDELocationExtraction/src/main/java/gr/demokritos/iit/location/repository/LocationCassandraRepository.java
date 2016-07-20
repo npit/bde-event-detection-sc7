@@ -160,7 +160,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
         if (places_polygons == null || places_polygons.isEmpty()) {
             return;
         }
-        System.out.println("\tupdating twitter tables, tweet: " + post_id + ", with: " + places_polygons.keySet().toString());
+        System.out.println("\tupdating twitter table" + Cassandra.Twitter.Tables.TWITTER_POSTS_PER_REFERRED_PLACE.getTableName() + ", tweet: " + post_id + ", with: " + places_polygons.keySet().toString());
         // load tweet from repository
         Map<String, Object> tweet = loadTweet(post_id);
         // update twitter post with referred place
