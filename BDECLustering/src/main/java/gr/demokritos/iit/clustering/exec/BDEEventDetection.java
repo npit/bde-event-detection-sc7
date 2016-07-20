@@ -32,15 +32,31 @@ import gr.demokritos.iit.clustering.structs.SimilarityMode;
 import gr.demokritos.iit.clustering.util.DocumentPairGenerationFilterFunction;
 
 import java.util.*;
+import java.util.logging.Level;
 
 import gr.demokritos.iit.clustering.util.StructUtils;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
+import org.scify.asset.server.model.datacollections.CleanResultCollection;
+import org.scify.asset.server.model.structures.social.TwitterResult;
+import org.scify.asset.social.classification.IClassifier;
+import org.scify.asset.social.clustering.SocialMediaClusterer;
+import org.scify.asset.social.data.preprocessing.DefaultSocialMediaCleaner;
+import org.scify.asset.social.data.preprocessing.ISocialMediaCleaner;
+import org.scify.asset.social.data.preprocessing.IStemmer;
+import org.scify.asset.social.data.preprocessing.TwitterStemmer;
 import org.scify.newsum.server.clustering.ArticleMCLClusterer;
 import org.scify.newsum.server.clustering.BaseArticleClusterer;
 import org.scify.newsum.server.clustering.IArticleClusterer;
+import org.scify.newsum.server.model.structures.Article;
+import org.scify.newsum.server.model.structures.Sentence;
+import org.scify.newsum.server.model.structures.Summary;
 import org.scify.newsum.server.model.structures.Topic;
+import org.scify.newsum.server.nlp.sentsplit.DefaultSentenceSplitter;
+import org.scify.newsum.server.nlp.sentsplit.ISentenceSplitter;
+import org.scify.newsum.server.summarization.ISummarizer;
+import org.scify.newsum.server.summarization.Summarizer;
 import scala.Tuple2;
 import scala.Tuple4;
 
@@ -94,9 +110,48 @@ public class BDEEventDetection {
         cl.calculateClusters();
 
         Map<String,Topic> articlesPerCluster = cl.getArticlesPerCluster();
-        //repository.saveEvents(articlesPerCluster,)
+
+        // the below should be already populated after news crawls
+        Map<String, Map<String, String>> place_mappings = getPlaceMappings(articles, articlesPerCluster);
 
 
+
+        ISentenceSplitter splitter = new DefaultSentenceSplitter(configuration.getSentenceSplitterModelPath());
+        System.out.println("getting summaries");
+        ISummarizer sum = new Summarizer(splitter);
+        // get summaries
+        Map<String, Summary> summaries = sum.getSummaries(new HashSet(articlesPerCluster.values()));
+        System.out.println("loading tweets");
+        // get token dictionary from topics
+
+        // process tweets
+        Collection<TwitterResult> tweets = repository.loadTweetsAsDemo(tstamp);
+        // clean tweets (stem)
+        IStemmer tsStemmer = new TwitterStemmer(1, configuration.getStopwordsFilePath());
+        System.out.println("Creating tweets dictionary");
+        ISocialMediaCleaner social_media_cleaner = new DefaultSocialMediaCleaner(tsStemmer);
+        Map<String, String> plainTextSummaries = convertToPlainSummaries(summaries);
+        Set<String> summaries_dict_words = social_media_cleaner.createDictionaryFromSummaries(plainTextSummaries);
+        System.out.println("Cleaning tweets");
+        CleanResultCollection<TwitterResult> cleanTweets
+                = social_media_cleaner.cleanTweets((List<TwitterResult>) tweets, summaries_dict_words);
+        System.out.println(cleanTweets.size() + " tweets left after cleaning" );
+        System.out.println("Clustering tweets...");
+        // get social media clusters
+        IArticleClusterer smClusterer = factory.getSocialMediaClustererForTwitter(SocialMediaClusterer.Mode.NVS, cleanTweets);
+        smClusterer.calculateClusters();
+        Collection<Topic> tweetClusters = smClusterer.getArticlesPerCluster().values();
+        System.out.println("Classifying tweets...");
+        IClassifier smClassifier = factory.getSocialMediaClassifierForTwitter(plainTextSummaries, tweetClusters, tsStemmer);
+
+        Map<Topic, List<String>> related = smClassifier.getRelated();
+
+        Map<String, Long> tweetURLtoPostIDMapping = getTweetClustersToIDsMappings(cleanTweets);
+        System.out.println("saving events...");
+
+
+        repository.saveEvents(articlesPerCluster, summaries, related, place_mappings, tweetURLtoPostIDMapping, 2);
+        System.out.println("Done");
 
         return;
 
@@ -157,5 +212,67 @@ public class BDEEventDetection {
 
 
         */
+    }
+
+    private static Map<String, Map<String, String>> getPlaceMappings(List<BDEArticle> articles, Map<String, Topic> clusters) {
+
+        Map<String, BDEArticle> mapped_articles = getMappingPerSourceURL(articles);
+
+        Map<String, Map<String, String>> res = new HashMap();
+
+        for (Map.Entry<String, Topic> entry : clusters.entrySet()) {
+            String topic_id = entry.getKey();
+            Topic topic = entry.getValue();
+            Map<String, String> places_polygons = new HashMap();
+
+            for (Article each : topic) {
+                BDEArticle tmp = mapped_articles.get(each.getSource());
+                if (tmp != null) {
+                    places_polygons.putAll(tmp.getPlaces_to_polygons());
+                }
+            }
+            res.put(topic_id, places_polygons);
+        }
+        return res;
+    }
+    private static Map<String, BDEArticle> getMappingPerSourceURL(List<BDEArticle> articles) {
+        Map<String, BDEArticle> res = new HashMap();
+        for (BDEArticle each : articles) {
+            res.put(each.getSource(), each);
+        }
+        return res;
+    }
+
+    private static Map<String, String> convertToPlainSummaries(Map<String, Summary> summaries) {
+        Map<String, String> res = new HashMap();
+        for (Map.Entry<String, Summary> entry : summaries.entrySet()) {
+            Summary tmp = entry.getValue();
+            res.put(entry.getKey(), toPlainText(tmp));
+        }
+        return res;
+    }
+
+    private static String toPlainText(Summary tmp) {
+        StringBuilder sb = new StringBuilder();
+        Summary.SummaryData commander_data = tmp.asSummaryData();
+        for (Sentence sen : commander_data.getAllSentences()) {
+            String sentSnip = sen.getSnippet().trim();
+            if (sentSnip.endsWith(".")) {
+                sb.append(sentSnip).append("\n");
+            } else {
+                sb.append(sentSnip).append(".").append("\n");
+            }
+        }
+        return sb.toString();
+    }
+    private static Map<String, Long> getTweetClustersToIDsMappings(CleanResultCollection<TwitterResult> cleanTweets) {
+        Map<String, Long> res = new HashMap();
+
+        for (TwitterResult cleanTweet : cleanTweets) {
+            long post_id = cleanTweet.getTweetID();
+            String permalink = cleanTweet.getURL();
+            res.put(permalink, post_id);
+        }
+        return res;
     }
 }

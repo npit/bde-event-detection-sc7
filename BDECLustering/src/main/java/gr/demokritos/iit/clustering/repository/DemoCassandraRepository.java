@@ -8,6 +8,7 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
 import gr.demokritos.iit.base.repository.views.Cassandra;
 import gr.demokritos.iit.base.util.Utils;
 import gr.demokritos.iit.clustering.model.BDEArticle;
+import gr.demokritos.iit.jinsect.structs.Pair;
 import gr.demokritos.iit.location.repository.LocationCassandraRepository;
 import org.scify.asset.server.model.structures.social.TwitterResult;
 import org.scify.newsum.server.model.structures.Article;
@@ -71,9 +72,10 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
         Map<String, Set<Long>> tweetIDsPerTopicID = extractRelatedTweetIDs(relatedTweets, tweetURLtoPostIDMapping);
         // get all tweet IDs for the topic related
         Set<Long> tweetIDs = tweetIDsPerTopicID.get(topicID);
-
-        Set<String> topicSourceURLs = extractSourceURLs(t);
-
+        if(tweetIDs == null) System.out.println("Null tweet ids");
+        // updated to extract URL + title pairs
+        //Set<String> topicSourceURLs = extractSourceURLs(t);
+        Map<String,String> topicSourceURL_Titles = extractSourceURLTitlePairs(t);
         // update events
         Statement upsert = QueryBuilder
                 .update(session.getLoggedKeyspace(), Cassandra.Event.Tables.EVENTS.getTableName())
@@ -83,7 +85,8 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
                 .and(set(Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName(), place_mappings))
                 .and(set(Cassandra.Event.TBL_EVENTS.FLD_TWEET_IDS.getColumnName(),
                         tweetIDs == null ? Collections.EMPTY_SET : tweetIDs))
-                .and(set(Cassandra.Event.TBL_EVENTS.FLD_EVENT_SOURCE_URLS.getColumnName(), topicSourceURLs))
+               // .and(set(Cassandra.Event.TBL_EVENTS.FLD_EVENT_SOURCE_URLS.getColumnName(), topicSourceURLs))
+                .and(set(Cassandra.Event.TBL_EVENTS.FLD_EVENT_SOURCE_URLS.getColumnName(), topicSourceURL_Titles))
                 .where(eq(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName(), topicID));
         session.execute(upsert);
         for (Map.Entry<String, String> entry : place_mappings.entrySet()) {
@@ -98,7 +101,8 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
                     .and(set(Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_PLACE_POLYGON.getColumnName(), polygon))
                     .and(set(Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_TWEET_IDS.getColumnName(),
                             tweetIDs == null ? Collections.EMPTY_SET : tweetIDs))
-                    .and(set(Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_EVENT_SOURCE_URLS.getColumnName(), topicSourceURLs))
+                    //.and(set(Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_EVENT_SOURCE_URLS.getColumnName(), topicSourceURLs))
+                    .and(set(Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_EVENT_SOURCE_URLS.getColumnName(), topicSourceURL_Titles))
                     .where(eq(Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_PLACE_LITERAL.getColumnName(), place_literal))
                     .and(eq(Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_EVENT_ID.getColumnName(), topicID));
             session.execute(upsert);
@@ -140,8 +144,8 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
 
         List<BDEArticle> res = new ArrayList();
         // npit edit : load all articles
-        Collection<Map<String, Object>> items = loadAllArticles(10);
-        //Collection<Map<String, Object>> items = loadArticles(timestamp);
+        //Collection<Map<String, Object>> items = loadAllArticles(15);
+        Collection<Map<String, Object>> items = loadArticles(timestamp);
         // wrap to Article instances
         for (Map<String, Object> eachItem : items) {
             String source_url = (String) eachItem.get(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName());
@@ -166,6 +170,8 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
         Collection<TwitterResult> res = new ArrayList();
 
         Collection<Map<String, Object>> items = loadTweets(timestamp);
+        //Collection<Map<String, Object>> items = loadAllTweets(50);
+
         // wrap to Article instances
         for (Map<String, Object> eachItem : items) {
             long post_id = (long) eachItem.get(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_POST_ID.getColumnName());
@@ -221,6 +227,13 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
         Set<String> res = new HashSet();
         for (Article article : t) {
             res.add(article.getSource());
+        }
+        return res;
+    }
+    private Map<String,String> extractSourceURLTitlePairs(Topic t) {
+        Map<String,String> res = new HashMap();
+        for (Article article : t) {
+            res.put(article.getSource(),article.getTitle());
         }
         return res;
     }
