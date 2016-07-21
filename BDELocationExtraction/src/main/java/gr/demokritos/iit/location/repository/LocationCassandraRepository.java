@@ -152,7 +152,8 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
             session.execute(insert);
 
         }
-        updateEventsWithArticleLocationPolygonPairs(places_polygons, permalink);
+        // this populates existing events table with locations/polygons pairs from news
+        //updateEventsWithArticleLocationPolygonPairs(places_polygons, permalink);
     }
 
     @Override
@@ -181,7 +182,8 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
                     .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_REFERRED_PLACE.FLD_ACCOUNT_NAME.getColumnName(), tweet.get(Cassandra.Twitter.TBL_TWITTER_POST.FLD_ACCOUNT_NAME.getColumnName()));
             session.execute(insert);
         }
-        updateEventsWithTweetLocationPolygonPairs(places_polygons,post_id);
+        // this populates existing events table with locations/polygons pairs from tweets
+        //updateEventsWithTweetLocationPolygonPairs(places_polygons,post_id);
     }
 
 
@@ -292,6 +294,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
         //System.out.println("### Done with article permalink: " + permalink + " in " + Long.toString(duration) + " msec");
 
     }
+    // hotfix for populating events table
     void updateEventsWithTweetLocationPolygonPairs(Map<String,String> places_polygons, long post_id)
     {
         //String strpostid = Long.toString(post_id);

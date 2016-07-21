@@ -1,4 +1,7 @@
 # is a comment
 # Reuters news.
 http://feeds.reuters.com/news/artsculture
-
+http://feeds.reuters.com/Reuters/PoliticsNews
+http://feeds.reuters.com/Reuters/worldNews
+http://feeds.reuters.com/reuters/topNews
+http://feeds.reuters.com/Reuters/domesticNews

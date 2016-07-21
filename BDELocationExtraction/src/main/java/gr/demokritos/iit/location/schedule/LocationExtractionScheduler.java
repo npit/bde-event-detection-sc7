@@ -96,6 +96,7 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
     }
 
     private ExecRes extractLocation(Collection<Map<String, Object>> items, OperationMode mode) {
+        System.out.println("Extracting location for " + items.size() + " items\n");
         // keep most recent published for reference
         long max_published = Long.MIN_VALUE;
         int i = 0;
@@ -103,10 +104,11 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
             case ARTICLES:
                 // for each article
                 for (Map<String, Object> article : items) {
+                    String permalink;
                     long published = (long) article.get(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PUBLISHED.getColumnName());
                     max_published = Math.max(max_published, published);
 
-                    String permalink = (String) article.get(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName());
+                    permalink = (String) article.get(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName());
                     String clean_text = (String) article.get(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CLEAN_TEXT.getColumnName());
                     // extract location entities
                     Set<String> locationsFound = locExtractor.extractLocation(clean_text);
@@ -118,6 +120,8 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                         repos.updateArticlesWithReferredPlaceMetadata(permalink, places_polygons);
                         i++;
                     }
+                    else
+                        System.out.println("\tNo location found for article" + permalink); //debugprint
                 }
                 break;
             case TWEETS:
@@ -139,6 +143,8 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                         repos.updateTweetsWithReferredPlaceMetadata(post_id, places_polygons);
                         i++;
                     }
+                    else
+                        System.out.println("\tNo location found for tweet" + post_id); //debugprint
                 }
                 break;
         }

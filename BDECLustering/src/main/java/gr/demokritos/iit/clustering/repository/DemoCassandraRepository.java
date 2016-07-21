@@ -144,8 +144,8 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
 
         List<BDEArticle> res = new ArrayList();
         // npit edit : load all articles
-        //Collection<Map<String, Object>> items = loadAllArticles(15);
-        Collection<Map<String, Object>> items = loadArticles(timestamp);
+        Collection<Map<String, Object>> items = loadAllArticles(-1);
+        //Collection<Map<String, Object>> items = loadArticles(timestamp);
         // wrap to Article instances
         for (Map<String, Object> eachItem : items) {
             String source_url = (String) eachItem.get(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName());
@@ -169,8 +169,8 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
     public Collection<TwitterResult> loadTweetsAsDemo(long timestamp) {
         Collection<TwitterResult> res = new ArrayList();
 
-        Collection<Map<String, Object>> items = loadTweets(timestamp);
-        //Collection<Map<String, Object>> items = loadAllTweets(50);
+       // Collection<Map<String, Object>> items = loadTweets(timestamp);
+        Collection<Map<String, Object>> items = loadAllTweets(-1);
 
         // wrap to Article instances
         for (Map<String, Object> eachItem : items) {
