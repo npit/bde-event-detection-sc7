@@ -46,7 +46,7 @@ public class NewsCrawler extends AbstractCrawler {
         if (args.length == 0) {
             throw new IllegalArgumentException(USAGE);
         }
-        System.out.println("working from " + new File(".").getAbsolutePath());
+        //System.out.println("working from " + new File(".").getAbsolutePath()); //debugprint
         IRSSConf configuration = new RSSConf(args[0]);
         RSSCrawlFactory factory = null; 
         try {
