@@ -292,7 +292,7 @@ public class CassandraRepository extends AbstractRepository implements IReposito
             session.execute(insert_coords);
         }
         if (!sPlace.isEmpty()) {
-            System.out.println("inserting: " + tplace.toString() + ", for post: " + post.getId());
+            //System.out.println("inserting: " + tplace.toString() + ", for post: " + post.getId());
             // insert metadata at twitter_place_per_post
             Statement insert_place
                     = QueryBuilder

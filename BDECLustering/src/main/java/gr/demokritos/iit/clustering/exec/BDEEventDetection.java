@@ -142,15 +142,19 @@ public class BDEEventDetection {
         smClusterer.calculateClusters();
         Collection<Topic> tweetClusters = smClusterer.getArticlesPerCluster().values();
         System.out.println("Classifying tweets...");
-        IClassifier smClassifier = factory.getSocialMediaClassifierForTwitter(plainTextSummaries, tweetClusters, tsStemmer);
-
+        //IClassifier smClassifier = factory.getSocialMediaClassifierForTwitter(plainTextSummaries, tweetClusters, tsStemmer);
+        // default thresholds are
+        double min_assign_sim_threshold = 0.010D;
+        double min_assign_titlesim_threshold = 0.10D;
+        IClassifier smClassifier = factory.getSocialMediaClassifierForTwitter(min_assign_sim_threshold, min_assign_titlesim_threshold,plainTextSummaries, tweetClusters, tsStemmer);
         Map<Topic, List<String>> related = smClassifier.getRelated();
 
         Map<String, Long> tweetURLtoPostIDMapping = getTweetClustersToIDsMappings(cleanTweets);
+        Map<String, String> tweetURLtoUserMapping = getTweetClustersToUsersMappings(cleanTweets);
         System.out.println("saving events...");
 
 
-        repository.saveEvents(articlesPerCluster, summaries, related, place_mappings, tweetURLtoPostIDMapping, 2);
+        repository.saveEvents(articlesPerCluster, summaries, related, place_mappings, tweetURLtoPostIDMapping, tweetURLtoUserMapping, 2);
         System.out.println("Done");
 
         return;
@@ -275,4 +279,17 @@ public class BDEEventDetection {
         }
         return res;
     }
+    private static Map<String, String> getTweetClustersToUsersMappings(CleanResultCollection<TwitterResult> cleanTweets) {
+        Map<String, String> res = new HashMap();
+
+        for (TwitterResult cleanTweet : cleanTweets) {
+            String user = cleanTweet.getUser_name();
+            String permalink = cleanTweet.getURL();
+            res.put(permalink, user);
+        }
+        return res;
+    }
+
+
+
 }

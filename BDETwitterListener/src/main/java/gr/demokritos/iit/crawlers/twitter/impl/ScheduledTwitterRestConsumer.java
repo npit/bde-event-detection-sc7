@@ -110,6 +110,7 @@ public class ScheduledTwitterRestConsumer extends AbstractTwitterRestConsumer im
             }
         }
         // for each account
+        System.out.println(">>> num accounts: " + accounts.size());
         for (SourceAccount sourceAccount : accounts) {
             try {
                 // check rate limit status
@@ -122,6 +123,7 @@ public class ScheduledTwitterRestConsumer extends AbstractTwitterRestConsumer im
                     seconds_until_reset = checkStatus.get(API_SECONDS_UNTIL_RESET);
                 }
                 String sourceName = sourceAccount.getAccount();
+                System.out.println("SOurce account : " + sourceName);
                 LOGGER.info(String.format("Parsing '%s': %d/%d accounts", sourceName, iCount++, iTotal));
                 // get posts from selected account
                 List<Status> statuses = twitter.getUserTimeline(sourceName);

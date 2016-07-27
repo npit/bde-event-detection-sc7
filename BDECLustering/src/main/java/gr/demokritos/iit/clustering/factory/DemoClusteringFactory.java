@@ -85,6 +85,17 @@ public class DemoClusteringFactory {
         return new SocialMediaClassifier(plainSummaries, clusters, stemmer);
     }
 
+    public IClassifier getSocialMediaClassifierForTwitter(
+            double min_assign_sim_threshold,
+            double min_assign_title_sim_threshold,
+            Map<String, String> plainSummaries,
+            Collection<Topic> clusters,
+            IStemmer stemmer
+    ){
+        // use Default Thresholds
+        return new SocialMediaClassifier(min_assign_sim_threshold, min_assign_title_sim_threshold, plainSummaries, clusters, stemmer);
+    }
+
     public void releaseResources() {
         if (cluster !=null) { cluster.close(); }
     }

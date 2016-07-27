@@ -98,9 +98,11 @@ public class DemoBDEEventDetection {
             Map<Topic, List<String>> related = smClassifier.getRelated();
 
             Map<String, Long> tweetURLtoPostIDMapping = getTweetClustersToIDsMappings(cleanTweets);
+            Map<String, String> tweetURLtoUserMapping = getTweetClustersToUsersMappings(cleanTweets);
+
             LOGGER.info("saving events...");
 
-            repository.saveEvents(clusters, summaries, related, place_mappings, tweetURLtoPostIDMapping, 2);
+            repository.saveEvents(clusters, summaries, related, place_mappings, tweetURLtoPostIDMapping,tweetURLtoUserMapping, 2);
             LOGGER.info("Done");
         } finally {
             if (factory != null) {
@@ -176,4 +178,16 @@ public class DemoBDEEventDetection {
         }
         return sb.toString();
     }
+
+    private static Map<String, String> getTweetClustersToUsersMappings(CleanResultCollection<TwitterResult> cleanTweets) {
+        Map<String, String> res = new HashMap();
+
+        for (TwitterResult cleanTweet : cleanTweets) {
+            String user = cleanTweet.getUser_name();
+            String permalink = cleanTweet.getURL();
+            res.put(permalink, user);
+        }
+        return res;
+    }
+
 }

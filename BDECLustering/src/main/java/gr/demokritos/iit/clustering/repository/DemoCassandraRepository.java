@@ -10,6 +10,7 @@ import gr.demokritos.iit.base.util.Utils;
 import gr.demokritos.iit.clustering.model.BDEArticle;
 import gr.demokritos.iit.jinsect.structs.Pair;
 import gr.demokritos.iit.location.repository.LocationCassandraRepository;
+import org.apache.commons.collections.map.HashedMap;
 import org.scify.asset.server.model.structures.social.TwitterResult;
 import org.scify.newsum.server.model.structures.Article;
 import org.scify.newsum.server.model.structures.Summary;
@@ -40,6 +41,7 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
                            Map<Topic, List<String>> relatedTweets,
                            Map<String, Map<String, String>> place_mappings,
                            Map<String, Long> tweetURLtoPostIDMapping,
+                           Map<String, String> tweetURLtoUserIDMapping,
                            int event_size_cuttof
 
     ) {
@@ -47,7 +49,7 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
             String id = entry.getKey();
             Topic t = entry.getValue();
             if (t.size() >= event_size_cuttof) {
-                saveEvent(id, t, summaries.get(id), relatedTweets, place_mappings, tweetURLtoPostIDMapping);
+                saveEvent(id, t, summaries.get(id), relatedTweets, place_mappings, tweetURLtoPostIDMapping,tweetURLtoUserIDMapping);
             }
         }
     }
@@ -57,7 +59,10 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
                           Summary s,
                           Map<Topic, List<String>> relatedTweets,
                           Map<String, Map<String, String>> places_polygons_per_id,
-                          Map<String, Long> tweetURLtoPostIDMapping) {
+                          Map<String, Long> tweetURLtoPostIDMapping,
+                          Map<String, String> tweetURLtoUserIDMapping
+
+                          ) {
 
         String title = t.getTitle();
         System.out.println(String.format("saving event id: %s with title: %s", topicID, title));
@@ -71,9 +76,11 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
         // get tweet IDs related to the event
         Map<String, Set<Long>> tweetIDsPerTopicID = extractRelatedTweetIDs(relatedTweets, tweetURLtoPostIDMapping);
         // get all tweet IDs for the topic related
-        Set<Long> tweetIDs = tweetIDsPerTopicID.get(topicID);
-        if(tweetIDs == null) System.out.println("Null tweet ids");
-        // updated to extract URL + title pairs
+        //Set<Long> tweetIDs = tweetIDsPerTopicID.get(topicID);
+        Map<Long,String> tweetIDsUsers = extractRelatedTweetIDsTitlesPerTopicID(topicID,relatedTweets,
+                tweetURLtoPostIDMapping,tweetURLtoUserIDMapping);
+        if(tweetIDsUsers == null) System.out.println("Null tweet ids");
+        // news : updated to extract URL + title pairs
         //Set<String> topicSourceURLs = extractSourceURLs(t);
         Map<String,String> topicSourceURL_Titles = extractSourceURLTitlePairs(t);
         // update events
@@ -84,11 +91,13 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
                 .and(set(Cassandra.Event.TBL_EVENTS.FLD_DATE_LITERAL.getColumnName(), sUTCEventDate))
                 .and(set(Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName(), place_mappings))
                 .and(set(Cassandra.Event.TBL_EVENTS.FLD_TWEET_IDS.getColumnName(),
-                        tweetIDs == null ? Collections.EMPTY_SET : tweetIDs))
+                        tweetIDsUsers == null ? Collections.EMPTY_SET : tweetIDsUsers))
                // .and(set(Cassandra.Event.TBL_EVENTS.FLD_EVENT_SOURCE_URLS.getColumnName(), topicSourceURLs))
                 .and(set(Cassandra.Event.TBL_EVENTS.FLD_EVENT_SOURCE_URLS.getColumnName(), topicSourceURL_Titles))
                 .where(eq(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName(), topicID));
+        System.out.println(upsert.toString());
         session.execute(upsert);
+
         for (Map.Entry<String, String> entry : place_mappings.entrySet()) {
             String place_literal = entry.getKey();
             String polygon = entry.getValue();
@@ -100,7 +109,7 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
                     .and(set(Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_DATE_LITERAL.getColumnName(), sUTCEventDate))
                     .and(set(Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_PLACE_POLYGON.getColumnName(), polygon))
                     .and(set(Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_TWEET_IDS.getColumnName(),
-                            tweetIDs == null ? Collections.EMPTY_SET : tweetIDs))
+                            tweetIDsUsers == null ? Collections.EMPTY_SET : tweetIDsUsers))
                     //.and(set(Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_EVENT_SOURCE_URLS.getColumnName(), topicSourceURLs))
                     .and(set(Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_EVENT_SOURCE_URLS.getColumnName(), topicSourceURL_Titles))
                     .where(eq(Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_PLACE_LITERAL.getColumnName(), place_literal))
@@ -108,6 +117,49 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
             session.execute(upsert);
         }
     }
+
+    private Map<Long,String> extractRelatedTweetIDsTitlesPerTopicID(
+            String tid,
+            Map<Topic, List<String>> relatedTweets,
+            Map<String, Long> tweetURLtoPostIDMapping,
+            Map<String, String> tweetURLtoUserIDMapping
+    ) {
+        Map<String, Map<Long,String>> res = new HashMap();
+
+        for (Map.Entry<Topic, List<String>> entry : relatedTweets.entrySet()) {
+            Topic tweetsCluster = entry.getKey();
+            List<String> lClusterIDs = entry.getValue();
+
+            for (String topicID : lClusterIDs) {
+                if (!res.containsKey(topicID)) {
+                    Map<Long,String> tweetData = new HashMap();
+                    //Set<Long> tweetIDs = new HashSet();
+
+                    // it is a tweet transformed to an article
+                    for (Article article : tweetsCluster) {
+                        Long id = (tweetURLtoPostIDMapping.get(article.getSource()));
+                        String title = (tweetURLtoUserIDMapping.get(article.getSource()));
+                        tweetData.put(id,title);
+                    }
+                    res.put(topicID, tweetData);
+                } else {
+                    Map<Long,String> existing = res.get(topicID);
+                    // it is a tweet transformed to an article
+                    for (Article article : tweetsCluster) {
+                        Long id = (tweetURLtoPostIDMapping.get(article.getSource()));
+                        String title = (tweetURLtoUserIDMapping.get(article.getSource()));
+                        existing.put(id,title);
+                    }
+                    res.put(topicID, existing);
+                }
+            }
+        }
+        // get tweets of the current topic id
+        return res.get(tid);
+
+
+    }
+
 
     private Map<String, Set<Long>> extractRelatedTweetIDs(
                 Map<Topic, List<String>> relatedTweets,
@@ -179,7 +231,9 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
             String tweet = (String) eachItem.get(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_TWEET.getColumnName());
             long created_at = (long) eachItem.get(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_CREATED_AT.getColumnName());
             String lang = (String) eachItem.get(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_LANGUAGE.getColumnName());
-            res.add(new TwitterResult(post_id, 0l, permalink, tweet, created_at, lang));
+            // add extra entries to use twitter_results's constructor with the username field
+            String user_name = (String) eachItem.get(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_ACCOUNT_NAME.getColumnName());
+            res.add(new TwitterResult(post_id, 0l, permalink, tweet, Long.toString(created_at), lang,new ArrayList<String>(),user_name,""));
         }
         return res;
     }
