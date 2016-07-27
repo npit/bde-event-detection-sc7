@@ -46,6 +46,7 @@ public class LocationExtraction {
             System.out.println(USAGE);
             System.out.println(String.format("Using default path for configuration file: %s%n", path));
         } else {
+            System.out.println(String.format("Provided configuration file path: [%s]\n",args[0]));
             path = args[0];
         }
         ILocConf conf = new LocConf(path);
