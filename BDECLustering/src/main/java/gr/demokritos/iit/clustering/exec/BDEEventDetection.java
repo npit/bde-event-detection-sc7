@@ -91,6 +91,7 @@ public class BDEEventDetection {
         if (args.length == 1) {
             properties = args[0];
         }
+
         IBaseConf configuration = new BaseConfiguration(properties);
         DemoClusteringFactory factory = null;
         DemoCassandraRepository repository;

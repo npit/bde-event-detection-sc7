@@ -36,11 +36,10 @@ nb*.xml
 *.iml
 
 # config-specific
-*.properties
 *.csv
 BDETwitterListener/placeholder_twitterdevaccount
-*.queries
 *.ignore
 *META-INF*
 out/*
 *.csv#
+installPOMs/
