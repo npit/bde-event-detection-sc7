@@ -158,7 +158,7 @@ public class BDEEventDetection {
         repository.saveEvents(articlesPerCluster, summaries, related, place_mappings, tweetURLtoPostIDMapping, tweetURLtoUserMapping, 2);
         System.out.println("Done");
 
-        return;
+
 
         /*
 
