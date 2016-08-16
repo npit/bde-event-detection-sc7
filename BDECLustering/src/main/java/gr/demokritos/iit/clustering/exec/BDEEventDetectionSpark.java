@@ -18,6 +18,7 @@ import gr.demokritos.iit.base.conf.BaseConfiguration;
 import gr.demokritos.iit.base.conf.IBaseConf;
 import gr.demokritos.iit.base.repository.BaseCassandraRepository;
 import gr.demokritos.iit.base.repository.IBaseRepository;
+import gr.demokritos.iit.clustering.clustering.BaseSparkClusterer;
 import gr.demokritos.iit.clustering.config.BDESpark;
 import gr.demokritos.iit.clustering.config.BDESparkConf;
 import gr.demokritos.iit.clustering.config.ISparkConf;
@@ -63,12 +64,12 @@ import scala.Tuple4;
 /**
  * @author George K. <gkiom@iit.demokritos.gr>
  */
-public class BDEEventDetection {
+public class BDEEventDetectionSpark {
 
     //    private final SparkContext sc;
     private final BDESpark sp;
 
-    public BDEEventDetection(BDESpark bdes) {
+    public BDEEventDetectionSpark(BDESpark bdes) {
         this.sp = bdes;
     }
 
@@ -91,77 +92,6 @@ public class BDEEventDetection {
         if (args.length == 1) {
             properties = args[0];
         }
-        // load base configuration, initialize repository
-        IBaseConf configuration = new BaseConfiguration(properties);
-        DemoClusteringFactory factory = null;
-        DemoCassandraRepository repository;
-        factory = new DemoClusteringFactory(configuration);
-        repository = factory.createDemoCassandraRepository();
-
-        Calendar now = Calendar.getInstance();
-        now.set(Calendar.MONTH, now.get(Calendar.MONTH) - 1);
-
-        long tstamp = now.getTimeInMillis();
-        System.out.println("loading articles");
-        List<BDEArticle> articles = repository.loadArticlesAsDemo(tstamp);
-
-        // clusterer
-        IArticleClusterer cl = new BaseArticleClusterer(articles);
-        System.out.println("clustering articles...");
-        cl.calculateClusters();
-
-        Map<String,Topic> articlesPerCluster = cl.getArticlesPerCluster();
-
-        // the below should be already populated after news crawls
-        Map<String, Map<String, String>> place_mappings = getPlaceMappings(articles, articlesPerCluster);
-
-
-
-        ISentenceSplitter splitter = new DefaultSentenceSplitter(configuration.getSentenceSplitterModelPath());
-        System.out.println("getting summaries");
-        ISummarizer sum = new Summarizer(splitter);
-        // get summaries
-        Map<String, Summary> summaries = sum.getSummaries(new HashSet(articlesPerCluster.values()));
-        System.out.println("loading tweets");
-        // get token dictionary from topics
-
-        // process tweets
-        Collection<TwitterResult> tweets = repository.loadTweetsAsDemo(tstamp);
-        // clean tweets (stem)
-        IStemmer tsStemmer = new TwitterStemmer(1, configuration.getStopwordsFilePath());
-        System.out.println("Creating tweets dictionary");
-        ISocialMediaCleaner social_media_cleaner = new DefaultSocialMediaCleaner(tsStemmer);
-        Map<String, String> plainTextSummaries = convertToPlainSummaries(summaries);
-        Set<String> summaries_dict_words = social_media_cleaner.createDictionaryFromSummaries(plainTextSummaries);
-        System.out.println("Cleaning tweets");
-        CleanResultCollection<TwitterResult> cleanTweets
-                = social_media_cleaner.cleanTweets((List<TwitterResult>) tweets, summaries_dict_words);
-        System.out.println(cleanTweets.size() + " tweets left after cleaning" );
-        System.out.println("Clustering tweets...");
-        // get social media clusters
-        IArticleClusterer smClusterer = factory.getSocialMediaClustererForTwitter(SocialMediaClusterer.Mode.NVS, cleanTweets);
-        smClusterer.calculateClusters();
-        Collection<Topic> tweetClusters = smClusterer.getArticlesPerCluster().values();
-        System.out.println("Classifying tweets...");
-        //IClassifier smClassifier = factory.getSocialMediaClassifierForTwitter(plainTextSummaries, tweetClusters, tsStemmer);
-        // default thresholds are
-        double min_assign_sim_threshold = 0.010D;
-        double min_assign_titlesim_threshold = 0.10D;
-        IClassifier smClassifier = factory.getSocialMediaClassifierForTwitter(min_assign_sim_threshold, min_assign_titlesim_threshold,plainTextSummaries, tweetClusters, tsStemmer);
-        Map<Topic, List<String>> related = smClassifier.getRelated();
-
-        Map<String, Long> tweetURLtoPostIDMapping = getTweetClustersToIDsMappings(cleanTweets);
-        Map<String, String> tweetURLtoUserMapping = getTweetClustersToUsersMappings(cleanTweets);
-        System.out.println("saving events...");
-
-
-        repository.saveEvents(articlesPerCluster, summaries, related, place_mappings, tweetURLtoPostIDMapping, tweetURLtoUserMapping, 2);
-        System.out.println("Done");
-        System.out.println("Done!");
-
-
-
-        /*
 
         // init configuration
         ISparkConf conf = new BDESparkConf(args[0]);
@@ -180,7 +110,13 @@ public class BDEEventDetection {
         // load batch. The quadruple represents <entry_url, title, clean_text, timestamp>
         // entry URL is supposed to be the unique identifier of an article (though for reuters many articles with same body
         // are republished under different URLs)
+
+        // load articles as RDD 4-tuples
         JavaRDD<Tuple4<String, String, String, Long>> RDDbatch = repo.loadArticlesPublishedLaterThan(timestamp);
+        // generate all article pairs
+        BaseSparkClusterer clusterer = new BaseSparkClusterer(sc,conf.getSimilarityMode(),conf.getCutOffThreshold(), conf.getNumPartitions());
+        //StructUtils.printArticlePairs(RDDPairs, 5);
+
 
 //        // instantiate a clusterer
 //        IClusterer clusterer = new NSClusterer(sc, conf.getSimilarityMode(), conf.getCutOffThreshold(), conf.getNumPartitions());
@@ -190,21 +126,18 @@ public class BDEEventDetection {
 
         //StructUtils.printArticles(RDDbatch);
         // create pairs
-        System.out.println("EXTRACTING PAIRS");
         // get pairs of articles
-        JavaPairRDD<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>> RDDPairs
-                = RDDbatch.cartesian(RDDbatch).filter(new DocumentPairGenerationFilterFunction());
+
         // debug
-        StructUtils.printArticlePairs(RDDPairs, 5);
         // get matching mapping
 
-       // TODO: use flatMap?? we want for the full pairs rdd, each item mapped to a boolean value.
+        // TODO: use flatMap?? we want for the full pairs rdd, each item mapped to a boolean value.
         // the next call returns true on the pairs that are similar enough, based on the similarity
         // cutoff value
-        JavaRDD<Boolean> map = RDDPairs.map(new ExtractMatchingPairsFunc(sc, conf.getSimilarityMode(),
-                conf.getCutOffThreshold(), conf.getNumPartitions()));
+        //JavaRDD<Boolean> map = RDDPairs.map(new ExtractMatchingPairsFunc(sc, conf.getSimilarityMode(),
+        //        conf.getCutOffThreshold(), conf.getNumPartitions()));
         // generate clusters
-        IClusterer clusterer = new NSClusterer(sc,conf.getSimilarityMode(),conf.getCutOffThreshold(), conf.getNumPartitions());
+      //  IClusterer clusterer = new NSClusterer(sc,conf.getSimilarityMode(),conf.getCutOffThreshold(), conf.getNumPartitions());
         clusterer.calculateClusters(RDDbatch);
         // TODO: change method signature: return smth (not void)
 
@@ -216,8 +149,6 @@ public class BDEEventDetection {
         // save clusters
         int a=2;
 
-
-        */
     }
 
     private static Map<String, Map<String, String>> getPlaceMappings(List<BDEArticle> articles, Map<String, Topic> clusters) {

@@ -16,6 +16,7 @@ import org.scify.newsum.server.model.structures.Article;
 import org.scify.newsum.server.model.structures.Summary;
 import org.scify.newsum.server.model.structures.Topic;
 
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -91,7 +92,7 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
                 .and(set(Cassandra.Event.TBL_EVENTS.FLD_DATE_LITERAL.getColumnName(), sUTCEventDate))
                 .and(set(Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName(), place_mappings))
                 .and(set(Cassandra.Event.TBL_EVENTS.FLD_TWEET_IDS.getColumnName(),
-                        tweetIDsUsers == null ? Collections.EMPTY_SET : tweetIDsUsers))
+                        Collections.EMPTY_SET)) //  tweetIDsUsers == null ? Collections.EMPTY_SET : tweetIDsUsers))
                // .and(set(Cassandra.Event.TBL_EVENTS.FLD_EVENT_SOURCE_URLS.getColumnName(), topicSourceURLs))
                 .and(set(Cassandra.Event.TBL_EVENTS.FLD_EVENT_SOURCE_URLS.getColumnName(), topicSourceURL_Titles))
                 .where(eq(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName(), topicID));
@@ -114,6 +115,8 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
                     .and(set(Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_EVENT_SOURCE_URLS.getColumnName(), topicSourceURL_Titles))
                     .where(eq(Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_PLACE_LITERAL.getColumnName(), place_literal))
                     .and(eq(Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_EVENT_ID.getColumnName(), topicID));
+            System.out.println(upsert.toString());
+
             session.execute(upsert);
         }
     }
@@ -233,7 +236,7 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
             String lang = (String) eachItem.get(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_LANGUAGE.getColumnName());
             // add extra entries to use twitter_results's constructor with the username field
             String user_name = (String) eachItem.get(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_ACCOUNT_NAME.getColumnName());
-            res.add(new TwitterResult(post_id, 0l, permalink, tweet, Long.toString(created_at), lang,new ArrayList<String>(),user_name,""));
+            res.add(new TwitterResult(post_id, 0l, permalink, tweet, new Timestamp(created_at).toString(), lang,new ArrayList<String>(),user_name,""));
         }
         return res;
     }

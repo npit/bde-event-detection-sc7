@@ -121,7 +121,7 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                         i++;
                     }
                     else
-                        System.out.println("\tNo location found for article" + permalink); //debugprint
+                        System.out.println("\tNo location found for article " + permalink); //debugprint
                 }
                 break;
             case TWEETS:
@@ -144,7 +144,7 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                         i++;
                     }
                     else
-                        System.out.println("\tNo location found for tweet" + post_id); //debugprint
+                        System.out.println("\tNo location found for tweet " + post_id); //debugprint
                 }
                 break;
         }
