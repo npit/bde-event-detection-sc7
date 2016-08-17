@@ -56,8 +56,9 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                 executeSchedule(m);
 
             }
+            //TODO popeye process call!
             // call popeye.di.uoa.gr - process
-            repos.storeAndChangeDetectionEvents();
+            // repos.storeAndChangeDetectionEvents();
         } else {
             executeSchedule(opMode);
         }
@@ -96,7 +97,7 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
     }
 
     private ExecRes extractLocation(Collection<Map<String, Object>> items, OperationMode mode) {
-        System.out.println("Extracting location for " + items.size() + " items\n");
+
         // keep most recent published for reference
         long max_published = Long.MIN_VALUE;
         int i = 0;
