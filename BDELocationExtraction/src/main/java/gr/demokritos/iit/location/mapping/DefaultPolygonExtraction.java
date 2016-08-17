@@ -81,6 +81,8 @@ public class DefaultPolygonExtraction implements IPolygonExtraction {
         String res = "";
         // API accepts only JsonArray
         final Collection<String> input = new ArrayList() {{add(locationEntity);}};
+        System.out.println("Location extraction POST...");
+        long startTime = System.currentTimeMillis(); //debugprint , timing
         try {
             Response response = client.execJSONPost(polURL, gs.toJson(input, Collection.class), String.class);
             String ent = (String) response.getEntity();
@@ -96,6 +98,10 @@ public class DefaultPolygonExtraction implements IPolygonExtraction {
         } catch (Exception ex) {
             Logger.getLogger(DefaultPolygonExtraction.class.getName()).log(Level.SEVERE, null, ex);
         }
+
+        long duration = (System.currentTimeMillis() - startTime);
+        System.out.println("\ttime took " + Long.toString(duration) + " msec");
+
         return res;
     }
 

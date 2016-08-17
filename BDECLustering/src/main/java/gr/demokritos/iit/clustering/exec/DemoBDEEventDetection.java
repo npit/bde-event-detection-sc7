@@ -103,10 +103,16 @@ public class DemoBDEEventDetection {
             LOGGER.info("saving events...");
 
             repository.saveEvents(clusters, summaries, related, place_mappings, tweetURLtoPostIDMapping,tweetURLtoUserMapping, 2);
+
+            LOGGER.info("Sending events to popeye.di.uoa...");
+            LOGGER.info("[disabled for now]");
+            //repository.storeAndChangeDetectionEvents();
             LOGGER.info("Done");
         } finally {
             if (factory != null) {
+                System.out.println("Releasing resources.");
                 factory.releaseResources();
+                System.out.println("Done.");
             }
         }
     }
