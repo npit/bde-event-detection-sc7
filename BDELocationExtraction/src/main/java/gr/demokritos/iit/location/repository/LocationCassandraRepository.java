@@ -327,7 +327,6 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
         );
         BoundStatement bstatement = new BoundStatement(pstatement);
 
-
         // for each event
         for(String event_id  : eventIDs)
         {
@@ -352,9 +351,6 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
                     session.execute(bstatement.bind(event_id));
                     break;
                 }
-
-
-
             }
         }
 
@@ -370,6 +366,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
     @Override
     public void storeAndChangeDetectionEvents()
     {
+        System.out.println("Sending events to Strabon.");
         // get all events, fields: id, title, date, placemappings
         // store each field of interest in an arraylist
         ArrayList<String> entries = new ArrayList<>();

@@ -156,10 +156,15 @@ public class BDEEventDetection {
 
 
         repository.saveEvents(articlesPerCluster, summaries, related, place_mappings, tweetURLtoPostIDMapping, tweetURLtoUserMapping, 2);
-        System.out.println("Done");
+        System.out.println("Sending events to popeye.di.uoa...");
+        repository.storeAndChangeDetectionEvents();
         if(factory != null)
+        {
+            System.out.println("Releasing resources.");
             factory.releaseResources();
+        }
 
+        System.out.println("Done");
         return;
 
 
