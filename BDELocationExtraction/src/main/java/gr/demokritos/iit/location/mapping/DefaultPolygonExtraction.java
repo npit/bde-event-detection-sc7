@@ -84,7 +84,7 @@ public class DefaultPolygonExtraction implements IPolygonExtraction {
         String res = "";
         // API accepts only JsonArray
         final Collection<String> input = new ArrayList() {{add(locationEntity);}};
-        System.out.println("Miss!\n\tLocation extraction POST ...");
+        System.out.println("Cache miss!\n\tLocation extraction POST ...");
         long startTime = System.currentTimeMillis(); //debugprint , timing
         try {
             Response response = client.execJSONPost(polURL, gs.toJson(input, Collection.class), String.class);
