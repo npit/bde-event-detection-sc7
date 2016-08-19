@@ -227,7 +227,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
         return Collections.unmodifiableMap(res);
     }
 
-
+    // obsolete hotfix
     void updateEventsWithArticleLocationPolygonPairs(Map<String,String> places_polygons, String permalink)
     {
         //System.out.println("\t>Updating events with article permalink: " + permalink); //debugprint
@@ -294,7 +294,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
         //System.out.println("### Done with article permalink: " + permalink + " in " + Long.toString(duration) + " msec");
 
     }
-    // hotfix for populating events table
+    // obsolete hotfix for populating events table
     void updateEventsWithTweetLocationPolygonPairs(Map<String,String> places_polygons, long post_id)
     {
         //String strpostid = Long.toString(post_id);
@@ -431,7 +431,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
 
                 connection.setUseCaches(false);
                 connection.setDoOutput(true);
-
+                System.out.println("Sending event.");
                 //Send request
                 DataOutputStream wr = new DataOutputStream (
                         connection.getOutputStream());

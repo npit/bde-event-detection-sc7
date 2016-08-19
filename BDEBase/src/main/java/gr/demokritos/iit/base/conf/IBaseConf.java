@@ -94,4 +94,5 @@ public interface IBaseConf {
     String getSentenceSplitterModelPath();
 
     String getStopwordsFilePath();
+
 }

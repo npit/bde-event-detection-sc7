@@ -91,6 +91,11 @@ public class BDEEventDetection {
         if (args.length == 1) {
             properties = args[0];
         }
+        boolean SendToStrabon = false;
+        if (args.length == 2) {
+            if(args[1].toString() == "strabon")
+                SendToStrabon = true;
+        }
         // load base configuration, initialize repository
         IBaseConf configuration = new BaseConfiguration(properties);
         DemoClusteringFactory factory = null;
@@ -157,7 +162,8 @@ public class BDEEventDetection {
 
         repository.saveEvents(articlesPerCluster, summaries, related, place_mappings, tweetURLtoPostIDMapping, tweetURLtoUserMapping, 2);
         System.out.println("Sending events to popeye.di.uoa...");
-        repository.storeAndChangeDetectionEvents();
+        if (SendToStrabon)
+            repository.storeAndChangeDetectionEvents();
         if(factory != null)
         {
             System.out.println("Releasing resources.");
