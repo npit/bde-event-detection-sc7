@@ -29,7 +29,7 @@ public class CybozuLangDetect implements ILangDetect {
 
 //    private static final String PROFILES_FILE_PROD = "./res/profiles/";
 //    private static final String PROFILES_FILE_DEV = "../BDEBase/res/profiles/";
-    private static final String PROFILES_FILE_PROD = "/home/npittaras/Documents/project/BDE/BDEproject/BDEEventDetection/BDEBase/res/profiles/";
+    private static final String PROFILES_FILE_PROD = "/home/nik/work/iit/BDE/bde-event-detection-sc7/BDEBase/res/profiles//";
     private static final String PROFILES_FILE_DEV = PROFILES_FILE_PROD;
 
     public static final String UNDEFINED_LANG = "und";

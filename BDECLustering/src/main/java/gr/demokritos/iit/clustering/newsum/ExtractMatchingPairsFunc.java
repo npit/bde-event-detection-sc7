@@ -5,6 +5,7 @@ import gr.demokritos.iit.clustering.parallelngg.graph.NGramGraphCreator;
 import gr.demokritos.iit.clustering.parallelngg.structs.StringEntity;
 import gr.demokritos.iit.clustering.parallelngg.traits.Similarity;
 import gr.demokritos.iit.clustering.structs.SimilarityMode;
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.graphx.Graph;
@@ -18,7 +19,7 @@ import java.io.Serializable;
  */
 public class ExtractMatchingPairsFunc implements Function<Tuple2<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>>, Boolean> {
 
-    private final transient SparkContext sc;
+    private final SparkContext sc;
     private final SimilarityMode mode;
     private final double simCutOff;
     private final int numPartitions;
@@ -37,16 +38,33 @@ public class ExtractMatchingPairsFunc implements Function<Tuple2<Tuple4<String, 
         // get text from first item
         StringEntity ent1 = new StringEntity();
         // concatenate title and clean text together
-        ent1.setString(sc, new StringBuilder().append(v1._1()._2()).append(" ").append(v1._1()._3()).toString());
+        ///System.out.println("1 : Concatenating [" + v1._1()._2() + "] and [" + v1._1()._3() + "]");
+        if(sc == null) {
+            System.out.println("Null spark context!!!");
+            return false;
+        }
+        else
+            System.out.println("\t\tSC ok");
+
+        try {
+            ent1.setString(sc, v1._1()._2() + v1._1()._3());
+        }
+        catch(java.lang.NullPointerException exc)
+        {
+            System.out.println(">>>>>>>>>>>>>>>>>>>>>exc : " + exc.toString());
+            exc.printStackTrace();
+        }
         // get text from second item
         StringEntity ent2 = new StringEntity();
         // concatenate title and clean text together
-        ent1.setString(sc, new StringBuilder().append(v1._2()._2()).append(" ").append(v1._2()._3()).toString());
+        System.out.println("2 : Concatenating [" + v1._2()._2() + "] and [" + v1._2()._3() + "]");
+        ent2.setString(sc, new StringBuilder().append(v1._2()._2()).append(" ").append(v1._2()._3()).toString());
 
         // create graphs for each document
         NGramGraphCreator ngc1 = new NGramGraphCreator(sc, numPartitions, 3, 3);
         Graph<String, Object> ngg1 = ngc1.getGraph(ent1);
         NGramGraphCreator ngc2 = new NGramGraphCreator(sc, numPartitions, 3, 3);
+
         Graph<String, Object> ngg2 = ngc2.getGraph(ent2);
         // get graph similarity
         GraphSimilarityCalculator gsc = new GraphSimilarityCalculator();

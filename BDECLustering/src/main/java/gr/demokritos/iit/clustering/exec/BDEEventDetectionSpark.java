@@ -105,7 +105,7 @@ public class BDEEventDetectionSpark {
         CassandraSparkRepository repo = new CassandraSparkRepository(sc, conf);
         // get a timestamp : TODO: FIXME
         long timestamp = repo.getLatestTimestamp("event_detection_log"); // TODO: add table(?) or use parameter days_back.
-        System.out.println(new Date(timestamp).toString());
+        System.out.println("timestamp: " + new Date(timestamp).toString());
         System.out.println("LOADING ARTICLES");
         // load batch. The quadruple represents <entry_url, title, clean_text, timestamp>
         // entry URL is supposed to be the unique identifier of an article (though for reuters many articles with same body
@@ -113,8 +113,10 @@ public class BDEEventDetectionSpark {
 
         // load articles as RDD 4-tuples
         JavaRDD<Tuple4<String, String, String, Long>> RDDbatch = repo.loadArticlesPublishedLaterThan(timestamp);
+        StructUtils.printArticles(RDDbatch);
         // generate all article pairs
         BaseSparkClusterer clusterer = new BaseSparkClusterer(sc,conf.getSimilarityMode(),conf.getCutOffThreshold(), conf.getNumPartitions());
+        clusterer.calculateClusters(RDDbatch);
         //StructUtils.printArticlePairs(RDDPairs, 5);
 
 
@@ -138,7 +140,7 @@ public class BDEEventDetectionSpark {
         //        conf.getCutOffThreshold(), conf.getNumPartitions()));
         // generate clusters
       //  IClusterer clusterer = new NSClusterer(sc,conf.getSimilarityMode(),conf.getCutOffThreshold(), conf.getNumPartitions());
-        clusterer.calculateClusters(RDDbatch);
+//        clusterer.calculateClusters(RDDbatch);
         // TODO: change method signature: return smth (not void)
 
         // get matching mappings
