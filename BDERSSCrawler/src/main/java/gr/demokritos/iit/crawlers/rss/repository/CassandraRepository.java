@@ -159,7 +159,6 @@ public class CassandraRepository extends AbstractRepository implements IReposito
                 .where(eq(key, crawlerStrategy.crawlType()))
                 .limit(1);
         ResultSet results = null;
-        // npit added exception catching @ query execution
         try {
             results = session.execute(select);
         }
@@ -207,7 +206,6 @@ public class CassandraRepository extends AbstractRepository implements IReposito
                 .with(set(start, crawlId.getStartTimestamp())).and(set(end, crawlId.getEndTimestamp()))
                 .where(eq(key, crawlerStrategy.crawlType()))
                 .and(eq(id, crawlId.getId()));
-        // npit added exception catching @ query execution
         try
         {
             session.execute(upsert);

@@ -161,7 +161,7 @@ public class BDEEventDetection {
 
 
         repository.saveEvents(articlesPerCluster, summaries, related, place_mappings, tweetURLtoPostIDMapping, tweetURLtoUserMapping, 2);
-        System.out.println("Sending events to popeye.di.uoa...");
+        System.out.print("Sending events to popeye.di.uoa...");
         if (SendToStrabon)
             repository.storeAndChangeDetectionEvents();
         if(factory != null)
