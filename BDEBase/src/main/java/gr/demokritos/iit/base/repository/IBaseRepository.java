@@ -24,7 +24,6 @@ import java.util.Map;
  */
 public interface IBaseRepository {
 
-    // npit : Added load All Tweets/Articles interface methods
     /**
      * load all tweets
      *
