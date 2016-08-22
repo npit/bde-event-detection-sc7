@@ -7,7 +7,7 @@
 # the input file should contain two lines, as below:
 # twitterConsumerKey twitterConsumerKeySecret twitterAccessTokken twitterAccessTokkenSecret
 # host port
-BDEROOT="/home/npittaras/Documents/project/BDE/BDEproject"
+BDEROOT="$(pwd)"
 
 function usage {
 	echo
