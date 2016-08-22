@@ -43,3 +43,5 @@ BDETwitterListener/placeholder_twitterdevaccount
 out/*
 *.csv#
 installPOMs/
+propertiesfiles/
+externalDependencies/
