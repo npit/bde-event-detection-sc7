@@ -81,10 +81,10 @@ else
 fi
 
 # files to modify
-paths="$BDEROOT/BDEEventDetection/BDECLustering/res/clustering.properties"
-paths+=" $BDEROOT/BDEEventDetection/BDETwitterListener/res/twitter.properties"
-paths+=" $BDEROOT/BDEEventDetection/BDELocationExtraction/res/location_extraction.properties"
-paths+=" $BDEROOT/BDEEventDetection/BDERSSCrawler/res/newscrawler_configuration.properties"
+paths="$BDEROOT/BDECLustering/res/clustering.properties"
+paths+=" $BDEROOT/BDETwitterListener/res/twitter.properties"
+paths+=" $BDEROOT/BDELocationExtraction/res/location_extraction.properties"
+paths+=" $BDEROOT/BDERSSCrawler/res/newscrawler_configuration.properties"
 # newline-delimit, let's not change IFS
 paths="$(echo $paths | sed  's/ /\n/g' )"
 
@@ -97,8 +97,8 @@ for f in $paths ; do
 done
 echo "Setting twitter credentials..."
 # set the twitter credentials
-sed -i "s/twitterConsumerKey=.*/twitterConsumerKey=$twitterConsumerKey/g" "$BDEROOT/BDEEventDetection/BDETwitterListener/res/twitter.properties"
-sed -i "s/twitterConsumerKeySecret=.*/twitterConsumerKeySecret=$twitterConsumerKeySecret/g" "$BDEROOT/BDEEventDetection/BDETwitterListener/res/twitter.properties"
-sed -i "s/twitterAccessTokken=.*/twitterAccessTokken=$twitterAccessTokken/g" "$BDEROOT/BDEEventDetection/BDETwitterListener/res/twitter.properties"
-sed -i "s/twitterAccessTokkenSecret=.*/twitterAccessTokkenSecret=$twitterAccessTokkenSecret/g" "$BDEROOT/BDEEventDetection/BDETwitterListener/res/twitter.properties"
+sed -i "s/twitterConsumerKey=.*/twitterConsumerKey=$twitterConsumerKey/g" "$BDEROOT/BDETwitterListener/res/twitter.properties"
+sed -i "s/twitterConsumerKeySecret=.*/twitterConsumerKeySecret=$twitterConsumerKeySecret/g" "$BDEROOT/BDETwitterListener/res/twitter.properties"
+sed -i "s/twitterAccessTokken=.*/twitterAccessTokken=$twitterAccessTokken/g" "$BDEROOT/BDETwitterListener/res/twitter.properties"
+sed -i "s/twitterAccessTokkenSecret=.*/twitterAccessTokkenSecret=$twitterAccessTokkenSecret/g" "$BDEROOT/BDETwitterListener/res/twitter.properties"
 
