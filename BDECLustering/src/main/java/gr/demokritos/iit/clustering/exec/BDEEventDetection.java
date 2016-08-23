@@ -123,16 +123,6 @@ public class BDEEventDetection {
 
         Map<String,Topic> articlesPerCluster = cl.getArticlesPerCluster();
 
-        System.out.println("Printing clustering results.");
-        for(String clustid : articlesPerCluster.keySet())
-        {
-            System.out.println("cluster " + clustid);
-            for(Article art : articlesPerCluster.get(clustid))
-            {
-                System.out.println("\t art" + art.toString());
-            }
-        }
-        if(true) return;
         // the below should be already populated after news crawls
         Map<String, Map<String, String>> place_mappings = getPlaceMappings(articles, articlesPerCluster);
 
