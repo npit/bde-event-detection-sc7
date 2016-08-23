@@ -41,7 +41,8 @@ BDETwitterListener/placeholder_twitterdevaccount
 *.ignore
 *META-INF*
 out/*
-*.csv#
+*.csv
 installPOMs/
 propertiesfiles/
 externalDependencies/
+*.properties
