@@ -47,3 +47,6 @@ installPOMs/
 propertiesfiles/
 externalDependencies/
 *.properties
+credentials_
+p2
+p3
