@@ -20,11 +20,14 @@ import com.datastax.spark.connector.japi.SparkContextJavaFunctions;
 import gr.demokritos.iit.base.repository.views.Cassandra;
 import gr.demokritos.iit.clustering.config.ISparkConf;
 import gr.demokritos.iit.clustering.util.CassandraArticleRowToTuple4RDD;
+import gr.demokritos.iit.clustering.util.CassandraArticleRowToSerializable;
 import gr.demokritos.iit.clustering.util.FilterByAfterTimeStamp;
 import java.util.Calendar;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.graphx.Graph;
 import scala.Tuple4;
+import scala.Tuple5;
 
 /**
  *
@@ -64,6 +67,7 @@ public class CassandraSparkRepository {
      */
     public JavaRDD<Tuple4<String, String, String, Long>> loadArticlesPublishedLaterThan(long timestamp) {
         // TODO improve query: try to filter by timestamp on cassandra, not afterwards
+
         JavaRDD<CassandraRow> filter = scjf
                 .cassandraTable(keyspace, Cassandra.RSS.Tables.NEWS_ARTICLES_PER_PUBLISHED_DATE.getTableName())
         .select(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName(),
@@ -80,6 +84,20 @@ public class CassandraSparkRepository {
                 Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CLEAN_TEXT.getColumnName(),
                 Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PUBLISHED.getColumnName())
         );
+        // the below requires the sparkcontext as well.
+        int numParttions = 4;
+
+        CassandraArticleRowToSerializable CRS = new CassandraArticleRowToSerializable(
+                Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName(),
+                Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_TITLE.getColumnName(),
+                Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CLEAN_TEXT.getColumnName(),
+                Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PUBLISHED.getColumnName(),
+                numParttions, sc);
+        JavaRDD<Tuple5<String, String, String, Long, Graph<String,Object>>> tuples = filter.map(CRS);
+
+
+
+
         return extracted;
     }
 }
