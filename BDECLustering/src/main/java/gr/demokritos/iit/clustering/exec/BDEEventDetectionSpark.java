@@ -98,7 +98,7 @@ public class BDEEventDetectionSpark {
         // init sparkConf (holds the spark context object)
         BDESpark bdes = new BDESpark(conf);
         // instantiate us
-        BDEEventDetection bdedet = new BDEEventDetection(bdes);
+        BDEEventDetectionSpark bdedet = new BDEEventDetectionSpark(bdes);
         // keep context to pass around
         SparkContext sc = bdedet.getContext();
         // get the spark repository class

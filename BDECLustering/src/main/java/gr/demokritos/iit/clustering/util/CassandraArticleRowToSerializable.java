@@ -41,6 +41,7 @@ public class CassandraArticleRowToSerializable implements Function<CassandraRow,
         @Override
         public Tuple5<String, String, String, Long, Graph<String,Object>> call(CassandraRow arg0) throws Exception {
 
+            // input is a cassandra row, can only get primitive (CQLSH) values from it.
             return new Tuple5(
                     arg0.getString(title), arg0.getString(text), arg0.getString(source), arg0.getLong(date), graph
             );

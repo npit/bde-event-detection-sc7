@@ -14,9 +14,12 @@
  */
 package gr.demokritos.iit.clustering.repository;
 
+import com.datastax.driver.core.Session;
 import com.datastax.spark.connector.japi.CassandraJavaUtil;
 import com.datastax.spark.connector.japi.CassandraRow;
 import com.datastax.spark.connector.japi.SparkContextJavaFunctions;
+import gr.demokritos.iit.base.repository.BaseCassandraRepository;
+import gr.demokritos.iit.base.repository.IBaseRepository;
 import gr.demokritos.iit.base.repository.views.Cassandra;
 import gr.demokritos.iit.clustering.config.ISparkConf;
 import gr.demokritos.iit.clustering.util.CassandraArticleRowToTuple4RDD;
@@ -33,14 +36,15 @@ import scala.Tuple5;
  *
  * @author George K. <gkiom@iit.demokritos.gr>
  */
-public class CassandraSparkRepository {
+public class CassandraSparkRepository extends BaseCassandraRepository {
 
     private final SparkContextJavaFunctions scjf;
     private final String keyspace;
     private final SparkContext sc;
     private final int numDaysBatch;
 
-    public CassandraSparkRepository(SparkContext scArg, ISparkConf conf) {
+    public CassandraSparkRepository(SparkContext scArg, ISparkConf conf,Session session) {
+        super(session);
         this.scjf = CassandraJavaUtil.javaFunctions(scArg);
         this.keyspace = conf.getCassandraKeyspace();
         this.sc = scArg;
@@ -67,7 +71,9 @@ public class CassandraSparkRepository {
      */
     public JavaRDD<Tuple4<String, String, String, Long>> loadArticlesPublishedLaterThan(long timestamp) {
         // TODO improve query: try to filter by timestamp on cassandra, not afterwards
+        System.err.println(" >>>>>>> DEBUG : getting only the first 20 articles.");
 
+        // get cassandra row
         JavaRDD<CassandraRow> filter = scjf
                 .cassandraTable(keyspace, Cassandra.RSS.Tables.NEWS_ARTICLES_PER_PUBLISHED_DATE.getTableName())
         .select(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName(),
@@ -78,6 +84,8 @@ public class CassandraSparkRepository {
                                 .limit(20l);
                 // DEBUG // TODO: UNCOMMENT!
                 //.filter(new FilterByAfterTimeStamp(timestamp));
+
+        // convert to scala tuple
         JavaRDD<Tuple4<String, String, String, Long>> extracted = filter.map(new CassandraArticleRowToTuple4RDD(
                 Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName(),
                 Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_TITLE.getColumnName(),
@@ -100,4 +108,6 @@ public class CassandraSparkRepository {
 
         return extracted;
     }
+
+
 }
