@@ -98,7 +98,7 @@ public class BDEEventDetectionSpark {
         // init sparkConf (holds the spark context object)
         BDESpark bdes = new BDESpark(conf);
         // instantiate us
-        BDEEventDetection bdedet = new BDEEventDetection(bdes);
+        BDEEventDetectionSpark bdedet = new BDEEventDetectionSpark(bdes);
         // keep context to pass around
         SparkContext sc = bdedet.getContext();
         // get the spark repository class
@@ -115,6 +115,17 @@ public class BDEEventDetectionSpark {
         JavaRDD<Tuple4<String, String, String, Long>> RDDbatch = repo.loadArticlesPublishedLaterThan(timestamp);
         // generate all article pairs
         BaseSparkClusterer clusterer = new BaseSparkClusterer(sc,conf.getSimilarityMode(),conf.getCutOffThreshold(), conf.getNumPartitions());
+        clusterer.calculateClusters(RDDbatch);
+        Map<String, Topic> res = clusterer.getArticlesPerCluster();
+        System.out.println("Printing clustering results.");
+        for(String clustid : res.keySet())
+        {
+            System.out.println("cluster " + clustid);
+            for(Article art : res.get(clustid))
+            {
+                System.out.println("\t art" + art.toString());
+            }
+        }
         //StructUtils.printArticlePairs(RDDPairs, 5);
 
 
@@ -138,7 +149,7 @@ public class BDEEventDetectionSpark {
         //        conf.getCutOffThreshold(), conf.getNumPartitions()));
         // generate clusters
       //  IClusterer clusterer = new NSClusterer(sc,conf.getSimilarityMode(),conf.getCutOffThreshold(), conf.getNumPartitions());
-        clusterer.calculateClusters(RDDbatch);
+        //clusterer.calculateClusters(RDDbatch);
         // TODO: change method signature: return smth (not void)
 
         // get matching mappings

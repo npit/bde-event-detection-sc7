@@ -108,15 +108,31 @@ public class BDEEventDetection {
 
         long tstamp = now.getTimeInMillis();
         System.out.println("loading articles");
+        long startTime = System.currentTimeMillis();
         List<BDEArticle> articles = repository.loadArticlesAsDemo(tstamp);
+        long endTime = System.currentTimeMillis();
+        System.out.println("Ttook " + Long.toString((endTime - startTime)/1000l) + " sec");
 
         // clusterer
         IArticleClusterer cl = new BaseArticleClusterer(articles);
         System.out.println("clustering articles...");
+        startTime = System.currentTimeMillis();
         cl.calculateClusters();
+        endTime = System.currentTimeMillis();
+        System.out.println("Ttook " + Long.toString((endTime - startTime)/1000l) + " sec");
 
         Map<String,Topic> articlesPerCluster = cl.getArticlesPerCluster();
 
+        System.out.println("Printing clustering results.");
+        for(String clustid : articlesPerCluster.keySet())
+        {
+            System.out.println("cluster " + clustid);
+            for(Article art : articlesPerCluster.get(clustid))
+            {
+                System.out.println("\t art" + art.toString());
+            }
+        }
+        if(true) return;
         // the below should be already populated after news crawls
         Map<String, Map<String, String>> place_mappings = getPlaceMappings(articles, articlesPerCluster);
 
