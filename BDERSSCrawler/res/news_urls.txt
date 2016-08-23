@@ -1,0 +1,8 @@
+# is a comment
+# Reuters news.
+http://feeds.reuters.com/Reuters/worldNews
+http://feeds.reuters.com/reuters/topNews
+http://feeds.reuters.com/Reuters/domesticNews
+http://feeds.reuters.com/reuters/environment
+http://feeds.reuters.com/reuters/technologyNews
+

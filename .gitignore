@@ -43,8 +43,6 @@ BDETwitterListener/placeholder_twitterdevaccount
 out/*
 *.csv#
 installPOMs/
-*.properties*
 p2
 p3
 credentials_
-*news_urls*
