@@ -93,8 +93,10 @@ public class BDEEventDetection {
         }
         boolean SendToStrabon = false;
         if (args.length == 2) {
-            if(args[1].toString().toLowerCase() == "strabon")
+            if(args[1].toString().toLowerCase().equals("strabon"))
                 SendToStrabon = true;
+            else
+                System.out.println(args[1].toString().toLowerCase() + " undefined.");
         }
         // load base configuration, initialize repository
         IBaseConf configuration = new BaseConfiguration(properties);
