@@ -79,8 +79,8 @@ public class BDEEventDetection {
     public static void main(String[] args) {
 
         // we require one argument, the config file
-        if (args.length < 1 || args.length > 1) {
-            throw new IllegalArgumentException(String.format("USAGE: %s <PATH_TO_CONFIGURATION_FILE>" +
+        if (args.length < 1 ) {
+            throw new IllegalArgumentException(String.format("USAGE: %s <PATH_TO_CONFIGURATION_FILE> <strabon|e>" +
                     "\n\te.g. %s ./res/clustering.properties", BDEEventDetection.class.getName(), BDEEventDetection.class.getName()));
         }
 
@@ -93,7 +93,7 @@ public class BDEEventDetection {
         }
         boolean SendToStrabon = false;
         if (args.length == 2) {
-            if(args[1].toString() == "strabon")
+            if(args[1].toString().toLowerCase() == "strabon")
                 SendToStrabon = true;
         }
         // load base configuration, initialize repository
