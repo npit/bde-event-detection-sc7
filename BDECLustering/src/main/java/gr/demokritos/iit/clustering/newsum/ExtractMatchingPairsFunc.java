@@ -19,11 +19,8 @@ import java.io.Serializable;
  */
 public class ExtractMatchingPairsFunc implements Function<Tuple2<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>>, Boolean> {
 
-<<<<<<< HEAD
-    private final SparkContext sc;
-=======
+
     private static transient SparkContext sc;
->>>>>>> 3e3bf08458732fb901edced7458c3dfb22eb2e39
     private final SimilarityMode mode;
     private final double simCutOff;
     private final int numPartitions;

@@ -200,13 +200,11 @@ public class BaseCassandraRepository implements IBaseRepository {
     public Collection<Map<String, Object>> loadArticles(long from) {
         System.out.println("loading articles...");
         List<String> ymdLitRange = Utils.extractYearMonthDayLiteralRangeFrom(from);
-        System.out.println("Extracted range from " + Long.toString(from) + " : ");
         Statement select;
         ResultSet results;
         Collection<Map<String, Object>> out = new ArrayList();
         boolean got_first = false;
         for (String each_key : ymdLitRange) {
-            System.out.println(each_key);
             if (got_first) {
                 select = QueryBuilder
                         .select()

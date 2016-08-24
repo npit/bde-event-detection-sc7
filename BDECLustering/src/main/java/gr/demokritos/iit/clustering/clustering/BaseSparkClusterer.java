@@ -14,14 +14,11 @@ import scala.Tuple2;
 import scala.Tuple4;
 
 import java.util.*;
-<<<<<<< HEAD
-import java.util.logging.Level;
-=======
+
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.Map.Entry;
->>>>>>> 3e3bf08458732fb901edced7458c3dfb22eb2e39
 
 /**
  * Created by npittaras on 16/8/2016.
@@ -95,97 +92,6 @@ public class BaseSparkClusterer implements IClusterer {
         endTime = System.currentTimeMillis();
         System.out.println("Took " + Long.toString((endTime - startTime)/1000l) + " sec");
         ArticlesPerCluster =  bs.getArticlesPerCluster();
-                /*
-
-        // loop on the pairs
-        ArticlesPerCluster = new HashMap<String,Topic>();
-        ClustersPerArticle = new HashMap<Article,String>();
-
-        int count = -1;
-        boolean matchValue;
-
-        // foreach pair
-        for(Tuple2<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>> pair : RDDPairs.collect())
-        {
-            ++ count; // pair index
-            matchValue = matches.get(count);
-            String clusterID;
-            Topic newTopic;
-            // 4-tuple : entry url, title, clean text, published date
-            // get article entities
-            Article article1 = new Article(pair._1()._1(),pair._1()._2(),pair._1()._3(),"","",new URLImage(""),new Date(pair._1()._4()));
-            Article article2 = new Article(pair._2()._1(),pair._2()._2(),pair._2()._3(),"","",new URLImage(""),new Date(pair._2()._4()));
-
-            //Article first = pair.
-            if(matchValue) // if the article pair matches
-            {
-                // if both exist in a cluster, merge the clusters
-                if(ClustersPerArticle.containsKey(article1) && ClustersPerArticle.containsKey(article2)) {
-                    this.collapseTopics((String)this.ClustersPerArticle.get(article1), (String)this.ClustersPerArticle.get(article2));
-                }
-                else // one or more articles is not in any cluster
-                {
-                    // if first article not in cluster, create one and enter it
-                    if(! ClustersPerArticle.containsKey(article1))
-                    {
-                        Topic tNew = new Topic();
-                        String sClusterID = tNew.getID();
-                        tNew.add(article1);
-                        ArticlesPerCluster.put(sClusterID, tNew);
-                        ClustersPerArticle.put(article1, sClusterID);
-                    }
-                    // check the second article
-                    if( ClustersPerArticle.containsKey(article2))
-                    {   // if  article2 is in a cluster, merge the
-                        this.collapseTopics((String)this.ClustersPerArticle.get(article1), (String)this.ClustersPerArticle.get(article2));
-                    }
-                    else    // second not contained
-                    {
-                        // create new cluster
-                        Topic tNew = new Topic();
-                        String sClusterID = tNew.getID();
-                        ArticlesPerCluster.put(sClusterID, tNew);
-
-                        ((Topic)ArticlesPerCluster.get(sClusterID)).add(article2);
-                        ClustersPerArticle.put(article2, sClusterID);
-                    }
-                }
-
-
-            }
-            else  // if they do not match
-            {
-                // create new clusters  for each article
-
-                if( !ClustersPerArticle.containsKey(article1))
-                {
-                    Topic tNew = new Topic();
-                    String sClusterID = tNew.getID();
-                    tNew.add(article1);
-                    ArticlesPerCluster.put(sClusterID, tNew);
-                    ClustersPerArticle.put(article1, sClusterID);
-                }
-                if( !ClustersPerArticle.containsKey(article2))
-                {
-                    Topic tNew = new Topic();
-                    String sClusterID = tNew.getID();
-                    tNew.add(article2);
-                    ArticlesPerCluster.put(sClusterID, tNew);
-                    ClustersPerArticle.put(article2, sClusterID);
-                }
-            }
-        }
-        */
-
-        checkForInconsistencies();
-        //generateFinalTopics();
-
-
-
-        // create triple-tuples <pair1, pair2, matchOrNot> ?
-
-        // TODO: change method signature: return smth (not void)
-
 
     }
 
@@ -320,6 +226,26 @@ public class BaseSparkClusterer implements IClusterer {
 
             this.hsArticlesPerCluster = (HashMap) hsFinalMap;
             this.hsClusterPerArticle = (HashMap) hsClusterPerArticleFinal;
+        }
+        protected boolean collapseTopics(String sTopic1ID, String sTopic2ID) {
+            Topic t1 = (Topic) this.hsArticlesPerCluster.get(sTopic1ID);
+            Topic t2 = (Topic) this.hsArticlesPerCluster.get(sTopic2ID);
+            if (t1 == t2) {
+                return false;
+            } else {
+                Iterator i$ = t2.iterator();
+
+                while (i$.hasNext()) {
+                    Article aCur = (Article) i$.next();
+                    t1.add(aCur);
+                    this.hsClusterPerArticle.put(aCur, t1.getID());
+                    this.hsArticlesPerCluster.put(t1.getID(), t1);
+                }
+
+                t2.clear();
+                this.hsArticlesPerCluster.remove(t2.getID());
+                return true;
+            }
         }
     }
 }

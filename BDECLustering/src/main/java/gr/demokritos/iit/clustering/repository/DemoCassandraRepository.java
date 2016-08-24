@@ -92,11 +92,11 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
                 .and(set(Cassandra.Event.TBL_EVENTS.FLD_DATE_LITERAL.getColumnName(), sUTCEventDate))
                 .and(set(Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName(), place_mappings))
                 .and(set(Cassandra.Event.TBL_EVENTS.FLD_TWEET_IDS.getColumnName(),
-                        Collections.EMPTY_SET)) //  tweetIDsUsers == null ? Collections.EMPTY_SET : tweetIDsUsers))
+                 tweetIDsUsers == null ? Collections.EMPTY_SET : tweetIDsUsers))
                // .and(set(Cassandra.Event.TBL_EVENTS.FLD_EVENT_SOURCE_URLS.getColumnName(), topicSourceURLs))
                 .and(set(Cassandra.Event.TBL_EVENTS.FLD_EVENT_SOURCE_URLS.getColumnName(), topicSourceURL_Titles))
                 .where(eq(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName(), topicID));
-        System.out.println(upsert.toString());
+        //System.out.println(upsert.toString());
         session.execute(upsert);
 
         for (Map.Entry<String, String> entry : place_mappings.entrySet()) {
@@ -115,7 +115,7 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
                     .and(set(Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_EVENT_SOURCE_URLS.getColumnName(), topicSourceURL_Titles))
                     .where(eq(Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_PLACE_LITERAL.getColumnName(), place_literal))
                     .and(eq(Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_EVENT_ID.getColumnName(), topicID));
-            System.out.println(upsert.toString());
+            //System.out.println(upsert.toString());
 
             session.execute(upsert);
         }

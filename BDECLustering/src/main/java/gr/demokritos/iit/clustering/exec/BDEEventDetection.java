@@ -111,7 +111,7 @@ public class BDEEventDetection {
         long startTime = System.currentTimeMillis();
         List<BDEArticle> articles = repository.loadArticlesAsDemo(tstamp);
         long endTime = System.currentTimeMillis();
-        System.out.println("Ttook " + Long.toString((endTime - startTime)/1000l) + " sec");
+        System.out.println("Took " + Long.toString((endTime - startTime)/1000l) + " sec");
 
         // clusterer
         IArticleClusterer cl = new BaseArticleClusterer(articles);
@@ -119,20 +119,10 @@ public class BDEEventDetection {
         startTime = System.currentTimeMillis();
         cl.calculateClusters();
         endTime = System.currentTimeMillis();
-        System.out.println("Ttook " + Long.toString((endTime - startTime)/1000l) + " sec");
+        System.out.println("Took " + Long.toString((endTime - startTime)/1000l) + " sec");
 
         Map<String,Topic> articlesPerCluster = cl.getArticlesPerCluster();
 
-        System.out.println("Printing clustering results.");
-        for(String clustid : articlesPerCluster.keySet())
-        {
-            System.out.println("cluster " + clustid);
-            for(Article art : articlesPerCluster.get(clustid))
-            {
-                System.out.println("\t art" + art.toString());
-            }
-        }
-        if(true) return;
         // the below should be already populated after news crawls
         Map<String, Map<String, String>> place_mappings = getPlaceMappings(articles, articlesPerCluster);
 
@@ -166,8 +156,8 @@ public class BDEEventDetection {
         System.out.println("Classifying tweets...");
         //IClassifier smClassifier = factory.getSocialMediaClassifierForTwitter(plainTextSummaries, tweetClusters, tsStemmer);
         // default thresholds are
-        double min_assign_sim_threshold = 0.010D;
-        double min_assign_titlesim_threshold = 0.10D;
+        double min_assign_sim_threshold = 0.008D;
+        double min_assign_titlesim_threshold = 0.08D;
         IClassifier smClassifier = factory.getSocialMediaClassifierForTwitter(min_assign_sim_threshold, min_assign_titlesim_threshold,plainTextSummaries, tweetClusters, tsStemmer);
         Map<Topic, List<String>> related = smClassifier.getRelated();
 
@@ -177,9 +167,10 @@ public class BDEEventDetection {
 
 
         repository.saveEvents(articlesPerCluster, summaries, related, place_mappings, tweetURLtoPostIDMapping, tweetURLtoUserMapping, 2);
-        System.out.print("Sending events to popeye.di.uoa...");
-        if (SendToStrabon)
+        if (SendToStrabon) {
+            System.out.print("Sending events to popeye.di.uoa...");
             repository.storeAndChangeDetectionEvents();
+        }
         if(factory != null)
         {
             System.out.println("Releasing resources.");
