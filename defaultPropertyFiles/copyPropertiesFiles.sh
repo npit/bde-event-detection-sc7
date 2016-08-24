@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-BDEDIR="$(pwd)"
+BDEDIR="../"
 cp ./newscrawler_configuration.properties "$BDEDIR/BDERSSCrawler/res/"
 cp ./news_urls.txt "$BDEDIR/BDERSSCrawler/res/"
 cp ./clustering.properties "$BDEDIR/BDECLustering/res/"
