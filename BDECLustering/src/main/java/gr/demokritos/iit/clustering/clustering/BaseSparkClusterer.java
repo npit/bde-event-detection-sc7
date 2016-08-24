@@ -14,7 +14,14 @@ import scala.Tuple2;
 import scala.Tuple4;
 
 import java.util.*;
+<<<<<<< HEAD
 import java.util.logging.Level;
+=======
+
+import java.util.logging.Logger;
+import java.util.logging.Level;
+import java.util.Map.Entry;
+>>>>>>> 3e3bf08458732fb901edced7458c3dfb22eb2e39
 
 /**
  * Created by npittaras on 16/8/2016.
@@ -27,8 +34,8 @@ public class BaseSparkClusterer implements IClusterer {
     private final int numPartitions;
     private List<Topic> Clusters;
 
-    protected Map<String, Topic> ArticlesPerCluster;
-    protected Map<Article, String> ClustersPerArticle;
+    public Map<String, Topic> ArticlesPerCluster;
+    protected Map<String, String> ClustersPerArticle;
 
 
     public BaseSparkClusterer(SparkContext scArg, SimilarityMode mode, double simCutOff, int numPartitions) {
@@ -36,6 +43,11 @@ public class BaseSparkClusterer implements IClusterer {
         this.mode = mode;
         this.simCutOff = simCutOff;
         this.numPartitions = numPartitions;
+    }
+
+    public Map<String, Topic> getArticlesPerCluster()
+    {
+        return  ArticlesPerCluster;
     }
 
     /**
@@ -48,23 +60,42 @@ public class BaseSparkClusterer implements IClusterer {
     public void calculateClusters(JavaRDD<Tuple4<String, String, String, Long>> articles) {
 
         // create pairs
-        System.out.print("Generating article pairs...");
+        System.out.println("Generating article pairs...");
         JavaPairRDD<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>> RDDPairs
                 = articles.cartesian(articles).filter(new DocumentPairGenerationFilterFunction());
         // debug
         StructUtils.printArticlePairs(RDDPairs, 5);
         // get matching mapping
+        System.out.println("Mapping to boolean similarity...");
+        long startTime = System.currentTimeMillis();
 
         // TODO: use flatMap?? we want for the full pairs rdd, each item mapped to a boolean value.
         JavaRDD<Boolean> matchesrdd = RDDPairs.map(new ExtractMatchingPairsFunc(sc, mode, simCutOff, numPartitions));
 
         // spark parallelization ends here.
         // collect matches values
-        System.out.println("Appid : " + sc.applicationId().toString() );
-        List<Boolean> matches = matchesrdd.collect();
 
-        // generate clusters
-        // baseArticleClusterer shuts down executors. Should we collect the data and do that here too?
+        org.apache.log4j.Logger L = org.apache.log4j.Logger.getRootLogger();
+        L.setLevel(org.apache.log4j.Level.WARN);
+
+        List<Boolean> matches = matchesrdd.collect();
+        int c=0;
+        for(Boolean b : matches)
+        {
+            System.out.println(c++ + " " + b.toString());
+
+        }
+        long endTime = System.currentTimeMillis();
+        System.out.println("Ttook " + Long.toString((endTime - startTime)/1000l) + " sec");
+
+        baseclusterer bs = new baseclusterer();
+        System.out.println("Calculating clusters.");
+        startTime = System.currentTimeMillis();
+        bs.calculateClusters(matches,RDDPairs);
+        endTime = System.currentTimeMillis();
+        System.out.println("Took " + Long.toString((endTime - startTime)/1000l) + " sec");
+        ArticlesPerCluster =  bs.getArticlesPerCluster();
+                /*
 
         // loop on the pairs
         ArticlesPerCluster = new HashMap<String,Topic>();
@@ -72,6 +103,7 @@ public class BaseSparkClusterer implements IClusterer {
 
         int count = -1;
         boolean matchValue;
+
         // foreach pair
         for(Tuple2<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>> pair : RDDPairs.collect())
         {
@@ -143,6 +175,7 @@ public class BaseSparkClusterer implements IClusterer {
                 }
             }
         }
+        */
 
         checkForInconsistencies();
         //generateFinalTopics();
@@ -156,54 +189,137 @@ public class BaseSparkClusterer implements IClusterer {
 
     }
 
-    protected boolean collapseTopics(String sTopic1ID, String sTopic2ID) {
-        Topic t1 = (Topic)this.ArticlesPerCluster.get(sTopic1ID);
-        Topic t2 = (Topic)this.ArticlesPerCluster.get(sTopic2ID);
-        if(t1 == t2) {
-            return false;
-        } else {
-            Iterator i$ = t2.iterator();
+    private class baseclusterer {
+        protected HashMap<Article, String> hsClusterPerArticle;
+        protected HashMap<String, Topic> hsArticlesPerCluster;
+        protected final Logger LOGGER = Logger.getAnonymousLogger();
 
-            while(i$.hasNext()) {
-                Article aCur = (Article)i$.next();
-                t1.add(aCur);
-                this.ClustersPerArticle.put(aCur, t1.getID());
-                this.ArticlesPerCluster.put(t1.getID(), t1);
-            }
-
-            t2.clear();
-            this.ArticlesPerCluster.remove(t2.getID());
-            return true;
-        }
-    }
-
-    protected void checkForInconsistencies() {
-        int iCnt = 0;
-
-        Iterator i$;
-        for(i$ = this.ClustersPerArticle.keySet().iterator(); i$.hasNext(); ++iCnt) {
-            Article sCurCluster = (Article)i$.next();
-            if(!((Topic)this.ArticlesPerCluster.get(this.ClustersPerArticle.get(sCurCluster))).contains(sCurCluster)) {
-                System.out.println( "Mismatch found!");
-            }
+        public Map<String, Topic> getArticlesPerCluster() {
+            return (Map) (this.hsArticlesPerCluster != null && !this.hsArticlesPerCluster.isEmpty() ? this.hsArticlesPerCluster : Collections.EMPTY_MAP);
         }
 
-        System.out.println(String.format("Checked {0} items.",  Integer.valueOf(iCnt)));
-        i$ = this.ArticlesPerCluster.keySet().iterator();
+        public void calculateClusters(List<Boolean> hmResults,
+                                      JavaPairRDD<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>> RDDPairs
+        ) {
 
-        while(i$.hasNext()) {
-            String var6 = (String)i$.next();
-            Iterator i$1 = ((Topic)this.ArticlesPerCluster.get(var6)).iterator();
+            this.hsArticlesPerCluster = new HashMap();
+            this.hsClusterPerArticle = new HashMap();
+            int count = -1;
+            for (Tuple2<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>> pair : RDDPairs.collect()) {
+                //  The quadruple represents <entry_url, title, clean_text, timestamp>
+                //    public Article(String sSource, String Title, String Text, String Category, String Feed, URLImage imageUrl, Date date) {
 
-            while(i$1.hasNext()) {
-                Article aCurArticle = (Article)i$1.next();
-                if(((String)this.ClustersPerArticle.get(aCurArticle)).trim().compareTo(var6.trim()) != 0) {
-                    System.out.println(String.format("Mismatch found (reverse)!\n{0} != \n{1}\n",  new Object[]{this.ClustersPerArticle.get(aCurArticle), var6}));
+                Article aA = new Article(pair._1()._1(), pair._1()._2(), pair._1()._3(), "", "", new URLImage(""), new Date(pair._1()._4()));
+                Article aB = new Article(pair._2()._1(), pair._2()._2(), pair._2()._3(), "", "", new URLImage(""), new Date(pair._2()._4()));
+
+                boolean bMatch = hmResults.get(++count);
+                String sClusterID;
+                Topic tNew;
+                if (bMatch) {
+                    if (this.hsClusterPerArticle.containsKey(aA) && this.hsClusterPerArticle.containsKey(aB)) {
+                        this.collapseTopics((String) this.hsClusterPerArticle.get(aA), (String) this.hsClusterPerArticle.get(aB));
+                    } else {
+                        if (!this.hsClusterPerArticle.containsKey(aA)) {
+                            tNew = new Topic();
+                            sClusterID = tNew.getID();
+                            tNew.add(aA);
+                            this.hsArticlesPerCluster.put(sClusterID, tNew);
+                            this.hsClusterPerArticle.put(aA, sClusterID);
+                        }
+
+                        if (this.hsClusterPerArticle.containsKey(aB)) {
+                            this.collapseTopics((String) this.hsClusterPerArticle.get(aA), (String) this.hsClusterPerArticle.get(aB));
+                        } else {
+                            tNew = new Topic();
+                            sClusterID = tNew.getID();
+                            this.hsArticlesPerCluster.put(sClusterID, tNew);
+                            ((Topic) this.hsArticlesPerCluster.get(sClusterID)).add(aB);
+                            this.hsClusterPerArticle.put(aB, sClusterID);
+                        }
+                    }
+                } else {
+                    if (!this.hsClusterPerArticle.containsKey(aA)) {
+                        tNew = new Topic();
+                        sClusterID = tNew.getID();
+                        tNew.add(aA);
+                        this.hsArticlesPerCluster.put(sClusterID, tNew);
+                        this.hsClusterPerArticle.put(aA, sClusterID);
+                    }
+
+                    if (!this.hsClusterPerArticle.containsKey(aB)) {
+                        tNew = new Topic();
+                        sClusterID = tNew.getID();
+                        tNew.add(aB);
+                        this.hsArticlesPerCluster.put(sClusterID, tNew);
+                        this.hsClusterPerArticle.put(aB, sClusterID);
+                    }
                 }
             }
+
+            this.checkForInconsistencies();
+            this.generateFinalTopics();
+            return;
         }
 
-        System.out.println( "Reversed Checked Mappings Done");
-    }
 
+
+        protected void checkForInconsistencies() {
+            int iCnt = 0;
+
+            for (Article sCurCluster : hsClusterPerArticle.keySet()) {
+                iCnt++;
+                if (!((Topic) this.hsArticlesPerCluster.get(this.hsClusterPerArticle.get(sCurCluster))).contains(sCurCluster)) {
+                    LOGGER.log(Level.SEVERE, "Mismatch found!");
+                }
+            }
+
+            LOGGER.log(Level.INFO, "Checked {0} items.", Integer.valueOf(iCnt));
+
+
+            for (String var6 : hsArticlesPerCluster.keySet()) {
+                Topic T = hsArticlesPerCluster.get(var6);
+                for (Article aCurArticle : T) {
+                    if (((String) this.hsClusterPerArticle.get(aCurArticle)).trim().compareTo(var6.trim()) != 0) {
+                        LOGGER.log(Level.SEVERE, "Mismatch found (reverse)!\n{0} != \n{1}\n", new Object[]{this.hsClusterPerArticle.get(aCurArticle), var6});
+                    }
+
+                }
+
+                LOGGER.log(Level.INFO, "Reversed Checked Mappings Done");
+            }
+        }
+
+        protected void generateFinalTopics() {
+
+            HashSet hsIDs = new HashSet();
+            HashMap hsFinalMap = new HashMap();
+            HashMap hsClusterPerArticleFinal = new HashMap();
+            Iterator mIter = this.hsArticlesPerCluster.entrySet().iterator();
+
+            while (mIter.hasNext()) {
+                Entry tmpEntry = (Entry) mIter.next();
+                Topic tmpTopic = (Topic) tmpEntry.getValue();
+                tmpTopic.setNewestDate(true);
+                tmpTopic.setTitleFromNewestDate();
+                tmpTopic.assignFinalTopicID();
+                boolean bInsertedAsNew = hsIDs.add(tmpTopic.getID());
+                if (!bInsertedAsNew) {
+                    throw new RuntimeException("Found same ID for differrent topic..." + tmpTopic.toTopicDataJSON() + " : " + hsFinalMap.get(tmpTopic.getID()));
+                }
+
+                hsFinalMap.put(tmpTopic.getID(), tmpTopic);
+                Iterator i$ = tmpTopic.iterator();
+
+                while (i$.hasNext()) {
+                    Article article = (Article) i$.next();
+                    hsClusterPerArticleFinal.put(article, tmpTopic.getID());
+                }
+
+                mIter.remove();
+            }
+
+            this.hsArticlesPerCluster = (HashMap) hsFinalMap;
+            this.hsClusterPerArticle = (HashMap) hsClusterPerArticleFinal;
+        }
+    }
 }

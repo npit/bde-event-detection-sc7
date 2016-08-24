@@ -19,7 +19,11 @@ import java.io.Serializable;
  */
 public class ExtractMatchingPairsFunc implements Function<Tuple2<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>>, Boolean> {
 
+<<<<<<< HEAD
     private final SparkContext sc;
+=======
+    private static transient SparkContext sc;
+>>>>>>> 3e3bf08458732fb901edced7458c3dfb22eb2e39
     private final SimilarityMode mode;
     private final double simCutOff;
     private final int numPartitions;
@@ -34,30 +38,17 @@ public class ExtractMatchingPairsFunc implements Function<Tuple2<Tuple4<String, 
     // <entry_url, title, clean_text, timestamp>, <entry_url, title, clean_text, timestamp>
     @Override
     public Boolean call(Tuple2<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>> v1) throws Exception {
+
         // spark-context
         // get text from first item
+
         StringEntity ent1 = new StringEntity();
         // concatenate title and clean text together
-        ///System.out.println("1 : Concatenating [" + v1._1()._2() + "] and [" + v1._1()._3() + "]");
-        if(sc == null) {
-            System.out.println("Null spark context!!!");
-            return false;
-        }
-        else
-            System.out.println("\t\tSC ok");
+        ent1.setString(sc, new StringBuilder().append(v1._1()._2()).append(" ").append(v1._1()._3()).toString());
 
-        try {
-            ent1.setString(sc, v1._1()._2() + v1._1()._3());
-        }
-        catch(java.lang.NullPointerException exc)
-        {
-            System.out.println(">>>>>>>>>>>>>>>>>>>>>exc : " + exc.toString());
-            exc.printStackTrace();
-        }
         // get text from second item
         StringEntity ent2 = new StringEntity();
         // concatenate title and clean text together
-        System.out.println("2 : Concatenating [" + v1._2()._2() + "] and [" + v1._2()._3() + "]");
         ent2.setString(sc, new StringBuilder().append(v1._2()._2()).append(" ").append(v1._2()._3()).toString());
 
         // create graphs for each document

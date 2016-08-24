@@ -98,7 +98,7 @@ public class BDEEventDetectionSpark {
         // init sparkConf (holds the spark context object)
         BDESpark bdes = new BDESpark(conf);
         // instantiate us
-        BDEEventDetection bdedet = new BDEEventDetection(bdes);
+        BDEEventDetectionSpark bdedet = new BDEEventDetectionSpark(bdes);
         // keep context to pass around
         SparkContext sc = bdedet.getContext();
         // get the spark repository class
@@ -117,39 +117,20 @@ public class BDEEventDetectionSpark {
         // generate all article pairs
         BaseSparkClusterer clusterer = new BaseSparkClusterer(sc,conf.getSimilarityMode(),conf.getCutOffThreshold(), conf.getNumPartitions());
         clusterer.calculateClusters(RDDbatch);
-        //StructUtils.printArticlePairs(RDDPairs, 5);
 
+        Map<String, Topic> res = clusterer.getArticlesPerCluster();
+        System.out.println("Printing clustering results.");
+        for(String clustid : res.keySet())
+        {
+            System.out.println("cluster " + clustid);
+            for(Article art : res.get(clustid))
+            {
+                System.out.println("\t art" + art.toString());
+            }
+        }
 
-//        // instantiate a clusterer
-//        IClusterer clusterer = new NSClusterer(sc, conf.getSimilarityMode(), conf.getCutOffThreshold(), conf.getNumPartitions());
-//
-//        // TODO: we should return the clusters (e.g. a map RDD of ID, List<Tuple4<>>)
-//        clusterer.calculateClusters(RDDbatch);
-
-        //StructUtils.printArticles(RDDbatch);
-        // create pairs
-        // get pairs of articles
-
-        // debug
-        // get matching mapping
-
-        // TODO: use flatMap?? we want for the full pairs rdd, each item mapped to a boolean value.
-        // the next call returns true on the pairs that are similar enough, based on the similarity
-        // cutoff value
-        //JavaRDD<Boolean> map = RDDPairs.map(new ExtractMatchingPairsFunc(sc, conf.getSimilarityMode(),
-        //        conf.getCutOffThreshold(), conf.getNumPartitions()));
-        // generate clusters
-      //  IClusterer clusterer = new NSClusterer(sc,conf.getSimilarityMode(),conf.getCutOffThreshold(), conf.getNumPartitions());
-//        clusterer.calculateClusters(RDDbatch);
-        // TODO: change method signature: return smth (not void)
-
-        // get matching mappings
-
-
-        // generate clusters
-
-        // save clusters
         int a=2;
+        return;
 
     }
 
