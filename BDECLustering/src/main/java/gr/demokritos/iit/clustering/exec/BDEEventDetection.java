@@ -88,7 +88,7 @@ public class BDEEventDetection {
         // copied from demo event detection
 
         String properties = "./res/clustering.properties";
-        if (args.length == 1) {
+        if (args.length >= 1) {
             properties = args[0];
         }
         boolean SendToStrabon = false;
