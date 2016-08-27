@@ -60,4 +60,14 @@ public class LocConf extends BaseConfiguration implements ILocConf {
     public String getLocationExtractionImpl() {
         return properties.getProperty("location_extraction_impl");
     }
+    @Override
+    public String getPolygonExtractionImpl()
+    {
+        return properties.getProperty("polygon_extraction_impl");
+    }
+    @Override
+    public String getPolygonExtractionSourceFile()
+    {
+        return properties.getProperty("polygon_extraction_sourcefile");
+    }
 }

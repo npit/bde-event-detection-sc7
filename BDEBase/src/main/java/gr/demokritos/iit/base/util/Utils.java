@@ -49,7 +49,7 @@ public class Utils {
      * @return
      */
     public static String extractYearMonthDayLiteral(long timestamp) {
-        if (timestamp == 0l) {
+        if (timestamp == 0l || timestamp == Long.MIN_VALUE) {
             return "UNDEFINED";
         }
         Calendar cal = Calendar.getInstance();
@@ -94,7 +94,7 @@ public class Utils {
         if (timestamp >= cur) {
             res.add(cur_literal);
         } else {
-            if (timestamp == 0l) {
+            if (timestamp == 0l || timestamp == Long.MIN_VALUE) {
                 // set timestamp 1 month ago
                 cal.set(Calendar.MONTH, cal.get(Calendar.MONTH) - 1);
                 timestamp = cal.getTimeInMillis();

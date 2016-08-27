@@ -15,6 +15,7 @@
 package gr.demokritos.iit.location.mapping;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -38,5 +39,7 @@ public interface IPolygonExtraction {
      * @return
      */
     Map<String, String> extractPolygon(Collection<String> locationEntities);
+
+    Map<String, String> parseGeomJSON(Map<String, String> input);
 
 }

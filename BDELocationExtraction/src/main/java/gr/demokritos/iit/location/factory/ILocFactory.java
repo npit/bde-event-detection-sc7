@@ -21,7 +21,9 @@ public interface ILocFactory {
 
     Logger LOG = Logger.getLogger(ILocFactory.class.getName());
 
+    IPolygonExtraction createPolygonExtractionClient()  throws NoSuchMethodException, ClassNotFoundException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException;
     IPolygonExtraction createDefaultPolygonExtractionClient() throws IllegalArgumentException;
+    IPolygonExtraction createLocalPolygonExtractionClient() throws IllegalArgumentException;
 
     ILocationRepository createLocationCassandraRepository();
 
