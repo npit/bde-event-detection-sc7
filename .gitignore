@@ -36,7 +36,6 @@ nb*.xml
 *.iml
 
 # config-specific
-*.csv
 BDETwitterListener/placeholder_twitterdevaccount
 *.ignore
 *META-INF*
