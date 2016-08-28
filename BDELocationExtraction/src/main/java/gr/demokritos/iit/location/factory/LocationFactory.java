@@ -15,6 +15,7 @@ import gr.demokritos.iit.location.extraction.ILocationExtractor;
 import gr.demokritos.iit.location.extraction.provider.ITokenProvider;
 import gr.demokritos.iit.location.mapping.DefaultPolygonExtraction;
 import gr.demokritos.iit.location.mapping.IPolygonExtraction;
+import gr.demokritos.iit.location.mapping.LocalPolygonExtraction;
 import gr.demokritos.iit.location.repository.LocationCassandraRepository;
 import gr.demokritos.iit.location.repository.ILocationRepository;
 import gr.demokritos.iit.location.sentsplit.ISentenceSplitter;
@@ -63,6 +64,20 @@ public class LocationFactory implements ILocFactory {
     }
 
     @Override
+    public IPolygonExtraction createPolygonExtractionClient() throws NoSuchMethodException, ClassNotFoundException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
+    {
+        String poly_extraction_impl = conf.getPolygonExtractionImpl();
+        if(poly_extraction_impl.equals("local"))
+            return createLocalPolygonExtractionClient();
+        else if(poly_extraction_impl.equals("remote"))
+                return createDefaultPolygonExtractionClient();
+        else
+        {
+            throw new IllegalArgumentException(String.format("Undefined polygon extraction implementation: " + poly_extraction_impl + " . Available: local | remote."));
+        }
+
+    }
+    @Override
     public IPolygonExtraction createDefaultPolygonExtractionClient() throws IllegalArgumentException {
         String url = conf.getPolygonExtractionURL();
         if (url == null || url.trim().isEmpty()) {
@@ -71,6 +86,11 @@ public class LocationFactory implements ILocFactory {
         return new DefaultPolygonExtraction(url);
     }
 
+    @Override
+    public IPolygonExtraction createLocalPolygonExtractionClient() throws IllegalArgumentException {
+        String sourcefile=conf.getPolygonExtractionSourceFile();
+        return new LocalPolygonExtraction(sourcefile);
+    }
     /**
      * release underlying DB connection pools
      */

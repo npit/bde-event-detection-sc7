@@ -90,8 +90,9 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
         // schedule updated
         sched.setItemsUpdated(er.getItemsFound());
         // update last timestamp parsed
+
         sched.setLastParsed(er.getMaxPublished());
-        System.out.println("last parsed: " + new Date(er.getMaxPublished()).toString());
+        System.out.println("Set last parsed to " + sched.getLastParsed());
         // register completed
         repos.scheduleFinalized(sched);
     }
@@ -99,7 +100,9 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
     private ExecRes extractLocation(Collection<Map<String, Object>> items, OperationMode mode) {
 
         // keep most recent published for reference
+
         long max_published = Long.MIN_VALUE;
+        System.out.println("Initial max published: " + max_published);
         int i = 0;
         switch (mode) {
             case ARTICLES:
@@ -117,7 +120,7 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                         Map<String, String> places_polygons = poly.extractPolygon(locationsFound);
                         // update entry
                         // edit geometry
-                        places_polygons = GeometryFormatTransformer.ToJSON(places_polygons);
+                        places_polygons = poly.parseGeomJSON(places_polygons);
                         repos.updateArticlesWithReferredPlaceMetadata(permalink, places_polygons);
                         i++;
                     }
@@ -140,6 +143,7 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                     // extract coordinates for each entity
                     if (!locationsFound.isEmpty()) {
                         Map<String, String> places_polygons = poly.extractPolygon(locationsFound);
+                        places_polygons = poly.parseGeomJSON(places_polygons);
                         // update entry (tweets_per_referred_place)
                         repos.updateTweetsWithReferredPlaceMetadata(post_id, places_polygons);
                         i++;

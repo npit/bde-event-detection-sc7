@@ -62,7 +62,7 @@ public class LocationExtraction {
             // init location extractor
             ILocationExtractor locExtractor = factory.createDefaultLocationExtractor();
             // load polygon extraction client
-            IPolygonExtraction poly = factory.createDefaultPolygonExtractionClient();
+            IPolygonExtraction poly = factory.createPolygonExtractionClient();
             // according to mode, execute location extraction schedule.
             ILocationExtractionScheduler scheduler = new LocationExtractionScheduler(
                 operationMode, repos, locExtractor, poly

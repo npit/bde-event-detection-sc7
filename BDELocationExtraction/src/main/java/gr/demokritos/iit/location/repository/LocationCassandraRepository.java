@@ -65,11 +65,12 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
         Calendar two_months_ago = Calendar.getInstance();
         two_months_ago.set(Calendar.MONTH, two_months_ago.get(Calendar.MONTH) - 2);
         long last_parsed = two_months_ago.getTimeInMillis();
-
+        System.out.println("Two months ago tstamp: "  + last_parsed);
         Row one = results.one();
         if (one != null) {
             max_existing = one.getLong(Cassandra.Location.TBL_LOCATION_LOG.FLD_SCHEDULE_ID.getColumnName());
             last_parsed = one.getLong(Cassandra.Location.TBL_LOCATION_LOG.FLD_LAST_PARSED.getColumnName());
+            System.out.println("Overwriting with one from table:Two months ago tstamp: "  + last_parsed);
         }
         long current = max_existing + 1;
         LocSched curSched = new LocSched(mode, current, last_parsed);
@@ -82,6 +83,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
                 .value(Cassandra.Location.TBL_LOCATION_LOG.FLD_ITEMS_UPDATED.getColumnName(), 0l) // avoid nulls
                 .value(Cassandra.Location.TBL_LOCATION_LOG.FLD_LAST_PARSED.getColumnName(), last_parsed)
                 .value(Cassandra.Location.TBL_LOCATION_LOG.FLD_START.getColumnName(), new Date().getTime());
+        System.out.println(insert.toString());
         session.execute(insert);
         return curSched;
     }
@@ -136,6 +138,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
         session.execute(upsert);
         Statement insert;
         for (String place : places) {
+            System.out.println("Updating palce " + place + " with poly " + places_polygons.get(place));
             insert = QueryBuilder
                     .insertInto(session.getLoggedKeyspace(), Cassandra.RSS.Tables.NEWS_ARTICLES_PER_PLACE.getTableName())
                     .value(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_PLACE_LITERAL.getColumnName(), place)
@@ -227,138 +230,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
         return Collections.unmodifiableMap(res);
     }
 
-    // obsolete hotfix
-    void updateEventsWithArticleLocationPolygonPairs(Map<String,String> places_polygons, String permalink)
-    {
-        //System.out.println("\t>Updating events with article permalink: " + permalink); //debugprint
-        long startTime = System.currentTimeMillis();
-        Set<String> places = places_polygons.keySet();
-        // this is an ugly workaround. a table events per article would be superb
 
-        // cheaper to go per article ? per place ? per event?
-        // probably per event.
-
-        // get all events
-        Statement query = QueryBuilder
-                .select(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName())
-                .from(session.getLoggedKeyspace(),Cassandra.Event.Tables.EVENTS.getTableName());
-        ResultSet results = session.execute(query);
-        Set<String> eventIDs = new HashSet<String>();
-        for(Row row : results)
-        {
-
-            eventIDs.add(row.getString(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName()));
-        }
-        String payload = GeometryFormatTransformer.LocationPolygonsToCQLString(places_polygons);
-
-        PreparedStatement pstatement = session.prepare(
-                "UPDATE " + session.getLoggedKeyspace() +"." + Cassandra.Event.Tables.EVENTS.getTableName()
-                +" SET " + Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName() + " = " + Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName() + " + "
-                + payload + " WHERE " + Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName() + " = ? "
-        );
-        BoundStatement bstatement = new BoundStatement(pstatement);
-
-
-        // for each event
-        for(String event  : eventIDs)
-        {
-            // get its source urls with a cql query
-            query = QueryBuilder
-                    .select(Cassandra.Event.TBL_EVENTS.FLD_EVENT_SOURCE_URLS.getColumnName())
-                    .from(session.getLoggedKeyspace(),Cassandra.Event.Tables.EVENTS.getTableName())
-                    .where(eq(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName(),event));
-            results = session.execute(query);
-
-            // for each article url
-            for(Row row : results)
-            {
-
-                Set<String> articleURLs = row.getSet(Cassandra.Event.TBL_EVENTS.FLD_EVENT_SOURCE_URLS.getColumnName(),String.class);
-                if (!articleURLs.contains(permalink)) continue;
-
-                else
-                {
-                    // insert the place mappings in that event
-                    System.out.println("\t\t>>> Inserting to event " + event + " , places :" + places.toString());
-                    session.execute(bstatement.bind(event));
-                    break;
-                }
-
-
-
-            }
-        }
-
-        long endTime = System.currentTimeMillis();
-        long duration = (endTime - startTime);  //divide by 1000000 to get milliseconds.
-        //System.out.println("### Done with article permalink: " + permalink + " in " + Long.toString(duration) + " msec");
-
-    }
-    // obsolete hotfix for populating events table
-    void updateEventsWithTweetLocationPolygonPairs(Map<String,String> places_polygons, long post_id)
-    {
-        //String strpostid = Long.toString(post_id);
-        //System.out.println("\t>Updating events with tweet post id: " + strpostid); //debugprint
-
-        long startTime = System.currentTimeMillis();
-        Set<String> places = places_polygons.keySet();
-        // this is an ugly workaround. a table events per article would be superb
-
-        // cheaper to go per article ? per place ? per event?
-        // probably per event.
-
-        // get all events
-        Statement query = QueryBuilder
-                .select(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName())
-                .from(session.getLoggedKeyspace(),Cassandra.Event.Tables.EVENTS.getTableName());
-        ResultSet results = session.execute(query);
-        Set<String> eventIDs = new HashSet<String>();
-        for(Row row : results)
-        {
-
-            eventIDs.add(row.getString(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName()));
-        }
-        String payload = GeometryFormatTransformer.LocationPolygonsToCQLString(places_polygons);
-
-        PreparedStatement pstatement = session.prepare(
-                "UPDATE " + session.getLoggedKeyspace() +"." + Cassandra.Event.Tables.EVENTS.getTableName()
-                        +" SET " + Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName() + " = " + Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName() + " + "
-                        + payload + " WHERE " + Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName() + " = ? "
-        );
-        BoundStatement bstatement = new BoundStatement(pstatement);
-
-        // for each event
-        for(String event_id  : eventIDs)
-        {
-            // get its source urls with a cql query
-            query = QueryBuilder
-                    .select(Cassandra.Event.TBL_EVENTS.FLD_TWEET_IDS.getColumnName())
-                    .from(session.getLoggedKeyspace(),Cassandra.Event.Tables.EVENTS.getTableName())
-                    .where(eq(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName(),event_id));
-            results = session.execute(query);
-
-            // for each article url
-            for(Row row : results)
-            {
-
-                Set<Long> tweet_ids = row.getSet(Cassandra.Event.TBL_EVENTS.FLD_TWEET_IDS.getColumnName(),Long.class);
-                if (!tweet_ids.contains(post_id)) continue;
-
-                else
-                {
-                    // insert the place mappings in that event
-                    System.out.println("\t\t>>> Inserting to event " + event_id + " , places :" + places.toString());
-                    session.execute(bstatement.bind(event_id));
-                    break;
-                }
-            }
-        }
-
-        long endTime = System.currentTimeMillis();
-        long duration = (endTime - startTime);  //divide by 1000000 to get milliseconds.
-        //System.out.println("### Done with article permalink: " + strpostid + " in " + Long.toString(duration) + " msec");
-
-    }
 
     /**
      * Function to send events to popeye.di.uoa.gr for storage and/or change detection

@@ -13,6 +13,9 @@ import gr.demokritos.iit.base.conf.IBaseConf;
  */
 public interface ILocConf extends IBaseConf {
 
+    String getPolygonExtractionSourceFile();
+    String getPolygonExtractionImpl();
+
     String getLocationExtractionImpl();
 
     String getTokenProviderImpl();

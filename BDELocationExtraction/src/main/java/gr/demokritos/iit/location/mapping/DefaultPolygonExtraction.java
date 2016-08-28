@@ -98,6 +98,11 @@ public class DefaultPolygonExtraction implements IPolygonExtraction {
                 location_cache.put(locationEntity, ent);
                 res = ent;
             }
+            // when the server returns html junk
+            if(ent.contains("The requested resource is not available."))
+            {
+                throw new Exception ("Polygon extraction server says resource is not available.");
+            }
         } catch (Exception ex) {
             Logger.getLogger(DefaultPolygonExtraction.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -152,4 +157,51 @@ public class DefaultPolygonExtraction implements IPolygonExtraction {
             return new Gson().toJson(this, GeocodeResponse.class);
         }
     }
+
+    /**
+     * Converts the location - geometry pair to a format that is easy to parse JSON from.
+     * This is invoked just before merging locations into the events table.
+     * @param input a Map<String,String> of location names and geometries
+     * @return the modified Map
+     */
+    public Map<String, String> parseGeomJSON(Map<String, String> input)
+    {
+
+        Map<String,String> output =  new HashMap();
+        for(String location : input.keySet())
+        {
+            String geometry =input.get(location);
+            String [] tokens = geometry.split(":|,");
+            // Token order should be
+            // type, TYPE,
+            // coordinates, C1,C2, ... , c10, with brackets around value pairs
+            // [{"type":"Polygon","coordinates":[[[9.61845970153809,48.3653259277344],
+            // [9.61845970153809,48.2986068725587],[9.82220172882086,48.2986068725587],
+            // [9.82220172882086,48.3653259277344],[9.61845970153809,48.3653259277344]]]}]
+            // TODO: need to ask E-Karr @ di uoa on the formats the geometries are guranteed to take
+            // TODO: ask G-Stam @ di uoa if he indeed does not need the type
+            // (how many coordinates, any other special characters, etc
+            String GeometryType = tokens[1];
+            assert tokens[0].contains("type") :  "parseGeomJSON:ToJSON: Expected \"type\" at the first token position.";
+            String coordinates="";
+            boolean atPair = false;
+            String replregex="[\\[\\]\\{\\}]";
+            for(int i=3; i<tokens.length; ++i)
+            {
+                String coord = tokens[i].replaceAll(replregex,"");
+                coordinates += coord;
+                if (atPair && i < tokens.length-1) {
+                    coordinates += ", ";
+                }
+                else coordinates += " ";
+                atPair = !atPair;
+
+            }
+            assert !coordinates.isEmpty() :   "parseGeomJSON:ToJSON: No coordinates parsed.";
+            output.put("\"" + location + "\"", "\"(" + coordinates + ")\"");
+
+        }
+        return output;
+    }
+
 }
