@@ -286,7 +286,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
             // TODO: make new connection for each send or make connection out of loop?
             // TODO: put target url in the properties file on the module this function will
             // end up in
-            String URLstr = "http://popeye.di.uoa.gr:8080/changeDetection/event/process";
+            String URLstr = "http://teleios4.di.uoa.gr:8080/changeDetection/event/process";
             URL url;
             HttpURLConnection connection = null;
             try
