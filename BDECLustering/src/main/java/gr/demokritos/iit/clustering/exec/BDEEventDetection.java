@@ -92,9 +92,12 @@ public class BDEEventDetection {
             properties = args[0];
         }
         boolean SendToStrabon = false;
+        boolean onlySendToStrabon = false;
         if (args.length == 2) {
             if(args[1].toString().toLowerCase().equals("strabon"))
                 SendToStrabon = true;
+            else if(args[1].toString().toLowerCase().equals("onlystrabon"))
+                onlySendToStrabon = true;
             else
                 System.out.println(args[1].toString().toLowerCase() + " undefined.");
         }
@@ -105,6 +108,13 @@ public class BDEEventDetection {
         factory = new DemoClusteringFactory(configuration);
         repository = factory.createDemoCassandraRepository();
 
+        // just send to strabon, if that mode is specified
+        if(onlySendToStrabon)
+        {
+            System.out.print("Note: No clustering: will only send events to strabon.");
+            repository.storeAndChangeDetectionEvents();
+            return;
+        }
         Calendar now = Calendar.getInstance();
         now.set(Calendar.MONTH, now.get(Calendar.MONTH) - 1);
 
@@ -170,7 +180,7 @@ public class BDEEventDetection {
 
         repository.saveEvents(articlesPerCluster, summaries, related, place_mappings, tweetURLtoPostIDMapping, tweetURLtoUserMapping, 2);
         if (SendToStrabon) {
-            System.out.print("Sending events to popeye.di.uoa...");
+            System.out.print("Finally,sending events to strabon...");
             repository.storeAndChangeDetectionEvents();
         }
         if(factory != null)
