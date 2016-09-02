@@ -113,6 +113,11 @@ public class BDEEventDetection {
         {
             System.out.print("Note: No clustering: will only send events to strabon.");
             repository.storeAndChangeDetectionEvents();
+            if(factory != null)
+            {
+                System.out.println("Releasing resources.");
+                factory.releaseResources();
+            }
             return;
         }
         Calendar now = Calendar.getInstance();
