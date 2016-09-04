@@ -12,8 +12,8 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.io.WKTWriter;
-import gr.demokritos.iit.location.util.GeometryFormatTransformer;
-import org.apache.lucene.document.Document;
+
+
 
 /**
  * Created by npittaras on 26/8/2016.
@@ -47,7 +47,8 @@ public class LocalPolygonExtraction implements IPolygonExtraction {
         try
         {
             Location L = fs.processQuery(locationEntity);
-            System.out.println(L.toString());
+            if (L != null)
+                System.out.println(L.toString());
             res =  processRawGeometry(L);
         }
         catch(Exception ex)
@@ -64,7 +65,7 @@ public class LocalPolygonExtraction implements IPolygonExtraction {
     {
         if (loc != null) {
 
-            String geom = loc.getGeometry().replaceAll("[^0-9.]", " ");
+            String geom = loc.getGeometry().toString().replaceAll("[^0-9.]", " ");
             Scanner sc = new Scanner(geom);
             Coordinate[] newPolygonCoords = new Coordinate[5];
             Point2D leftPoint = new Point2D.Double(sc.nextDouble(), sc.nextDouble());
