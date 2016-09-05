@@ -48,8 +48,8 @@ public class LocalPolygonExtraction implements IPolygonExtraction {
         try
         {
             Location L = fs.processQuery(locationEntity);
-            if (L != null)
-                System.out.println(L.toString());
+            //if (L != null)
+            //    System.out.println(L.toString());
             res =  processRawGeometry(L);
         }
         catch(Exception ex)
@@ -57,8 +57,8 @@ public class LocalPolygonExtraction implements IPolygonExtraction {
             Logger.getLogger(DefaultPolygonExtraction.class.getName()).log(Level.SEVERE, null, ex);
 
         }
-        System.out.println("Local pol-el returning geometry:");
-        System.out.println(res);
+        //System.out.println("Local pol-el returning geometry:");
+        //System.out.println(res);
         return res;
     }
 
@@ -82,7 +82,7 @@ public class LocalPolygonExtraction implements IPolygonExtraction {
             GeometryFactory geometryFactory = new GeometryFactory();
             Polygon geometry = geometryFactory.createPolygon(newPolygonCoords);
             WKTWriter writer = new WKTWriter();
-            System.out.println("parsed : " + writer.write(geometry));
+            //System.out.println("parsed : " + writer.write(geometry));
             return geometry.toString();
         }
         return "";
@@ -127,7 +127,7 @@ public class LocalPolygonExtraction implements IPolygonExtraction {
         Map<String,String> output =  new HashMap();
         for(String location : input.keySet())
         {
-            System.out.print("INitial : " + input.get(location));
+            //System.out.print("INitial : " + input.get(location));
             String geometry =input.get(location);
             assert geometry.contains("POLYGON") : "No [POLYGON] found in geometry.";
 
