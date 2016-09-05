@@ -23,6 +23,7 @@ public class LocalPolygonExtraction implements IPolygonExtraction {
     FuzzySearch fs;
     public LocalPolygonExtraction(String sourceFilePath)
     {
+	System.out.println("Initializing local polygon extractor from dataset : " + sourceFilePath + ".");
         try {
             fs = new FuzzySearch(sourceFilePath);
         }
