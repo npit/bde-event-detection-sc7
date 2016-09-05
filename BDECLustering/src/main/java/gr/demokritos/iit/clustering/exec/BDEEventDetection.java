@@ -92,9 +92,12 @@ public class BDEEventDetection {
             properties = args[0];
         }
         boolean SendToStrabon = false;
+        boolean onlySendToStrabon = false;
         if (args.length == 2) {
             if(args[1].toString().toLowerCase().equals("strabon"))
                 SendToStrabon = true;
+            else if(args[1].toString().toLowerCase().equals("onlystrabon"))
+                onlySendToStrabon = true;
             else
                 System.out.println(args[1].toString().toLowerCase() + " undefined.");
         }
@@ -105,6 +108,18 @@ public class BDEEventDetection {
         factory = new DemoClusteringFactory(configuration);
         repository = factory.createDemoCassandraRepository();
 
+        // just send to strabon, if that mode is specified
+        if(onlySendToStrabon)
+        {
+            System.out.print("Note: No clustering: will only send events to strabon.");
+            repository.storeAndChangeDetectionEvents();
+            if(factory != null)
+            {
+                System.out.println("Releasing resources.");
+                factory.releaseResources();
+            }
+            return;
+        }
         Calendar now = Calendar.getInstance();
         now.set(Calendar.MONTH, now.get(Calendar.MONTH) - 1);
 
@@ -158,8 +173,8 @@ public class BDEEventDetection {
         System.out.println("Classifying tweets...");
         //IClassifier smClassifier = factory.getSocialMediaClassifierForTwitter(plainTextSummaries, tweetClusters, tsStemmer);
         // default thresholds are
-        double min_assign_sim_threshold = 0.008D;
-        double min_assign_titlesim_threshold = 0.08D;
+        double min_assign_sim_threshold = 0.01D;
+        double min_assign_titlesim_threshold = 0.1D;
         IClassifier smClassifier = factory.getSocialMediaClassifierForTwitter(min_assign_sim_threshold, min_assign_titlesim_threshold,plainTextSummaries, tweetClusters, tsStemmer);
         Map<Topic, List<String>> related = smClassifier.getRelated();
 
@@ -170,7 +185,7 @@ public class BDEEventDetection {
 
         repository.saveEvents(articlesPerCluster, summaries, related, place_mappings, tweetURLtoPostIDMapping, tweetURLtoUserMapping, 2);
         if (SendToStrabon) {
-            System.out.print("Sending events to popeye.di.uoa...");
+            System.out.print("Finally,sending events to strabon...");
             repository.storeAndChangeDetectionEvents();
         }
         if(factory != null)

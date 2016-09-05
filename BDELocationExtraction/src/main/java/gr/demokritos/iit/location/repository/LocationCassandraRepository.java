@@ -370,7 +370,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
 
 
     /**
-     * Function to send events to popeye.di.uoa.gr for storage and/or change detection
+     * Function to send events to strabon for storage and/or change detection
      */
     @Override
     public void storeAndChangeDetectionEvents()
@@ -415,7 +415,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
                 entries.add(item);
                 entries.add(val);
             }
-            // reconstruct the entries in the format expected by popeye
+            // reconstruct the entries in the format expected by strabon
             String payload = GeometryFormatTransformer.EventRowToPopeyeProcess(entries);
             System.out.println("payload is:" + payload); // debugprint
 
@@ -459,11 +459,11 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
                 String resp = response.toString();
                 rd.close();
                 // debugprint
-                System.out.println("popeye response:\n\t" + resp);
+                System.out.println("server response:\n\t" + resp);
 
                 if (resp.equals("{\"code\":400,\"message\":\"exception\"}"))
                 {
-                    System.err.println("Popeye request failed.");
+                    System.err.println("Server request failed.");
                 }
             }
             catch(MalformedURLException exc)

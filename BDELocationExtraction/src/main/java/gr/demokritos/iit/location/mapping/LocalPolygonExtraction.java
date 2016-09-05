@@ -12,8 +12,8 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.io.WKTWriter;
-import gr.demokritos.iit.location.util.GeometryFormatTransformer;
-import org.apache.lucene.document.Document;
+
+
 
 /**
  * Created by npittaras on 26/8/2016.
@@ -23,6 +23,7 @@ public class LocalPolygonExtraction implements IPolygonExtraction {
     FuzzySearch fs;
     public LocalPolygonExtraction(String sourceFilePath)
     {
+	System.out.println("Initializing local polygon extractor from dataset : " + sourceFilePath + ".");
         try {
             fs = new FuzzySearch(sourceFilePath);
         }
@@ -48,7 +49,8 @@ public class LocalPolygonExtraction implements IPolygonExtraction {
         try
         {
             Location L = fs.processQuery(locationEntity);
-            System.out.println(L.toString());
+            //if (L != null)
+            //    System.out.println(L.toString());
             res =  processRawGeometry(L);
         }
         catch(Exception ex)
@@ -56,8 +58,8 @@ public class LocalPolygonExtraction implements IPolygonExtraction {
             Logger.getLogger(DefaultPolygonExtraction.class.getName()).log(Level.SEVERE, null, ex);
 
         }
-        System.out.println("Local pol-el returning geometry:");
-        System.out.println(res);
+        //System.out.println("Local pol-el returning geometry:");
+        //System.out.println(res);
         return res;
     }
 
@@ -65,7 +67,7 @@ public class LocalPolygonExtraction implements IPolygonExtraction {
     {
         if (loc != null) {
 
-            String geom = loc.getGeometry().replaceAll("[^0-9.]", " ");
+            String geom = loc.getGeometry().toString().replaceAll("[^0-9.]", " ");
             Scanner sc = new Scanner(geom);
             Coordinate[] newPolygonCoords = new Coordinate[5];
             Point2D leftPoint = new Point2D.Double(sc.nextDouble(), sc.nextDouble());
@@ -81,7 +83,7 @@ public class LocalPolygonExtraction implements IPolygonExtraction {
             GeometryFactory geometryFactory = new GeometryFactory();
             Polygon geometry = geometryFactory.createPolygon(newPolygonCoords);
             WKTWriter writer = new WKTWriter();
-            System.out.println("parsed : " + writer.write(geometry));
+            //System.out.println("parsed : " + writer.write(geometry));
             return geometry.toString();
         }
         return "";
@@ -126,7 +128,7 @@ public class LocalPolygonExtraction implements IPolygonExtraction {
         Map<String,String> output =  new HashMap();
         for(String location : input.keySet())
         {
-            System.out.print("INitial : " + input.get(location));
+            //System.out.print("INitial : " + input.get(location));
             String geometry =input.get(location);
             assert geometry.contains("POLYGON") : "No [POLYGON] found in geometry.";
 

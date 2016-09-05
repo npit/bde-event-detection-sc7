@@ -1,10 +1,11 @@
 package gr.demokritos.iit.location.mapping;
 
-
+        import com.vividsolutions.jts.io.ParseException;
         import java.io.BufferedReader;
         import java.io.FileReader;
         import java.io.IOException;
         import java.util.ArrayList;
+        import java.util.Collections;
         import java.util.List;
         import java.util.logging.Level;
         import java.util.logging.Logger;
@@ -34,12 +35,10 @@ public class FuzzySearch implements Constants {
     private Analyzer analyzer;
     private Directory indexDir;
     private IndexSearcher searcher;
-    private QueryParser[] queryParsers;
+    private QueryParser queryParser;
 
     public FuzzySearch(String dataPath) throws Exception {
-        System.out.print("Indexing local location extraction dataset...");
         indexDataset(dataPath);
-        System.out.println("done.");
         prepareQueries();
     }
 
@@ -62,15 +61,14 @@ public class FuzzySearch implements Constants {
 
         List<String> lines = getFileLines(dataPath);
         for (String line : lines) {
-            String[] parts = line.split(DATASET_DELIMITER);
+            String box = line.substring(line.lastIndexOf(DATASET_DELIMITER)+1);
+            String segmentedLocation = line.substring(0, line.lastIndexOf(DATASET_DELIMITER));
+            String normalizedLocation = segmentedLocation.replaceAll(DATASET_DELIMITER, " ");
 
             Document doc = new Document();
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < FIELD_NAMES.length - 1; i++) {
-                sb.append(parts[i]).append(" ");
-                doc.add(new Field(FIELD_NAMES[i], parts[i], TextField.TYPE_STORED));
-            }
-            doc.add(new Field(FIELD_NAMES[FIELD_NAMES.length - 1], sb.toString().trim(), TextField.TYPE_STORED));
+            doc.add(new Field(FIELD_NAMES[0], normalizedLocation, TextField.TYPE_STORED));
+            doc.add(new Field(FIELD_NAMES[1], segmentedLocation, TextField.TYPE_STORED));
+            doc.add(new Field(FIELD_NAMES[2], box, TextField.TYPE_STORED));
             w.addDocument(doc);
         }
 
@@ -89,34 +87,40 @@ public class FuzzySearch implements Constants {
     private void prepareQueries() throws IOException {
         IndexReader reader = DirectoryReader.open(indexDir);
         searcher = new IndexSearcher(reader);
-        queryParsers = new QueryParser[FIELD_NAMES.length];
-        for (int i = 0; i < FIELD_NAMES.length; i++) {
-            queryParsers[i] = new QueryParser(FIELD_NAMES[i], analyzer);
-        }
+        queryParser = new QueryParser(FIELD_NAMES[0], analyzer);
     }
 
-    public Location processQuery(String q) throws Exception{
+    private Location parseHits(ScoreDoc[] hits) throws ParseException, IOException {
+        Logger.getLogger(this.getClass().getName()).log(Level.INFO, "Total results\t:\t{0}", hits.length);
+
+        List<Location> sortedLocations = new ArrayList<>();
+        for (ScoreDoc hit : hits) {
+            sortedLocations.add(new Location(hit.score, searcher.doc(hit.doc)));
+        }
+        Collections.sort(sortedLocations);
+        return sortedLocations.get(0);
+    }
+
+    public Location processQuery(String q) {
         try {
             Logger.getLogger(this.getClass().getName()).log(Level.INFO, "Searching for: {0}", q);
 
-            for (int i = queryParsers.length - 2; 0 <= i; i--) {
-                Query query = queryParsers[i].parse(q);
-                TopDocs results = searcher.search(query, MAX_NUMBER_OF_RESULTS);
-                ScoreDoc[] hits = results.scoreDocs;
-                if (0 < hits.length) {
-                    return new Location(searcher.doc(hits[0].doc));
-                }
-            }
-
-            Query query = queryParsers[queryParsers.length-1].parse(normalizeLocationName(q));
+            Query query = queryParser.parse(q);
             TopDocs results = searcher.search(query, MAX_NUMBER_OF_RESULTS);
             ScoreDoc[] hits = results.scoreDocs;
             if (0 < hits.length) {
-                return new Location(searcher.doc(hits[0].doc));
+                return parseHits(hits);
+            } else {
+                Logger.getLogger(FuzzySearch.class.getName()).log(Level.INFO, "Fuzzy search activated!");
+                query = queryParser.parse(normalizeLocationName(q));
+                results = searcher.search(query, MAX_NUMBER_OF_RESULTS);
+                hits = results.scoreDocs;
+                if (0 < hits.length) {
+                    return parseHits(hits);
+                }
             }
         } catch (Exception ex) {
             Logger.getLogger(FuzzySearch.class.getName()).log(Level.SEVERE, null, ex);
-            throw ex;
         }
         Logger.getLogger(this.getClass().getName()).log(Level.INFO, "No results found");
         return null;
@@ -125,10 +129,12 @@ public class FuzzySearch implements Constants {
     public static void main(String[] args) throws Exception {
         String filePath = "gadm28.csv";
         FuzzySearch fs = new FuzzySearch(filePath);
-        String[] queries = {"Berlin", "Barlin", "Paris", "Vienna, Austria", "Viena", "London" , "Landon", "US", "USA"};
+        String[] queries = {"Berlin", "Paris", "Wien", "Amsterdam", "Brussels", "London", "Rome", "Athens", "Warsaw", "Moscow", "Amatrice" };
         for (String q : queries) {
             Location result = fs.processQuery(q);
-            System.out.println(result.toString() + "\t\t" + result.getGeometry());
+            if (result != null) {
+                System.out.println("\n\n" + result.toString());
+            }
         }
     }
 }

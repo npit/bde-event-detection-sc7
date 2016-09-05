@@ -49,6 +49,7 @@ public class DefaultPolygonExtraction implements IPolygonExtraction {
     private final Cache<String, String> location_cache;
 
     public DefaultPolygonExtraction(String locURL) {
+	System.out.println("Initializing remote polygon extractor, @ url : " + locURL +  ".");
         this.polURL = locURL;
         this.client = new JBossRestClient();
         this.location_cache  = CacheBuilder.newBuilder()
