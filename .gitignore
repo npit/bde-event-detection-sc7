@@ -48,3 +48,5 @@ credentials_
 */res/*.properties
 */res/news_urls*
 */res/*.queries
+
+timingParallelSpark.txt
