@@ -124,4 +124,24 @@ public class GeometryFormatTransformer {
         }
         return "[[" + out + "]]";
     }
+
+    /**
+     * Converts the input map to a single string, compatible for use in a CQL query, as a CQL map
+     * @param locpoly  Map<String,String> of location names and geometries
+     * @return  A string representation of the input
+     */
+    public static String LocationPolygonsToCQLString(Map<String,String> locpoly)
+    {
+        String result = "";
+        int count = 0;
+        for(String location : locpoly.keySet())
+        {
+            String geometry =locpoly.get(location);
+            if(count++ > 0)
+                result += ",";
+            result += "'" +location+"':'"+geometry +"'";
+        }
+        return "{" + result + "}";
+    }
+
 }

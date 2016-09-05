@@ -29,6 +29,7 @@ public class LocalPolygonExtraction implements IPolygonExtraction {
         catch(Exception e)
         {
             System.err.println("Failed to initialize LocalPolygonExtraction class");
+
             e.printStackTrace();
         }
     }
