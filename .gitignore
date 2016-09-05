@@ -50,3 +50,4 @@ credentials_
 */res/*.queries
 
 timingParallelSpark.txt
+local

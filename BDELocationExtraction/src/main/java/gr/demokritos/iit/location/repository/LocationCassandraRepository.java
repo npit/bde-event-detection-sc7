@@ -36,6 +36,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 
+import java.sql.Timestamp;
 import java.util.*;
 
 /**
@@ -353,4 +354,191 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
         }
 
     }
+    @Override
+    public void doHotfix()
+    {
+        Collection<Map<String, Object>> items = loadAllArticlesHotfix(-1);
+        for (Map<String, Object> article : items)
+        {
+
+            long pub_date = (long) article.get(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PUBLISHED.getColumnName());
+            String reversed_host = (String) article.get(Cassandra.RSS.TBL_ARTICLES.FLD_REVERSED_HOST.getColumnName());
+            String entryurl = (String) article.get(Cassandra.RSS.TBL_ARTICLES.FLD_ENTRY_URL.getColumnName());
+            String clean_text = (String) article.get(Cassandra.RSS.TBL_ARTICLES.FLD_CLEAN_TEXT.getColumnName());
+            Long crawl_id = (Long) article.get(Cassandra.RSS.TBL_ARTICLES.FLD_CRAWL_ID.getColumnName());
+            String feed_url = (String) article.get(Cassandra.RSS.TBL_ARTICLES.FLD_FEED_URL.getColumnName());
+            Set<String> place_literal = (Set<String>)article.get(Cassandra.RSS.TBL_ARTICLES.FLD_PLACE_LITERAL.getColumnName());
+            String raw_text = (String) article.get(Cassandra.RSS.TBL_ARTICLES.FLD_RAW_TEXT.getColumnName());
+            Long crawled = (Long) article.get(Cassandra.RSS.TBL_ARTICLES.FLD_CRAWLED.getColumnName());
+            String title = (String) article.get(Cassandra.RSS.TBL_ARTICLES.FLD_TITLE.getColumnName());
+            String lang = (String) article.get(Cassandra.RSS.TBL_ARTICLES.FLD_LANGUAGE.getColumnName());
+
+            String year_month_day = Utils.extractYearMonthDayLiteral(pub_date);
+
+
+            // populate the rest of the tables. (from base cassandra repo)
+
+            // insert in articles_per_published_date
+            Statement insert = QueryBuilder
+                    .insertInto(session.getLoggedKeyspace(), "news_articles_per_published_date")
+                    .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.getColumnName(), year_month_day)
+                    .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PUBLISHED.getColumnName(), pub_date)
+                    .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName(), entryurl)
+                    .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_FEED_URL.getColumnName(), feed_url)
+                    .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_RAW_TEXT.getColumnName(), raw_text)
+                    .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CLEAN_TEXT.getColumnName(), clean_text)
+                    .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CRAWLED.getColumnName(), crawled)
+                    .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CRAWL_ID.getColumnName(), crawl_id)
+                    .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_LANGUAGE.getColumnName(), lang)
+                    .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PLACE_LITERAL.getColumnName(), place_literal)
+                    .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_TITLE.getColumnName(), title);
+            session.execute(insert);
+            // insert in articles_per_crawled_date
+            insert = QueryBuilder
+                    .insertInto(session.getLoggedKeyspace(), "news_articles_per_crawled_date")
+                    .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.getColumnName(), year_month_day)
+                    .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CRAWLED.getColumnName(), crawled)
+                    .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PUBLISHED.getColumnName(), pub_date)
+                    .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName(), entryurl)
+                    .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_FEED_URL.getColumnName(),feed_url)
+                    .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_RAW_TEXT.getColumnName(),raw_text)
+                    .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CLEAN_TEXT.getColumnName(), clean_text)
+                    .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_LANGUAGE.getColumnName(), lang)
+                    .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PLACE_LITERAL.getColumnName(), place_literal)
+                    .value(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_TITLE.getColumnName(), title);
+            session.execute(insert);
+
+
+        }
+
+        Collection<Map<String, Object>> tweets = loadAllTweetsHotfix(-1);
+
+        for (Map<String, Object> eachItem : tweets) {
+            long post_id = (long) eachItem.get(Cassandra.Twitter.TBL_TWITTER_POST.FLD_POST_ID.getColumnName());
+            String tweet_identified_lang = (String) eachItem.get(Cassandra.Twitter.TBL_TWITTER_POST.FLD_LANGUAGE.getColumnName());
+            String account_name = (String) eachItem.get(Cassandra.Twitter.TBL_TWITTER_POST.FLD_ACCOUNT_NAME.getColumnName());
+            String coord = (String) eachItem.get(Cassandra.Twitter.TBL_TWITTER_POST.FLD_COORDINATES.getColumnName());
+            long timestamp_created = (long) eachItem.get(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_CREATED_AT.getColumnName());
+            String externalLinks = (String) eachItem.get(Cassandra.Twitter.TBL_TWITTER_POST.FLD_EXTERNAL_LINKS.getColumnName());
+            String followers = (String) eachItem.get(Cassandra.Twitter.TBL_TWITTER_POST.FLD_FOLLOWERS_WHEN_PUBLISHED.getColumnName());
+            String place = (String) eachItem.get(Cassandra.Twitter.TBL_TWITTER_POST.FLD_PLACE.getColumnName());
+            String retweet = (String) eachItem.get(Cassandra.Twitter.TBL_TWITTER_POST.FLD_RETWEET_CNT.getColumnName());
+            String tweet = (String) eachItem.get(Cassandra.Twitter.TBL_TWITTER_POST.FLD_TWEET.getColumnName());
+            String permalink = (String) eachItem.get(Cassandra.Twitter.TBL_TWITTER_POST.FLD_PERMALINK.getColumnName());
+
+            String year_month_day = Utils.extractYearMonthDayLiteral(timestamp_created);
+
+            Statement insert_created_at
+                    = QueryBuilder
+                    .insertInto(session.getLoggedKeyspace(), Cassandra.Twitter.Tables.TWITTER_POSTS_PER_DATE.getTableName())
+                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.getColumnName(), year_month_day)
+                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_CREATED_AT.getColumnName(), timestamp_created)
+                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_POST_ID.getColumnName(), post_id)
+                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_ACCOUNT_NAME.getColumnName(), account_name)
+                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_LANGUAGE.getColumnName(), tweet_identified_lang)
+                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_TWEET.getColumnName(), tweet)
+                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_PERMALINK.getColumnName(), permalink);
+            session.execute(insert_created_at);
+        }
+
+
+
+    }
+
+
+
+    public Collection<Map<String, Object>> loadAllTweetsHotfix(int atmost) {
+        System.out.println("loading tweets...");
+
+        Statement select;
+        ResultSet results;
+        Collection<Map<String, Object>> out = new ArrayList();
+        if (atmost > 0)
+            select = QueryBuilder
+                    .select()
+                    .all()
+                    .from(session.getLoggedKeyspace(), Cassandra.Twitter.Tables.TWITTER_POST.getTableName())
+                    .limit(atmost);
+        else
+            select = QueryBuilder
+                    .select()
+                    .all()
+                    .from(session.getLoggedKeyspace(), Cassandra.Twitter.Tables.TWITTER_POST.getTableName())
+                    ;
+
+        results = session.execute(select);
+        for (Row row : results) {
+            Map<String, Object> res = new HashMap();
+
+            long created_at = row.getLong(Cassandra.Twitter.TBL_TWITTER_POST.FLD_CREATED_AT.getColumnName());
+            res.put(Cassandra.Twitter.TBL_TWITTER_POST.FLD_CREATED_AT.getColumnName(), created_at);
+            long post_id = row.getLong(Cassandra.Twitter.TBL_TWITTER_POST.FLD_POST_ID.getColumnName());
+            res.put(Cassandra.Twitter.TBL_TWITTER_POST.FLD_POST_ID.getColumnName(), post_id);
+            String account_name = row.getString(Cassandra.Twitter.TBL_TWITTER_POST.FLD_ACCOUNT_NAME.getColumnName());
+            res.put(Cassandra.Twitter.TBL_TWITTER_POST.FLD_ACCOUNT_NAME.getColumnName(), account_name);
+            String lang = row.getString(Cassandra.Twitter.TBL_TWITTER_POST.FLD_LANGUAGE.getColumnName());
+            res.put(Cassandra.Twitter.TBL_TWITTER_POST.FLD_LANGUAGE.getColumnName(), lang);
+            String tweet = row.getString(Cassandra.Twitter.TBL_TWITTER_POST.FLD_TWEET.getColumnName());
+            res.put(Cassandra.Twitter.TBL_TWITTER_POST.FLD_TWEET.getColumnName(), tweet);
+            String permalink = row.getString(Cassandra.Twitter.TBL_TWITTER_POST.FLD_PERMALINK.getColumnName());
+            res.put(Cassandra.Twitter.TBL_TWITTER_POST.FLD_PERMALINK.getColumnName(), permalink);
+            // append
+            out.add(res);
+        }
+        System.out.println(String.format("loaded %d tweets", out.size()));
+        return Collections.unmodifiableCollection(out);
+    }
+
+
+    public Collection<Map<String, Object>> loadAllArticlesHotfix(int atmost) {
+        System.out.println("loading  ~ALL~ articles...");
+        Statement select;
+        ResultSet results;
+        Collection<Map<String, Object>> out = new ArrayList();
+        if (atmost > 0)
+            select = QueryBuilder
+                    .select()
+                    .all()
+                    .from(session.getLoggedKeyspace(), Cassandra.RSS.Tables.NEWS_ARTICLES.getTableName())
+                    .limit(atmost)
+                    ;
+        else
+            select = QueryBuilder
+                    .select()
+                    .all()
+                    .from(session.getLoggedKeyspace(), Cassandra.RSS.Tables.NEWS_ARTICLES.getTableName())
+                    ;
+        results = session.execute(select);
+        for (Row row : results) {
+            Map<String, Object> res = new HashMap();
+            long published = row.getLong(Cassandra.RSS.TBL_ARTICLES.FLD_PUBLISHED.getColumnName());
+            res.put(Cassandra.RSS.TBL_ARTICLES.FLD_PUBLISHED.getColumnName(), published);
+            String entry_url = row.getString(Cassandra.RSS.TBL_ARTICLES.FLD_ENTRY_URL.getColumnName());
+            res.put(Cassandra.RSS.TBL_ARTICLES.FLD_ENTRY_URL.getColumnName(), entry_url);
+            Set<String> place_literal = row.getSet(Cassandra.RSS.TBL_ARTICLES.FLD_PLACE_LITERAL.getColumnName(), String.class);
+            res.put(Cassandra.RSS.TBL_ARTICLES.FLD_PLACE_LITERAL.getColumnName(), place_literal);
+            String feed_url = row.getString(Cassandra.RSS.TBL_ARTICLES.FLD_FEED_URL.getColumnName());
+            res.put(Cassandra.RSS.TBL_ARTICLES.FLD_FEED_URL.getColumnName(), feed_url);
+            long crawl_id = row.getLong(Cassandra.RSS.TBL_ARTICLES.FLD_CRAWL_ID.getColumnName());
+            res.put(Cassandra.RSS.TBL_ARTICLES.FLD_CRAWL_ID.getColumnName(), crawl_id);
+            String raw_text = row.getString(Cassandra.RSS.TBL_ARTICLES.FLD_RAW_TEXT.getColumnName());
+            res.put(Cassandra.RSS.TBL_ARTICLES.FLD_RAW_TEXT.getColumnName(), raw_text);
+            String clean_text = row.getString(Cassandra.RSS.TBL_ARTICLES.FLD_CLEAN_TEXT.getColumnName());
+            res.put(Cassandra.RSS.TBL_ARTICLES.FLD_CLEAN_TEXT.getColumnName(), clean_text);
+            long crawled = row.getLong(Cassandra.RSS.TBL_ARTICLES.FLD_CRAWLED.getColumnName());
+            res.put(Cassandra.RSS.TBL_ARTICLES.FLD_CRAWLED.getColumnName(), crawled);
+            String lang = row.getString(Cassandra.RSS.TBL_ARTICLES.FLD_LANGUAGE.getColumnName());
+            res.put(Cassandra.RSS.TBL_ARTICLES.FLD_LANGUAGE.getColumnName(), lang);
+            String title = row.getString(Cassandra.RSS.TBL_ARTICLES.FLD_TITLE.getColumnName());
+            res.put(Cassandra.RSS.TBL_ARTICLES.FLD_TITLE.getColumnName(), title);
+            // append
+            //assert (published >= from) : String.format("query totally wrong: published=%d < from=%d", published, from);
+            out.add(res);
+        }
+        // debug
+        System.out.println(String.format("loaded %d articles", out.size()));
+        // debug
+        return Collections.unmodifiableCollection(out);
+    }
+
 }

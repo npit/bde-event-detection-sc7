@@ -27,6 +27,8 @@ import java.util.Map;
  */
 public interface ILocationRepository extends IBaseRepository {
 
+    void doHotfix();
+
     void storeAndChangeDetectionEvents();
     /**
      *
