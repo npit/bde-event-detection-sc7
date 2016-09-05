@@ -173,8 +173,8 @@ public class BDEEventDetection {
         System.out.println("Classifying tweets...");
         //IClassifier smClassifier = factory.getSocialMediaClassifierForTwitter(plainTextSummaries, tweetClusters, tsStemmer);
         // default thresholds are
-        double min_assign_sim_threshold = 0.008D;
-        double min_assign_titlesim_threshold = 0.08D;
+        double min_assign_sim_threshold = 0.01D;
+        double min_assign_titlesim_threshold = 0.1D;
         IClassifier smClassifier = factory.getSocialMediaClassifierForTwitter(min_assign_sim_threshold, min_assign_titlesim_threshold,plainTextSummaries, tweetClusters, tsStemmer);
         Map<Topic, List<String>> related = smClassifier.getRelated();
 
