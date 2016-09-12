@@ -27,8 +27,9 @@ import static jdk.nashorn.internal.runtime.regexp.joni.Config.log;
 /**
  * Created by npittaras on 5/9/2016.
  */
-public class hotfix {
 
+// hotfix to produce articles & tweets PER DATE , if they are missing, from existing news_articles and twitter_post tables.
+public class hotfix {
 
     public static void main(String[] args) {
         String path = "/home/npittaras/Documents/project/BDE/BDEproject/BDEEventDetection/BDELocationExtraction/res/location_extraction.properties";
@@ -43,8 +44,10 @@ public class hotfix {
             factory = new LocationFactory(conf);
             // init connection pool to the repository
             ILocationRepository repos = factory.createLocationCassandraRepository();
-            // init location extractor
+
+            // create per published date tables
             repos.doHotfix();
+
 
         } catch (IllegalArgumentException  ex) {
             LOG.log(Level.SEVERE, ex.getMessage(), ex);
@@ -55,6 +58,4 @@ public class hotfix {
             }
         }
     }
-
-
 }

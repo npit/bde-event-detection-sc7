@@ -111,9 +111,12 @@ public class CrawlSchedule {
 
         IStreamConsumer stream = null;
         try {
+            System.out.println("Getting stream impl.");
             stream = factory.getStreamImpl();
             // search for each of these queries
+            System.out.println("Getting stream.");
             stream.getStream();
+            System.out.println("Got stream .");
         } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | PropertyVetoException ex) {
             LOGGER.severe(ex.toString());
         }

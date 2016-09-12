@@ -41,12 +41,14 @@ public class SampleStatusListener extends BaseStreamListener implements StatusLi
     public SampleStatusListener(TwitterStream twitterStream, IRepository repos, String iso_code) {
         super(twitterStream, repos);
         this.iso_code = iso_code;
+        Locale[] Locs = Locale.getAvailableLocales();
         this.engine_id = repository.scheduleInitialized(IRepository.CrawlEngine.STREAM);
     }
 
     public SampleStatusListener(TwitterStream twitterStream, IRepository repos) {
         super(twitterStream, repos);
         this.iso_code = Locale.ENGLISH.getLanguage();
+        Locale[] Locs = Locale.getAvailableLocales();
         this.engine_id = repository.scheduleInitialized(IRepository.CrawlEngine.STREAM);
     }
 

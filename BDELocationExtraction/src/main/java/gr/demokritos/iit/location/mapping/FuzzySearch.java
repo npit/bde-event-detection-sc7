@@ -54,6 +54,7 @@ public class FuzzySearch implements Constants {
     }
 
     private void indexDataset(String dataPath) throws Exception {
+
         analyzer = new StandardAnalyzer();
         indexDir = new RAMDirectory();
         IndexWriterConfig config = new IndexWriterConfig(analyzer);

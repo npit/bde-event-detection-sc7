@@ -139,7 +139,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
         session.execute(upsert);
         Statement insert;
         for (String place : places) {
-            System.out.println("Updating palce " + place + " with poly " + places_polygons.get(place));
+            System.out.println("Updating place " + place + " with poly " + places_polygons.get(place));
             insert = QueryBuilder
                     .insertInto(session.getLoggedKeyspace(), Cassandra.RSS.Tables.NEWS_ARTICLES_PER_PLACE.getTableName())
                     .value(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_PLACE_LITERAL.getColumnName(), place)
@@ -156,7 +156,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
             session.execute(insert);
 
         }
-        // this populates existing events table with locations/polygons pairs from news
+        // this populates existing events table with locations/polygons pairs from news. It's a hotfix
         //updateEventsWithArticleLocationPolygonPairs(places_polygons, permalink);
     }
 
@@ -186,14 +186,14 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
                     .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_REFERRED_PLACE.FLD_ACCOUNT_NAME.getColumnName(), tweet.get(Cassandra.Twitter.TBL_TWITTER_POST.FLD_ACCOUNT_NAME.getColumnName()));
             session.execute(insert);
         }
-        // this populates existing events table with locations/polygons pairs from tweets
+        // this populates existing events table with locations/polygons pairs from tweets. It's a hotfix
         //updateEventsWithTweetLocationPolygonPairs(places_polygons,post_id);
     }
 
-
-    void updateEventsWithArticleLocationPolygonPairs(Map<String,String> places_polygons, String permalink)
+    @Override
+    public void updateEventsWithArticleLocationPolygonPairs(Map<String,String> places_polygons, String permalink)
     {
-        //System.out.println("\t>Updating events with article permalink: " + permalink); //debugprint
+        System.out.println("\t>Updating events with places of article permalink: " + permalink); //debugprint
         long startTime = System.currentTimeMillis();
         Set<String> places = places_polygons.keySet();
         // this is an ugly workaround. a table events per article would be superb
@@ -201,7 +201,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
         // cheaper to go per article ? per place ? per event?
         // probably per event.
 
-        // get all events
+        // get all event ids
         Statement query = QueryBuilder
                 .select(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName())
                 .from(session.getLoggedKeyspace(),Cassandra.Event.Tables.EVENTS.getTableName());
@@ -212,8 +212,13 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
 
             eventIDs.add(row.getString(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName()));
         }
-        String payload = GeometryFormatTransformer.LocationPolygonsToCQLString(places_polygons);
 
+        // get all locationName - geometry pairs. Iterate through each because putting all of them in a query
+        // might invoke an invalid query exception due to a size limit on insertions on a map column
+        String payload = GeometryFormatTransformer.LocationPolygonsToCQLString(places_polygons);
+        System.out.println("Location-geometry payload for event is " + payload);
+        System.out.println("Location-geometry payload for event is " + payload.length() + " chars.");
+        System.out.println("Location-geometry payload for event is " + payload.getBytes().length + " bytes.");
         PreparedStatement pstatement = session.prepare(
                 "UPDATE " + session.getLoggedKeyspace() +"." + Cassandra.Event.Tables.EVENTS.getTableName()
                         +" SET " + Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName() + " = " + Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName() + " + "
@@ -235,10 +240,10 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
             // for each article url
             for(Row row : results)
             {
-
-                Set<String> articleURLs = row.getSet(Cassandra.Event.TBL_EVENTS.FLD_EVENT_SOURCE_URLS.getColumnName(),String.class);
-                if (!articleURLs.contains(permalink)) continue;
-
+                Map<String,String> articleURLs = row.getMap(Cassandra.Event.TBL_EVENTS.FLD_EVENT_SOURCE_URLS.getColumnName(),String.class,String.class);
+                Set<String> justURLS = articleURLs.keySet();
+//                System.err.println("DEBUG - force-inserting article to event " + event );
+                if (!justURLS.contains(permalink)) continue;
                 else
                 {
                     // insert the place mappings in that event
@@ -246,9 +251,6 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
                     session.execute(bstatement.bind(event));
                     break;
                 }
-
-
-
             }
         }
 
@@ -258,13 +260,16 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
 
     }
     // hotfix for populating events table
-    void updateEventsWithTweetLocationPolygonPairs(Map<String,String> places_polygons, long post_id)
+    @Override
+    public void updateEventsWithTweetLocationPolygonPairs(Map<String,String> places_polygons, long post_id)
     {
-        //String strpostid = Long.toString(post_id);
-        //System.out.println("\t>Updating events with tweet post id: " + strpostid); //debugprint
+        String strpostid = Long.toString(post_id);
+        System.out.println("\t>Updating events with places of tweet post id: " + strpostid); //debugprint
 
         long startTime = System.currentTimeMillis();
+
         Set<String> places = places_polygons.keySet();
+        System.out.println("\t>Got places for : " + strpostid); //debugprint
         // this is an ugly workaround. a table events per article would be superb
 
         // cheaper to go per article ? per place ? per event?
@@ -281,8 +286,9 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
 
             eventIDs.add(row.getString(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName()));
         }
+        System.out.println("\t>Converting to CQL: " + strpostid); //debugprint
         String payload = GeometryFormatTransformer.LocationPolygonsToCQLString(places_polygons);
-
+        System.out.println("\t>Converted: " + payload); //debugprint
         PreparedStatement pstatement = session.prepare(
                 "UPDATE " + session.getLoggedKeyspace() +"." + Cassandra.Event.Tables.EVENTS.getTableName()
                         +" SET " + Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName() + " = " + Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName() + " + "
@@ -290,10 +296,13 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
         );
         BoundStatement bstatement = new BoundStatement(pstatement);
 
+        System.out.println("\t>Made bound statement: " + strpostid); //debugprint
 
         // for each event
         for(String event_id  : eventIDs)
         {
+            System.out.println("\t>Event id: " + event_id); //debugprint
+
             // get its source urls with a cql query
             query = QueryBuilder
                     .select(Cassandra.Event.TBL_EVENTS.FLD_TWEET_IDS.getColumnName())
@@ -304,9 +313,11 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
             // for each article url
             for(Row row : results)
             {
+                System.out.println("\t>tweet id: " + event_id); //debugprint
 
-                Set<Long> tweet_ids = row.getSet(Cassandra.Event.TBL_EVENTS.FLD_TWEET_IDS.getColumnName(),Long.class);
-                if (!tweet_ids.contains(post_id)) continue;
+                Map<Long,String> tweet_ids = row.getMap(Cassandra.Event.TBL_EVENTS.FLD_TWEET_IDS.getColumnName(),Long.class,String.class);
+                Set<Long> justIDs = tweet_ids.keySet();
+                if (!justIDs.contains(post_id)) continue;
 
                 else
                 {
@@ -575,6 +586,21 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
                     .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_TWEET.getColumnName(), tweet)
                     .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_PERMALINK.getColumnName(), permalink);
             session.execute(insert_created_at);
+
+//            Statement insert_place
+//                    = QueryBuilder
+//                    .insertInto(session.getLoggedKeyspace(), Cassandra.Twitter.Tables.TWITTER_POSTS_PER_PLACE.getTableName())
+//                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_PLACE.FLD_PLACE_LITERAL.getColumnName(), "")
+//                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_PLACE.FLD_CREATED_AT.getColumnName(), timestamp_created)
+//                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_PLACE.FLD_POST_ID.getColumnName(), post_id)
+//                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_PLACE.FLD_ACCOUNT_NAME.getColumnName(), account_name)
+//                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_PLACE.FLD_LANGUAGE.getColumnName(), tweet_identified_lang)
+//                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_PLACE.FLD_PLACE.getColumnName(), plCodec.serialize(tplace, ProtocolVersion.V2))
+//                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_PLACE.FLD_TWEET.getColumnName(), tweet)
+//                    .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_PLACE.FLD_PERMALINK.getColumnName(), permalink);
+//            session.execute(insert_place);
+
+
         }
 
 

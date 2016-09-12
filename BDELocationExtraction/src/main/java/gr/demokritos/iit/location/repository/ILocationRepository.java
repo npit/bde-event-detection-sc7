@@ -60,4 +60,7 @@ public interface ILocationRepository extends IBaseRepository {
 
     Map<String, Object> loadArticlePerPlace(String place_literal, String entry_url);
 
+    void updateEventsWithArticleLocationPolygonPairs(Map<String,String> places_polygons, String permalink);
+    void updateEventsWithTweetLocationPolygonPairs(Map<String,String> places_polygons, long post_id);
+
 }

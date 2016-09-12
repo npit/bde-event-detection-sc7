@@ -67,15 +67,20 @@ public class LocationFactory implements ILocFactory {
     public IPolygonExtraction createPolygonExtractionClient() throws NoSuchMethodException, ClassNotFoundException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
     {
         String poly_extraction_impl = conf.getPolygonExtractionImpl();
-        if(poly_extraction_impl.equals("local"))
-            return createLocalPolygonExtractionClient();
-        else if(poly_extraction_impl.equals("remote"))
+        try {
+            if (poly_extraction_impl.equals("local"))
+                return createLocalPolygonExtractionClient();
+            else if (poly_extraction_impl.equals("remote"))
                 return createDefaultPolygonExtractionClient();
-        else
-        {
-            throw new IllegalArgumentException(String.format("Undefined polygon extraction implementation: " + poly_extraction_impl + " . Available: local | remote."));
+            else {
+                throw new IllegalArgumentException(String.format("Undefined polygon extraction implementation: " + poly_extraction_impl + " . Available: local | remote."));
+            }
         }
-
+        catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+        return null;
     }
     @Override
     public IPolygonExtraction createDefaultPolygonExtractionClient() throws IllegalArgumentException {
@@ -89,7 +94,14 @@ public class LocationFactory implements ILocFactory {
     @Override
     public IPolygonExtraction createLocalPolygonExtractionClient() throws IllegalArgumentException {
         String sourcefile=conf.getPolygonExtractionSourceFile();
-        return new LocalPolygonExtraction(sourcefile);
+        try {
+            return new LocalPolygonExtraction(sourcefile);
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+        return null;
     }
     /**
      * release underlying DB connection pools

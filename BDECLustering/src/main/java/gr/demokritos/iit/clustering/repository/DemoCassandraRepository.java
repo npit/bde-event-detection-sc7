@@ -90,7 +90,7 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
                 .with(set(Cassandra.Event.TBL_EVENTS.FLD_TITLE.getColumnName(), title))
                 .and(set(Cassandra.Event.TBL_EVENTS.FLD_DESCRIPTION.getColumnName(), description))
                 .and(set(Cassandra.Event.TBL_EVENTS.FLD_DATE_LITERAL.getColumnName(), sUTCEventDate))
-                .and(set(Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName(), place_mappings))
+                //.and(set(Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName(), place_mappings)) //TODO: insert placemapp iteratively! (below for, most probably)
                 .and(set(Cassandra.Event.TBL_EVENTS.FLD_TWEET_IDS.getColumnName(),
                  tweetIDsUsers == null ? Collections.EMPTY_SET : tweetIDsUsers))
                // .and(set(Cassandra.Event.TBL_EVENTS.FLD_EVENT_SOURCE_URLS.getColumnName(), topicSourceURLs))
@@ -116,8 +116,16 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
                     .where(eq(Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_PLACE_LITERAL.getColumnName(), place_literal))
                     .and(eq(Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_EVENT_ID.getColumnName(), topicID));
             //System.out.println(upsert.toString());
-
             session.execute(upsert);
+
+            // also update regular events, 1 geometry at a time
+            upsert = QueryBuilder
+                    .update(session.getLoggedKeyspace(), Cassandra.Event.Tables.EVENTS.getTableName())
+                    .with(set(Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName(), place_mappings)) //TODO: insert placemapp iteratively! (below for, most probably)
+                    .where(eq(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName(), topicID));
+            //System.out.println(upsert.toString());
+            session.execute(upsert);
+
         }
     }
 

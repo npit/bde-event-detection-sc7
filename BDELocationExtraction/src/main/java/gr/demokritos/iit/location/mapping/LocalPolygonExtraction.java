@@ -49,6 +49,8 @@ public class LocalPolygonExtraction implements IPolygonExtraction {
         try
         {
             Location L = fs.processQuery(locationEntity);
+            //System.out.println("Processed query");
+
             //if (L != null)
             //    System.out.println(L.toString());
             res =  processRawGeometry(L);
@@ -66,25 +68,7 @@ public class LocalPolygonExtraction implements IPolygonExtraction {
     String processRawGeometry(Location loc)
     {
         if (loc != null) {
-
-            String geom = loc.getGeometry().toString().replaceAll("[^0-9.]", " ");
-            Scanner sc = new Scanner(geom);
-            Coordinate[] newPolygonCoords = new Coordinate[5];
-            Point2D leftPoint = new Point2D.Double(sc.nextDouble(), sc.nextDouble());
-            Point2D rightPoint = new Point2D.Double(sc.nextDouble(), sc.nextDouble());
-            sc.close();
-
-            newPolygonCoords[0] = new Coordinate(leftPoint.getX(), rightPoint.getY());
-            newPolygonCoords[1] = new Coordinate(leftPoint.getX(), leftPoint.getY());
-            newPolygonCoords[2] = new Coordinate(rightPoint.getX(), leftPoint.getY());
-            newPolygonCoords[3] = new Coordinate(rightPoint.getX(), rightPoint.getY());
-            newPolygonCoords[4] = new Coordinate(leftPoint.getX(), rightPoint.getY());
-
-            GeometryFactory geometryFactory = new GeometryFactory();
-            Polygon geometry = geometryFactory.createPolygon(newPolygonCoords);
-            WKTWriter writer = new WKTWriter();
-            //System.out.println("parsed : " + writer.write(geometry));
-            return geometry.toString();
+            return  loc.getGeometry().toText(); // to Well Known Text
         }
         return "";
     }
@@ -125,21 +109,46 @@ public class LocalPolygonExtraction implements IPolygonExtraction {
     {
 
 
+
         Map<String,String> output =  new HashMap();
         for(String location : input.keySet())
         {
             //System.out.print("INitial : " + input.get(location));
             String geometry =input.get(location);
-            assert geometry.contains("POLYGON") : "No [POLYGON] found in geometry.";
+            if(geometry.contains("MULTIPOLYGON "))
+            {
+                geometry = geometry.replaceAll("MULTIPOLYGON ","");
+                geometry = geometry.replaceAll("\\(\\(\\(","O"); // external par open
+                geometry = geometry.replaceAll("\\)\\)\\)","C");// external par close
 
-            geometry = geometry.replaceAll("POLYGON ","");
-            geometry = geometry.replaceAll("\\(\\(","(");
-            geometry = geometry.replaceAll("\\)\\)",")");
+                geometry = geometry.replaceAll("\\(\\(","("); // internal par open
+                geometry = geometry.replaceAll("\\)\\)",")");// internal par close
+
+                geometry = geometry.replaceAll("O","(("); // external par open
+                geometry = geometry.replaceAll("C","))");// external par close
+            }
+            else if(geometry.contains("POLYGON"))
+            {
+                geometry = geometry.replaceAll("POLYGON ","");
+                geometry = geometry.replaceAll("\\(\\(","(");
+                geometry = geometry.replaceAll("\\)\\)",")");
+            }
+            else
+            {
+                System.err.println("No [POLYGON] or [MULTIPOLYGON] prefix found in geometry.");
+                return output;
+            }
+
+
+
 
 
             output.put("\"" + location + "\"", "\"" + geometry + "\"");
 
         }
+
+
+
         return output;
     }
 }

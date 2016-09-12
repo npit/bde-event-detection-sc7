@@ -89,9 +89,10 @@ public class DefaultPolygonExtraction implements IPolygonExtraction {
         long startTime = System.currentTimeMillis(); //debugprint , timing
         try {
             Response response = client.execJSONPost(polURL, gs.toJson(input, Collection.class), String.class);
+
             String ent = (String) response.getEntity();
             // debug!
-            //System.out.println(ent); //debugprint
+            System.out.println("POST response entity : " + ent); //debugprint
             // debug!
             // responses from the API: when smth wrong: 'null', when error in call (?) 'code:400, message:exception"
             if (ent != null && !ent.contains("null") && !ent.equals("{\"code\":400,\"message\":\"exception\"}")) {
@@ -173,6 +174,7 @@ public class DefaultPolygonExtraction implements IPolygonExtraction {
         {
             String geometry =input.get(location);
             String [] tokens = geometry.split(":|,");
+            // format is geoJSON
             // Token order should be
             // type, TYPE,
             // coordinates, C1,C2, ... , c10, with brackets around value pairs
