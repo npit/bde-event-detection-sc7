@@ -18,9 +18,7 @@ import gr.demokritos.iit.base.conf.BaseConfiguration;
 import gr.demokritos.iit.base.conf.IBaseConf;
 import gr.demokritos.iit.base.repository.BaseCassandraRepository;
 import gr.demokritos.iit.base.repository.IBaseRepository;
-import gr.demokritos.iit.clustering.config.BDESpark;
-import gr.demokritos.iit.clustering.config.BDESparkConf;
-import gr.demokritos.iit.clustering.config.ISparkConf;
+import gr.demokritos.iit.clustering.config.*;
 import gr.demokritos.iit.clustering.factory.DemoClusteringFactory;
 import gr.demokritos.iit.clustering.model.BDEArticle;
 import gr.demokritos.iit.clustering.newsum.ExtractMatchingPairsFunc;
@@ -91,9 +89,9 @@ public class BDEEventDetection {
         if (args.length >= 1) {
             properties = args[0];
         }
-        boolean SendToStrabon = false;
-        boolean onlySendToStrabon = false;
-        if (args.length == 2) {
+
+        /*
+	if (args.length == 2) {
             if(args[1].toString().toLowerCase().equals("strabon"))
                 SendToStrabon = true;
             else if(args[1].toString().toLowerCase().equals("onlystrabon"))
@@ -101,8 +99,14 @@ public class BDEEventDetection {
             else
                 System.out.println(args[1].toString().toLowerCase() + " undefined.");
         }
+	*/
         // load base configuration, initialize repository
-        IBaseConf configuration = new BaseConfiguration(properties);
+        IClusteringConf configuration = new clusteringConf(properties);
+        boolean SendToStrabon = configuration.sendToStrabon();
+        boolean onlySendToStrabon = configuration.justSendToStrabon();
+
+	
+	
         DemoClusteringFactory factory = null;
         DemoCassandraRepository repository;
         factory = new DemoClusteringFactory(configuration);

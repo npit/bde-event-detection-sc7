@@ -65,7 +65,7 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
         this.sentenceSplitter = sentenceSplitter;
         this.prob_cutoff = prob_cutoff;
 
-
+	/* naive additions from GPapadakis' dataset
         // get extra names
         extraNames = new HashSet<String>();
         String extrapath="/home/npittaras/Documents/project/BDE/BDEproject/BDEEventDetection/BDELocationExtraction/res/local/namestotal";
@@ -84,7 +84,7 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
             e.printStackTrace();
         }
         System.out.println("done");
-
+	*/
 
 
     }
@@ -194,6 +194,7 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
                 }
             }
 
+/* naive additions from GPapadakis' dataset
             Set<String> added = new HashSet<>();
             for(int idx=0;idx <ss.length; ++idx)
             {
@@ -217,6 +218,7 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
             //for(String addition : added)
             //    System.out.print("[" + addition + "] " );
         }
+*/
         return res;
     }
 }
