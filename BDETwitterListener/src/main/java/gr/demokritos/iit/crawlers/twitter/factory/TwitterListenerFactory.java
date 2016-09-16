@@ -323,6 +323,7 @@ public class TwitterListenerFactory implements ITwitterFactory {
         cpds = new ComboPooledDataSource();
         cpds.setDriverClass("com.mysql.jdbc.Driver");
         cpds.setJdbcUrl("jdbc:" + conf.getDatabaseHost());
+//        cpds.setJdbcUrl("jdbc:" + conf.getDatabaseHost() +"/" + conf.getDatabaseName() + "?useUnicode=true&characterEncoding=UTF-8");
         cpds.setUser(conf.getDatabaseUserName());
         cpds.setPassword(conf.getDatabasePassword());
 

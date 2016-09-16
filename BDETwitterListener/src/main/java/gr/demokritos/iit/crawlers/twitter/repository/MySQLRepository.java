@@ -176,8 +176,14 @@ public class MySQLRepository extends AbstractRepository implements IRepository {
             if (tweet_identified_lang == null || tweet_identified_lang.equalsIgnoreCase(TWEET_UNDEFINED_LANG)) {
                 tweet_identified_lang = CybozuLangDetect.getInstance().identifyLanguage(cleanTweetFromURLs(post), TWEET_UNDEFINED_LANG);
             }
+    	    System.out.println("Language indentified as: " + tweet_identified_lang);
             Long postID = post.getId();
             dbConnection = dataSource.getConnection();
+		
+	java.sql.Statement stmt = (java.sql.Statement) dbConnection.createStatement();
+        stmt.executeQuery("SET NAMES 'UTF8'");
+        stmt.executeQuery("SET CHARACTER SET 'UTF8'");
+
             prepStmt = dbConnection.prepareStatement(
                     "INSERT INTO twitter_post (post_id, created_at, coordinates, place, "
                     + "retweet_count, followers_when_published, text, language, url, "
@@ -270,12 +276,13 @@ public class MySQLRepository extends AbstractRepository implements IRepository {
             insertHashtag.setString(1, hashtag);
             insertHashtag.execute();
             insertHashtag.close();
+	
             insertPostToHashtag
                     = dbConnection.prepareStatement("INSERT IGNORE INTO twitter_post_has_hashtag "
                             + "(`twitter_post_id`, `twitter_hashtag_id`) "
                             + "SELECT twitter_post.post_id, twitter_hashtag.id "
                             + "FROM twitter_post, twitter_hashtag "
-                            + "WHERE twitter_post.id = ? AND twitter_hashtag.hashtag = ?;");
+                            + "WHERE twitter_post.post_id = ? AND twitter_hashtag.hashtag = ?;");
             insertPostToHashtag.setLong(1, post_id);
             insertPostToHashtag.setString(2, hashtag);
             insertPostToHashtag.execute();
@@ -332,7 +339,7 @@ public class MySQLRepository extends AbstractRepository implements IRepository {
 
         String SQL = "select twitter_user.name, sum(twitter_post.retweet_count) as total_retweets from twitter_user "
                 + "inner join "
-                + "twitter_post on twitter_post.twitter_user_id = twitter_user.id "
+                + "twitter_post on twitter_post.twitter_user_id = twitter_user.user_id "
                 + "group by twitter_user.name "
                 + "order by total_retweets desc;";
         Connection dbConnection = null;
