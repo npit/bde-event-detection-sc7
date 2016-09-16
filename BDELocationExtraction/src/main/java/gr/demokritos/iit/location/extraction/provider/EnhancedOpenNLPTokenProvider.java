@@ -219,7 +219,6 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
             //    System.out.print("[" + addition + "] " );
 */
         }
-
         return res;
     }
 }
