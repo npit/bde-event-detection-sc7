@@ -115,8 +115,9 @@ public class BDEEventDetection {
         // just send to strabon, if that mode is specified
         if(onlySendToStrabon)
         {
-            System.out.print("Note: No clustering: will only send events to strabon.");
-            repository.storeAndChangeDetectionEvents();
+	    String strabonURL=configuration.getStrabonURL();
+            System.out.print("Note: No clustering: will only send events to strabon, to url:["+strabonURL+"].");
+            repository.storeAndChangeDetectionEvents(strabonURL);
             if(factory != null)
             {
                 System.out.println("Releasing resources.");
@@ -189,8 +190,9 @@ public class BDEEventDetection {
 
         repository.saveEvents(articlesPerCluster, summaries, related, place_mappings, tweetURLtoPostIDMapping, tweetURLtoUserMapping, 2);
         if (SendToStrabon) {
-            System.out.print("Finally,sending events to strabon...");
-            repository.storeAndChangeDetectionEvents();
+	    String strabonURL=configuration.getStrabonURL();
+            System.out.print("Finally,sending events to strabon to url ["+strabonURL+"].");
+            repository.storeAndChangeDetectionEvents(strabonURL);
         }
         if(factory != null)
         {

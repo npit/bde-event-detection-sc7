@@ -8,4 +8,5 @@ import gr.demokritos.iit.base.conf.IBaseConf;
 public interface IClusteringConf extends IBaseConf {
     public boolean sendToStrabon();
     public boolean justSendToStrabon();
+    public String getStrabonURL();
 }

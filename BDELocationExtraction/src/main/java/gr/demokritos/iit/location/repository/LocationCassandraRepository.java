@@ -384,7 +384,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
      * Function to send events to strabon for storage and/or change detection
      */
     @Override
-    public void storeAndChangeDetectionEvents()
+    public void storeAndChangeDetectionEvents(String strabonURL)
     {
         System.out.println("Sending events to Strabon.");
         // get all events, fields: id, title, date, placemappings
@@ -434,7 +434,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
             // TODO: make new connection for each send or make connection out of loop?
             // TODO: put target url in the properties file on the module this function will
             // end up in
-            String URLstr = "http://teleios4.di.uoa.gr:8080/changeDetection/event/process";
+            String URLstr = strabonURL;
             URL url;
             HttpURLConnection connection = null;
             try

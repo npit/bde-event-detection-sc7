@@ -30,6 +30,11 @@ public class clusteringConf extends BaseConfiguration implements IClusteringConf
 	if(value.equals("yes")) return true;
 	return false;
     }
+    @Override
+    public String getStrabonURL()
+    {
+	return properties.getProperty("strabon_url");
+    }
 
 
 }
