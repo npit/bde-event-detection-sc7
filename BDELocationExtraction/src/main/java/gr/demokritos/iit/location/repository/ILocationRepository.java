@@ -29,7 +29,7 @@ public interface ILocationRepository extends IBaseRepository {
 
     void doHotfix();
 
-    void storeAndChangeDetectionEvents();
+    void storeAndChangeDetectionEvents(String strabonURL);
     /**
      *
      * @param permalink the URL of the article

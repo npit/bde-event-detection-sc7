@@ -105,7 +105,7 @@ public class DemoBDEEventDetection {
             repository.saveEvents(clusters, summaries, related, place_mappings, tweetURLtoPostIDMapping,tweetURLtoUserMapping, 2);
 
             LOGGER.info("Sending events to popeye.di.uoa...");
-            repository.storeAndChangeDetectionEvents();
+            repository.storeAndChangeDetectionEvents("");
             LOGGER.info("Done");
         } finally {
             if (factory != null) {
