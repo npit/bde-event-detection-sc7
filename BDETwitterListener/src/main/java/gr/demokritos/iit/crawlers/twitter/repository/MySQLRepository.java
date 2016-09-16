@@ -273,7 +273,7 @@ public class MySQLRepository extends AbstractRepository implements IRepository {
             insertPostToHashtag
                     = dbConnection.prepareStatement("INSERT IGNORE INTO twitter_post_has_hashtag "
                             + "(`twitter_post_id`, `twitter_hashtag_id`) "
-                            + "SELECT twitter_post.id, twitter_hashtag.id "
+                            + "SELECT twitter_post.post_id, twitter_hashtag.id "
                             + "FROM twitter_post, twitter_hashtag "
                             + "WHERE twitter_post.id = ? AND twitter_hashtag.hashtag = ?;");
             insertPostToHashtag.setLong(1, post_id);
