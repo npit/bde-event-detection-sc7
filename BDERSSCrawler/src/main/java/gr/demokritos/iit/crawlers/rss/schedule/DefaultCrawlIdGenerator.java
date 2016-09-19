@@ -42,7 +42,14 @@ public class DefaultCrawlIdGenerator implements CrawlIdGenerator {
     }
 
     @Override
-    public CrawlId getCurrentCrawlId() {
-        return repository.findMostRecentCrawlId();
+    public CrawlId getCurrentCrawlId() throws RuntimeException{
+        try {
+            return repository.findMostRecentCrawlId();
+        }
+        catch(RuntimeException ex)
+        {
+            ex.printStackTrace();
+            throw new RuntimeException();
+        }
     }
 }

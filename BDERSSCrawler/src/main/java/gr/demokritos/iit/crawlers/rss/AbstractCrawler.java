@@ -96,16 +96,23 @@ public abstract class AbstractCrawler {
     public void startCrawling() throws ExecutionException, InterruptedException {
         // Start the consumer in a different thread. That thread will block until there are items on the queue
         // The consumer gets started and it just runs on its own
-        consumerExecutorService.execute(new LoggingRunnableDecorator(consumer, eventSink));
-        // if we want to crawl forever 
-        if (bRunForever) {
-            runForever();
-        } else {
-            runOnce();
+        try {
+            consumerExecutorService.execute(new LoggingRunnableDecorator(consumer, eventSink));
+            // if we want to crawl forever
+            if (bRunForever) {
+                runForever();
+            } else {
+                runOnce();
+            }
+        }catch(RuntimeException ex)
+        {
+            ex.printStackTrace();
+            throw new RuntimeException();
         }
     }
 
     protected void runForever() throws InterruptedException, ExecutionException {
+        System.out.println("Running runForever()... ");
         // Set up the producer.
         ScheduledFuture<?> scheduledFuture;
         long initialDelay = 0;

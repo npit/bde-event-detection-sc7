@@ -52,6 +52,7 @@ public class Consumer implements DescribableRunnable {
 
             while (bListNotEmpty) {
                 Item item = queue.take();
+
                 CrawlId crawlId = item.getCrawlId();
                 if (startSentinel(item)) {
                     eventSink.startedCrawling(crawlId);

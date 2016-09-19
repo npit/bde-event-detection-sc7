@@ -19,6 +19,8 @@ import gr.demokritos.iit.crawlers.rss.factory.RSSCrawlFactory;
 import gr.demokritos.iit.crawlers.rss.factory.conf.RSSConf;
 import static gr.demokritos.iit.crawlers.rss.factory.RSSCrawlFactory.log;
 import gr.demokritos.iit.crawlers.rss.repository.IRepository;
+
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.beans.PropertyVetoException;
 
 public class BlogCrawler extends AbstractCrawler {
@@ -39,7 +41,12 @@ public class BlogCrawler extends AbstractCrawler {
     }
 
     public static void main(String[] args) {
-        IRSSConf configuration = new RSSConf(DEFAULT_BLOG_CONFIGURATION);
+        IRSSConf configuration=null;
+        String configFile = "";
+
+        if(args.length > 0) configFile=args[0];
+        else configFile= DEFAULT_BLOG_CONFIGURATION;
+        configuration = new RSSConf(configFile);
         RSSCrawlFactory factory = null;
         try {
             factory = new RSSCrawlFactory(configuration);

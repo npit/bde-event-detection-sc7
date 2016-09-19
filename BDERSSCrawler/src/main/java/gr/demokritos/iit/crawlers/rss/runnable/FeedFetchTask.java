@@ -65,6 +65,8 @@ public class FeedFetchTask implements DescribableRunnable {
             //SyndFeed feed = input.build(new StringReader(contentFromFeed.getRawText()));
             // Create lenient reader
             InputStream is = new ByteArrayInputStream(contentFromFeed.getRawText().getBytes());
+            System.out.println("input from url " + url);
+
             SyndFeed feed = input.build(new XmlReader(is, true));
             @SuppressWarnings("unchecked")
             List<SyndEntry> entries = feed.getEntries();

@@ -38,11 +38,14 @@ public class DefaultCrawlSchedule implements CrawlSchedule {
     @Override
     public String nextUrl() {
         if (needsLoading()) {
+            System.out.println("CrawlSchedule object loading urls.");
             this.load();
         }
 
         if (urls.hasNext()) {
-            return urls.next();
+            String url = urls.next();
+            System.out.println("CrawlSchedule returning url [" + url + "].");
+            return url;
         }
         urls = null;
 
@@ -55,6 +58,7 @@ public class DefaultCrawlSchedule implements CrawlSchedule {
 
     @Override
     public void load() {
+        System.out.println("CrawlSchedule loading urls.");
         List<String> urlList = loader.load();
         domainsToUrlsMap.clear();
 

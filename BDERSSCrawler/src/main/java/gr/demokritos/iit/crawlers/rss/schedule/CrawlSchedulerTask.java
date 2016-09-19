@@ -39,17 +39,34 @@ public class CrawlSchedulerTask implements DescribableRunnable {
 
     @Override
     public void run() {
-        doCrawl();
-        isFinished = true;
+        try {
+            doCrawl();
+            isFinished = true;
+        }
+        catch(RuntimeException ex)
+        {
+            ex.printStackTrace();
+            throw new RuntimeException ();
+        }
     }
 
-    private void doCrawl() {
-        CrawlId currentCrawlId = generator.createNewCrawlId();
+    private void doCrawl() throws RuntimeException{
+        System.out.println("Running doCrawl().");
+        CrawlId currentCrawlId = null;
+        try {
+            currentCrawlId = generator.createNewCrawlId();
+        }
+        catch(RuntimeException ex)
+        {
+            ex.printStackTrace();
+            throw new RuntimeException();
+        }
         eventSink.schedulingCrawl(currentCrawlId);
         enqueue(new Item(START_SENTINEL, currentCrawlId));
         String url;
         while (null != (url = crawlSchedule.nextUrl())) {
             Item item = new Item(url, currentCrawlId);
+            System.out.println("doCrawl() : enqueueing ["+item.toString()+"]");
             enqueue(item);
         }
         //Add the end sentinel

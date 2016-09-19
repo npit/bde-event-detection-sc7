@@ -89,6 +89,8 @@ public class HttpFetcher implements Fetcher {
      */
     @Override
     public Content fetchUrl(String url) throws IOException {
+        //System.out.println("Running fetchUrl()... ");
+
         if (url == null) {
             return null;
         }

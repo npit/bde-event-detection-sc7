@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-base="$(pwd)/BDEEventDetection"
+#base="$(pwd)/BDEEventDetection"
+base="$(pwd)"
 P=""
 P+=" $base/BDECLustering/res/clustering.properties"
 P+=" $base/BDELocationExtraction/res/location_extraction.properties"
