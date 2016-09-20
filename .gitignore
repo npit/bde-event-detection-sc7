@@ -47,5 +47,5 @@ out/*
 timingParallelSpark.txt
 sensitive/*
 maven_settings.xml
-defaultPropertyFiles/*
 BDELocationExtraction/res/local/
+installPOMs/
