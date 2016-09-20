@@ -46,7 +46,5 @@ installPOMs/
 ./BDETwitterListener/res/twitter.properties
 propertiesfiles/
 externalDependencies/
-*.properties
-credentials_
-p2
-p3
+sensitive/*
+*/res/*.properties
