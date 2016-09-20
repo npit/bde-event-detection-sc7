@@ -50,4 +50,6 @@ credentials_
 */res/*.queries
 
 timingParallelSpark.txt
+sensitive
 local
+*.conf
