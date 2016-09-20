@@ -36,20 +36,16 @@ nb*.xml
 *.iml
 
 # config-specific
-BDETwitterListener/placeholder_twitterdevaccount
 *.ignore
 *META-INF*
 out/*
 *.csv#
-installPOMs/
-p2
-p3
-credentials_
 */res/*.properties
 */res/*_urls*
 */res/*.queries
 
 timingParallelSpark.txt
-sensitive
-local
-*.conf
+sensitive/*
+maven_settings.xml
+defaultPropertyFiles/*
+BDELocationExtraction/res/local/
