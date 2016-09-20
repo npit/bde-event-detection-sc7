@@ -13,7 +13,7 @@ nbproject/*
 .project
 .settings/
 target/
- 
+out/
 # java specific
 *.class
  
@@ -34,3 +34,7 @@ nb*.xml
 # intellij idea
 .idea/
 *.iml
+*META-INF*
+*.ignore
+BDELocationExtraction/res/local/
+sensitive*
