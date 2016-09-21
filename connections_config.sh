@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+#
 # Script to set cassandra/mysql connection host, port and twitter credentials
 # to the relevant BDE Event detection pilot configuration files.
 
