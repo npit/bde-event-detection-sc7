@@ -38,3 +38,4 @@ nb*.xml
 *.ignore
 BDELocationExtraction/res/local/
 sensitive*
+maven_settings.xml
