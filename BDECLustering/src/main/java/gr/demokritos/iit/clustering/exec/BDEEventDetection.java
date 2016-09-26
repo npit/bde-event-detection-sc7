@@ -78,14 +78,14 @@ public class BDEEventDetection {
 
         // we require one argument, the config file
         if (args.length < 1 ) {
-            throw new IllegalArgumentException(String.format("USAGE: %s <PATH_TO_CONFIGURATION_FILE> <strabon|e>" +
+            throw new IllegalArgumentException(String.format("USAGE: %s <PATH_TO_CONFIGURATION_FILE> " +
                     "\n\te.g. %s ./res/clustering.properties", BDEEventDetection.class.getName(), BDEEventDetection.class.getName()));
         }
 
         // call a non-spark event detection method for testing.
         // copied from demo event detection
 
-        String properties = "./res/clustering.properties";
+        String properties = "res/clustering.properties";
         if (args.length >= 1) {
             properties = args[0];
         }

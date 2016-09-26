@@ -92,63 +92,10 @@ public class LocalPolygonExtraction implements IPolygonExtraction {
         return res;
     }
 
-    /**
-     * Converts the location - geometry pair to a format that is easy to parse JSON from.
-     * This is invoked just before merging locations into the events table.
-     * @param input a Map<String,String> of location names and geometries
-     * geometries are like
-     * POLYGON ((72.5866317749023 45.2075157165528,
-     *              72.5866317749023 45.1597290039063,
-     *              72.556770324707 45.1597290039063,
-     *              72.556770324707 45.2075157165528,
-     *              72.5866317749023 45.2075157165528))
-     * @return the modified Map
-     */
-    @Override
-    public  Map<String, String> parseGeomJSON(Map<String, String> input)
+
+    public Map<String,String> postProcessGeometries(Map<String,String> places_polygons)
     {
-
-
-
-        Map<String,String> output =  new HashMap();
-        for(String location : input.keySet())
-        {
-            //System.out.print("INitial : " + input.get(location));
-            String geometry =input.get(location);
-            if(geometry.contains("MULTIPOLYGON "))
-            {
-                geometry = geometry.replaceAll("MULTIPOLYGON ","");
-                geometry = geometry.replaceAll("\\(\\(\\(","O"); // external par open
-                geometry = geometry.replaceAll("\\)\\)\\)","C");// external par close
-
-                geometry = geometry.replaceAll("\\(\\(","("); // internal par open
-                geometry = geometry.replaceAll("\\)\\)",")");// internal par close
-
-                geometry = geometry.replaceAll("O","(("); // external par open
-                geometry = geometry.replaceAll("C","))");// external par close
-            }
-            else if(geometry.contains("POLYGON"))
-            {
-                geometry = geometry.replaceAll("POLYGON ","");
-                geometry = geometry.replaceAll("\\(\\(","(");
-                geometry = geometry.replaceAll("\\)\\)",")");
-            }
-            else
-            {
-                System.err.println("No [POLYGON] or [MULTIPOLYGON] prefix found in geometry.");
-                return output;
-            }
-
-
-
-
-
-            output.put("\"" + location + "\"", "\"" + geometry + "\"");
-
-        }
-
-
-
-        return output;
+        return places_polygons;
     }
+
 }

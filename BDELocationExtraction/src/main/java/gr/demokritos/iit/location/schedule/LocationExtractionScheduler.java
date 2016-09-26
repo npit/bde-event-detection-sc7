@@ -120,7 +120,8 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                         Map<String, String> places_polygons = poly.extractPolygon(locationsFound);
                         // update entry
                         // edit geometry
-                        places_polygons = poly.parseGeomJSON(places_polygons);
+                        places_polygons = poly.postProcessGeometries(places_polygons);
+
                         repos.updateArticlesWithReferredPlaceMetadata(permalink, places_polygons);
                         i++;
                     }
@@ -143,7 +144,7 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                     // extract coordinates for each entity
                     if (!locationsFound.isEmpty()) {
                         Map<String, String> places_polygons = poly.extractPolygon(locationsFound);
-                        places_polygons = poly.parseGeomJSON(places_polygons);
+                        places_polygons = poly.postProcessGeometries(places_polygons);
                         // update entry (tweets_per_referred_place)
                         repos.updateTweetsWithReferredPlaceMetadata(post_id, places_polygons);
                         i++;

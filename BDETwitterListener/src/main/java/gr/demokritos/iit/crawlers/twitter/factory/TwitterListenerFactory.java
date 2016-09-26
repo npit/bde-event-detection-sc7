@@ -323,9 +323,10 @@ public class TwitterListenerFactory implements ITwitterFactory {
         cpds = new ComboPooledDataSource();
         cpds.setDriverClass("com.mysql.jdbc.Driver");
         cpds.setJdbcUrl("jdbc:" + conf.getDatabaseHost());
-//        cpds.setJdbcUrl("jdbc:" + conf.getDatabaseHost() +"/" + conf.getDatabaseName() + "?useUnicode=true&characterEncoding=UTF-8");
+//        cpds.setJdbcUrl("jdbc:" + conf.getDatabaseHost() +"/" + conf.selecgetDatabaseName() + "?useUnicode=true&characterEncoding=UTF-8");
         cpds.setUser(conf.getDatabaseUserName());
         cpds.setPassword(conf.getDatabasePassword());
+
 
         // the settings below are optional -- c3p0 can work with defaults
         cpds.setMinPoolSize(conf.getDataSourceMinPoolSize());

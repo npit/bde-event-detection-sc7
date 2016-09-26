@@ -40,6 +40,6 @@ public interface IPolygonExtraction {
      */
     Map<String, String> extractPolygon(Collection<String> locationEntities);
 
-    Map<String, String> parseGeomJSON(Map<String, String> input);
+    Map<String,String> postProcessGeometries(Map<String,String> places_polygons);
 
 }

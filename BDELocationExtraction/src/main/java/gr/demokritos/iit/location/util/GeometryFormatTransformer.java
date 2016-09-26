@@ -39,7 +39,6 @@ public class GeometryFormatTransformer {
 
 
 
-
     /**
      *
      * @param input a string with a WKT geometry, i.e.
@@ -59,7 +58,7 @@ public class GeometryFormatTransformer {
     public static String WKTtoGeoJSON(String input) throws ParseException, IOException {
 
 
-        String out="";
+        String out;
         // read WKT to jts geometry
         WKTReader reader = new WKTReader();
         Geometry geom = reader.read(input);
@@ -68,20 +67,21 @@ public class GeometryFormatTransformer {
         StringWriter writer = new StringWriter();
 
         // alternative 1 : vividsolutions GEOJSON writer (downloaded hard copy)
-        GeoJsonWriter gwriter= new GeoJsonWriter();
-        gwriter.write(geom,writer);
-        out = writer.toString();
+//        GeoJsonWriter gwriter= new GeoJsonWriter();
+//        gwriter.write(geom,writer);
+//        out = writer.toString();
 
         // alternative 2 : geotools
         GeometryJSON gjsn = new GeometryJSON();
         StringWriter writer2 = new StringWriter();
         gjsn.write(geom,writer2);
-        String out2=writer2.toString();
+        out=writer2.toString();
 
-        System.out.println("Gotta delete one system. Better to drop geoJSONwriter, as it's 3 extra hard files " +
-                "and we alreay use geotools, ask efi");
-        System.out.println("jts geojsonWriter          :"+out);
-        System.out.println("geotools geometryJSON.write:" + out2);
+//        System.out.println("Gotta delete one system. Better to drop geoJSONwriter, as it's 3 extra hard files " +
+//                "and we alreay use geotools, ask efi");
+//        System.out.println("jts geojsonWriter          :\n"+out);
+//        System.out.println("geotools geometryJSON.write:\n" + out2);
+//        System.out.println("-----------------------------_");
 
         return out;
     }
@@ -95,7 +95,24 @@ public class GeometryFormatTransformer {
      * @throws IOException
      * @throws org.json.simple.parser.ParseException
      */
-    public static ArrayList<String> GeoJSONtoWKT(String input) throws IOException, org.json.simple.parser.ParseException {
+    public static String GeoJSONtoWKT(String input) throws IOException, org.json.simple.parser.ParseException
+    {
+        // initialize geojson reader and WKT writer
+        GeometryJSON gjsn = new GeometryJSON();
+        WKTWriter wktr = new WKTWriter();
+
+        StringReader geomreader = new StringReader(input);
+        Geometry geom = (gjsn.read(geomreader));
+        StringWriter writer = new StringWriter();
+        wktr.write(geom,writer);
+//
+//        System.out.println("GEOJSON to WKT:");
+//        System.out.println(input);
+//        System.out.println(writer.toString());
+        return writer.toString();
+    }
+
+        public static ArrayList<String> GeoJSONtoWKTList(String input) throws IOException, org.json.simple.parser.ParseException {
 
         ArrayList<String> out = new ArrayList<String>();
         GeometryJSON gjsn = new GeometryJSON();
@@ -106,20 +123,19 @@ public class GeometryFormatTransformer {
         JSONArray jarray = (JSONArray) ps.parse(reader);
 
         // initialize WKT writer
-        StringWriter writer = new StringWriter();
         WKTWriter wktr = new WKTWriter();
 
         for (Object key : jarray)
         {
-
-            StringReader geomreader = new StringReader(key.toString());
-
-            Geometry geom = (gjsn.read(geomreader));
-            wktr.write(geom,writer);
-            out.add(writer.toString());
+            JSONObject jkey = (JSONObject) key;
+            if(jkey.containsKey("crs")) jkey.remove("crs");
+            out. add(GeoJSONtoWKT(jkey.toString()));
         }
         return out;
     }
+
+
+
 
     /**
      * Process an event row to a format that the event processing & change detection server expects

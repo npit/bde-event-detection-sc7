@@ -49,7 +49,7 @@ echo "Setting repository connection parameters and twitter credentials."
 twitterfile="$CONNECTIONS_CONFIG_FOLDER/twitter.conf"
 if [ -f "$twitterfile" ]; then
 
-	twitterConsumerKey="$(cat $twitterfile | tail -1 | head -1)"
+	twitterConsumerKey="$(cat $twitterfile | head -1 | tail -1)"
 	twitterConsumerKeySecret="$(cat $twitterfile | head -2 | tail -1)"
 	twitterAccessTokken="$(cat $twitterfile | head -3 | tail -1)"
 	twitterAccessTokkenSecret="$(cat $twitterfile | head -4 | tail -1)"
@@ -134,7 +134,7 @@ if [ -f "$mysqlfile" ]; then
 
 		printf "\t%s\n" "$f"
 		sed -i "s<databaseHost.*<databaseHost=$databaseHost<g" $f
-		sed -i "s<databaseName.*<databaseName=$databaseName<g" $f
+		sed -i "s<databasename.*<databasename=$databaseName<g" $f
 		sed -i "s<databaseUsername.*<databaseUsername=$databaseUsername<g" $f
 		sed -i "s<databasePassword.*<databasePassword=$databasePassword<g" $f
 	done
