@@ -8,11 +8,10 @@ import java.util.Properties;
  * Created by npittaras on 12/9/2016.
  */
 public class clusteringConf extends BaseConfiguration implements IClusteringConf {
-    Properties properties;
+
     public clusteringConf(String path)
     {
         super(path);
-        this.properties = new Properties();
     }
     @Override
     public boolean sendToStrabon()

@@ -4,31 +4,26 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.lang.reflect.Array;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
+
+import com.vividsolutions.jts.geom.util.GeometryTransformer;
 import org.json.simple.JSONArray;
 import org.json.simple.parser.JSONParser;
 
-import com.google.gson.JsonObject;
-import com.google.gson.stream.JsonReader;
+
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryCollection;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.Location;
+
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
 import gr.demokritos.iit.location.mapping.geojson.GeoJsonWriter;
 
-import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.geotools.geojson.GeoJSON;
+
 import org.geotools.geojson.geom.GeometryJSON;
 import org.json.simple.JSONObject;
-import org.opengis.feature.Feature;
 
 
 /**
@@ -55,6 +50,7 @@ public class GeometryFormatTransformer {
      *  them to strabon
 
      */
+
     public static String WKTtoGeoJSON(String input) throws ParseException, IOException {
 
 
@@ -67,15 +63,15 @@ public class GeometryFormatTransformer {
         StringWriter writer = new StringWriter();
 
         // alternative 1 : vividsolutions GEOJSON writer (downloaded hard copy)
-//        GeoJsonWriter gwriter= new GeoJsonWriter();
-//        gwriter.write(geom,writer);
-//        out = writer.toString();
+        GeoJsonWriter gwriter= new GeoJsonWriter();
+        gwriter.write(geom,writer);
+        out = writer.toString();
 
         // alternative 2 : geotools
-        GeometryJSON gjsn = new GeometryJSON();
-        StringWriter writer2 = new StringWriter();
-        gjsn.write(geom,writer2);
-        out=writer2.toString();
+//        GeometryJSON gjsn = new GeometryJSON();
+//        StringWriter writer2 = new StringWriter();
+//        gjsn.write(geom,writer2);
+//        out=writer2.toString();
 
 //        System.out.println("Gotta delete one system. Better to drop geoJSONwriter, as it's 3 extra hard files " +
 //                "and we alreay use geotools, ask efi");
@@ -128,20 +124,25 @@ public class GeometryFormatTransformer {
         for (Object key : jarray)
         {
             JSONObject jkey = (JSONObject) key;
-            if(jkey.containsKey("crs")) jkey.remove("crs");
+            jkey = GeometryFormatTransformer.filter(jkey);
+            //if(jkey.containsKey("crs")) jkey.remove("crs");
             out. add(GeoJSONtoWKT(jkey.toString()));
         }
         return out;
     }
 
 
-
-
-    /**
-     * Process an event row to a format that the event processing & change detection server expects
-     * @param input The event row data
-     * @return The formatted data
+    /***
+     *
+     * @param id
+     * @param title
+     * @param date
+     * @param locpoly
+     * @return
+     * @throws IOException
+     * @throws ParseException
      */
+
     /*
     Expected format is
 
@@ -152,100 +153,49 @@ public class GeometryFormatTransformer {
      */
 
     // popeye, meaning strabon
-    public static String EventRowToPopeyeProcess(ArrayList<String> input)
-    {
-        String output = "";
-        ArrayList<String> out = new ArrayList<>();
-        try {
+    public static String EventRowToPopeyeProcess(String id, String title, String date, Map<String,String> locpoly) throws IOException, ParseException {
+        JSONObject obj = new JSONObject();
+//        String outputformat = "YYYY-MM-DDThh:mm:ssZ";
+//        String inputformat = "YYYY-MM-DDThh:mm:ssZ";
+//        SimpleDateFormat sf = new SimpleDateFormat();asd
+//        sf.parse(date);
+        obj.put("id",id);
+        obj.put("title",title);
+        obj.put("eventDate",date);
+        obj.put("referenceDate",date);
 
-
-
-
-            int index = 0;
-
-            out.add("\"id\":\"" + input.get(index++) + "\"");
-            out.add("\"title\":\"" + input.get(index++) + "\"");
-            //typically, seconds are missing from the date, like 2016-05-23T08:27+0000
-            String date = input.get(index++);
-            final String targetDateFormat = "yyyy-mm-ddThh:mm:ss+zzzz";
-
-            if (date.length() < targetDateFormat.length()) {
-                //plug in zero seconds
-                String[] tok = date.split("\\+");
-                date = tok[0] + ":00+" + tok[1];
-            }
-
-            out.add("\"eventDate\":\"" + date + "\"");
-            out.add("\"referenceDate\":null");
-
-            String areasString = "";
-            int numLocations = 0;
-            while (index < input.size()) {
-                if (numLocations++ > 0)
-                    areasString += ",";
-                areasString += "{"; // start object
-                // loc. name
-                String location = input.get(index++);
-                // loc. coord
-                String coord = input.get(index++);
-                coord = GeometryFormatTransformer.geometryToPointList(coord);
-
-                areasString += "\"name\":" + location + ",\"geometry\":" + "{";
-                areasString += "\"type\":\"Polygon\",\"coordinates\":" + coord;
-                areasString += "}"; // close geometry
-                areasString += "}"; // close location object
-            }
-            out.add("\"areas\":[" + areasString + "]");
-            assert index == input.size() : "Index - input list size mismatch";
-        }
-        catch(java.lang.IndexOutOfBoundsException exc)
+        JSONArray array = new JSONArray();
+        for(String location : locpoly.keySet())
         {
-            System.out.println("Malformed input geometry to EventRowToPopeyeProcess.");
-            System.out.println(exc.getMessage());
-            exc.printStackTrace();
-            return "";
-        }
-        for (int i=0;i<out.size();++i)
-        {
-            if(i>0 && i < out.size())
-                output += ",";
-            output += out.get(i);
+            JSONObject area = new JSONObject();
+
+            String wktgeometry= locpoly.get(location);
+            String gjsonGeometry = GeometryFormatTransformer.WKTtoGeoJSON(wktgeometry);
+            JSONObject geomobject = new JSONObject();
+            try {
+                geomobject = (JSONObject) new JSONParser().parse(gjsonGeometry);
+            } catch (org.json.simple.parser.ParseException e) {
+                e.printStackTrace();
+            }
+            geomobject = GeometryFormatTransformer.filter(geomobject);
+            area.put("name",location);
+            area.put("geometry",geomobject);
+            array.add(area);
         }
 
-
-        return "{" + output + "}";
+        obj.put("areas",array);
+        String output = obj.toJSONString();
+        return output;
     }
-
-    private static String geometryToPointList(String geom)
-    {
-        String out = "";
-        String regex = "[()\"]";
-        geom = geom.replaceAll(regex,""); // drop parentheses
-        String [] values = geom.split("[,\\s]");
-        boolean startPair = true;
-        for(int s=0;s<values.length; ++s)
+    private static final String [] undesirables={"crs"};
+   public static JSONObject filter(JSONObject jsobj)
+   {
+        for(String undesirable : undesirables)
         {
-            if (values[s].isEmpty()) continue;
-
-
-            if (startPair)
-            {
-                // a pair begins
-                out += "[";
-                out += values[s] + ",";
-                startPair = false;
-            }
-            else {
-                out += " ";
-                out += values[s];
-                // a pair ends
-                out += "]";
-                if ( s != values.length -1) out +=",";
-                startPair = true;
-            }
+            jsobj.remove(undesirable);
         }
-        return "[[" + out + "]]";
-    }
+       return jsobj;
+   }
 
     /**
      * Converts the input map to a single string, compatible for use in a CQL query, as a CQL map

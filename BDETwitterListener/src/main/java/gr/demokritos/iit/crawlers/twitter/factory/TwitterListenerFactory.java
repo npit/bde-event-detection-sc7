@@ -327,6 +327,10 @@ public class TwitterListenerFactory implements ITwitterFactory {
         cpds.setUser(conf.getDatabaseUserName());
         cpds.setPassword(conf.getDatabasePassword());
 
+	System.out.println("uname:"+conf.getDatabaseUserName());
+	System.out.println("password:"+conf.getDatabasePassword());
+	System.out.println("host:" + conf.getDatabaseHost());
+
 
         // the settings below are optional -- c3p0 can work with defaults
         cpds.setMinPoolSize(conf.getDataSourceMinPoolSize());

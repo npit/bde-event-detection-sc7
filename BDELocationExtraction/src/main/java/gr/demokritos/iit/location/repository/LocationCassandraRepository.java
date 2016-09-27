@@ -19,6 +19,8 @@ import com.datastax.driver.core.querybuilder.QueryBuilder;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.gte;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.set;
+
+import com.vividsolutions.jts.io.ParseException;
 import gr.demokritos.iit.base.repository.BaseCassandraRepository;
 import gr.demokritos.iit.base.repository.views.Cassandra;
 import gr.demokritos.iit.base.util.Utils;
@@ -389,7 +391,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
         System.out.println("Sending events to Strabon.");
         // get all events, fields: id, title, date, placemappings
         // store each field of interest in an arraylist
-        ArrayList<String> entries = new ArrayList<>();
+
         // perform the query
         Statement query = QueryBuilder
                 .select(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName(),
@@ -402,34 +404,46 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
         // for each event
         for(Row row : results)
         {
-            entries.clear();
             // get the id
-            entries.add(row.getString(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName()));
+            String id = (row.getString(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName()));
 
             // place-mappings: If null, skip the processing
             Map<String,String> locpoly = row.getMap(Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName(),String.class,String.class);
             if (locpoly.isEmpty())
             {
-                System.out.println("Skipping processing event " + count++ + ":" + entries.get(entries.size()-1) + " due to no assigned geometries." );
-                entries.clear();
+                System.out.println("Skipping processing event " + count++ + ":" + id + " due to no assigned geometries." );
                 continue;
             }
 
             // get the title
-            entries.add(row.getString(Cassandra.Event.TBL_EVENTS.FLD_TITLE.getColumnName()));
+            String title = (row.getString(Cassandra.Event.TBL_EVENTS.FLD_TITLE.getColumnName()));
             // get date
-            entries.add(row.getString(Cassandra.Event.TBL_EVENTS.FLD_DATE_LITERAL.getColumnName()));
-            // get  geometry
-            for(String item : locpoly.keySet())
-            {
-                String val = locpoly.get(item);
-                entries.add(item);
-                entries.add(val);
-            }
-            // reconstruct the entries in the format expected by strabon
-            String payload = GeometryFormatTransformer.EventRowToPopeyeProcess(entries);
-            System.out.println("payload is:" + payload); // debugprint
+            String date = (row.getString(Cassandra.Event.TBL_EVENTS.FLD_DATE_LITERAL.getColumnName()));
 
+            // reconstruct the entries in the format expected by strabon
+            String payload="";
+            try
+            {
+                payload = GeometryFormatTransformer.EventRowToPopeyeProcess(id,title,date,locpoly);
+
+            }
+            catch (ParseException e)
+            {
+                e.printStackTrace();
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+
+            System.out.println("payload is:" + payload); // debugprint
+            if(payload.isEmpty())
+            {
+                System.out.println("Empty payload, won't send anything.");
+                return;
+            }
+
+            //payload = payload.replaceAll("\\\\","");
             // send http request
             // TODO: make new connection for each send or make connection out of loop?
             // TODO: put target url in the properties file on the module this function will
