@@ -11,5 +11,6 @@ P+=" $base/BDETwitterListener/res/twitter.queries"
 
 for p in $P; 
 do
-	/usr/bin/subl $p
+	[ ! -f $p ] && echo 2>&1 "File $p does not exists"
+	/home/nik/Software/Sublime/sublime_text_3/sublime_text $p
 done

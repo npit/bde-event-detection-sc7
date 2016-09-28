@@ -27,10 +27,9 @@ import java.util.logging.Logger;
  */
 public class CybozuLangDetect implements ILangDetect {
 
-//    private static final String PROFILES_FILE_PROD = "./res/profiles/";
-//    private static final String PROFILES_FILE_DEV = "../BDEBase/res/profiles/";
-    private static final String PROFILES_FILE_PROD = "//home/npittaras/Documents/project/BDE/BDEproject/BDEEventDetection/BDEBase/res/profiles//";
-    private static final String PROFILES_FILE_DEV = PROFILES_FILE_PROD;
+
+    private static  String PROFILES_FILE_PROD = "NO_PATH";
+    private static  String PROFILES_FILE_DEV = PROFILES_FILE_PROD;
 
     public static final String UNDEFINED_LANG = "und";
 
@@ -42,6 +41,15 @@ public class CybozuLangDetect implements ILangDetect {
     public synchronized static ILangDetect getInstance() {
         return InstanceHolder.INSTANCE;
     }
+
+    public static void  setProfiles(String path)
+    {
+        if(pathInitialized) return;
+        PROFILES_FILE_PROD = path;
+        PROFILES_FILE_DEV = PROFILES_FILE_PROD;
+    }
+    private static boolean pathInitialized = false;
+
 
     private CybozuLangDetect() {
         try {
@@ -57,6 +65,7 @@ public class CybozuLangDetect implements ILangDetect {
 
     @Override
     public String identifyLanguage(String text) {
+        //System.out.println("Running lang ident, path : [" + PROFILES_FILE_PROD + "].");
         String language = UNDEFINED_LANG;
         if (text == null || text.trim().isEmpty()) {
             return language;

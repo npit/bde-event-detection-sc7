@@ -95,4 +95,6 @@ public interface IBaseConf {
 
     String getStopwordsFilePath();
 
+    String getLangDetectionProfiles();
+
 }

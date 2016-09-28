@@ -41,7 +41,12 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
     protected static String DEFAULT_NE_MODELS_PATH = "./res/ne_models/";
     protected static String DEFAULT_SENT_SPLIT_MODEL_PATH = "./res/en-sent.bin";
 
-    private Set<String> extraNames;
+    public static void setDefaultPaths(String modelsPath, String splitterPath)
+    {
+        DEFAULT_NE_MODELS_PATH = modelsPath;
+        DEFAULT_SENT_SPLIT_MODEL_PATH = splitterPath;
+    }
+//    private Set<String> extraNames;
     /**
      *
      * @param basePath the path where the models are located

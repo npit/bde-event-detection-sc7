@@ -37,7 +37,6 @@ paths+=" $BDE_ROOT_DIR/BDERSSCrawler/res/newscrawler_configuration.properties"
 # newline-delimit, let's not change IFS
 paths="$(echo $paths | sed  's/ /\n/g' )"
 
-
 echo "Setting repository connection parameters and twitter credentials."
 
 ## TWITTER
@@ -60,12 +59,17 @@ if [ -f "$twitterfile" ]; then
 	printf "\tkeysecret: [%s]\n" $twitterConsumerKeySecret
 	printf "\tacctoken: [%s]\n" $twitterAccessTokken
 	printf "\tacctokensecret: [%s]\n" $twitterAccessTokkenSecret
-
+	
+	twitterpropsfile="$BDE_ROOT_DIR/BDETwitterListener/res/twitter.properties"
+	if [ ! -f "$twitterpropsfile" ]; then
+		echo >&2 "File [$twitterpropsfile] not found "
+	else
 	# set the twitter credentials
-	sed -i "s/twitterConsumerKey=.*/twitterConsumerKey=$twitterConsumerKey/g" "$BDE_ROOT_DIR/BDETwitterListener/res/twitter.properties"
-	sed -i "s/twitterConsumerKeySecret=.*/twitterConsumerKeySecret=$twitterConsumerKeySecret/g" "$BDE_ROOT_DIR/BDETwitterListener/res/twitter.properties"
-	sed -i "s/twitterAccessTokken=.*/twitterAccessTokken=$twitterAccessTokken/g" "$BDE_ROOT_DIR/BDETwitterListener/res/twitter.properties"
-	sed -i "s/twitterAccessTokkenSecret=.*/twitterAccessTokkenSecret=$twitterAccessTokkenSecret/g" "$BDE_ROOT_DIR/BDETwitterListener/res/twitter.properties"
+		sed -i "s/twitterConsumerKey=.*/twitterConsumerKey=$twitterConsumerKey/g" "$twitterpropsfile"
+		sed -i "s/twitterConsumerKeySecret=.*/twitterConsumerKeySecret=$twitterConsumerKeySecret/g" "$twitterpropsfile"
+		sed -i "s/twitterAccessTokken=.*/twitterAccessTokken=$twitterAccessTokken/g" "$twitterpropsfile"
+		sed -i "s/twitterAccessTokkenSecret=.*/twitterAccessTokkenSecret=$twitterAccessTokkenSecret/g" "$twitterpropsfile"
+	fi
 
 else
 	echo "(!) No twitter credentials were found at [$twitterfile]!"
@@ -99,6 +103,7 @@ if [  -f "$cassandrafile" ] ; then
 
 	for f in $paths ; do
 		printf "\t%s\n" "$f"
+		[ ! -f $f ] && echo >&2 "File [$f] not found" && continue;
 		sed -i "s/cassandra_hosts.*/cassandra_hosts=$cassandraHost/g" $f
 		sed -i "s/cassandra_port.*/cassandra_port=$cassandraPort/g" $f
 		sed -i "s/cassandra_keyspace.*/cassandra_keyspace=$cassandraKeyspace/g" $f
@@ -108,7 +113,7 @@ if [  -f "$cassandrafile" ] ; then
 else
 	echo "(!) No cassandra settings were found at [$cassandrafile]"
 fi
-
+ 
 # MYSQL
 # expecting format:
 # databaseHost
@@ -133,6 +138,8 @@ if [ -f "$mysqlfile" ]; then
 	for f in $paths ; do
 
 		printf "\t%s\n" "$f"
+                [ ! -f $f ] && echo >&2 "File [$f] not found" && continue;
+
 		sed -i "s<databaseHost.*<databaseHost=$databaseHost<g" $f
 		sed -i "s<databasename.*<databasename=$databaseName<g" $f
 		sed -i "s<databaseUsername.*<databaseUsername=$databaseUsername<g" $f

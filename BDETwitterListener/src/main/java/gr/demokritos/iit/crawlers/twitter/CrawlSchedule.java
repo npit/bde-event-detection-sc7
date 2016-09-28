@@ -14,6 +14,8 @@
  */
 package gr.demokritos.iit.crawlers.twitter;
 
+import gr.demokritos.iit.base.util.langdetect.CybozuLangDetect;
+import gr.demokritos.iit.base.util.langdetect.ILangDetect;
 import gr.demokritos.iit.crawlers.twitter.impl.ITwitterRestConsumer;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
@@ -36,6 +38,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
+
 /**
  *
  * @author George K. <gkiom@iit.demokritos.gr>
@@ -50,6 +53,8 @@ public class CrawlSchedule {
             IllegalAccessException, NoSuchMethodException,
             InvocationTargetException {
         loadCmdParams(args);
+
+
         switch (operation) {
             case MONITOR:
                 monitor();
@@ -67,6 +72,8 @@ public class CrawlSchedule {
 
         // load properties
         ITwitterConf config = new TConfig(properties);
+        // init lang detect
+        CybozuLangDetect.setProfiles(config.getLangDetectionProfiles());
         // init crawl factory
         TwitterListenerFactory factory = new TwitterListenerFactory(config);
         ITwitterRestConsumer crawler;
@@ -86,7 +93,8 @@ public class CrawlSchedule {
 
         // load properties
         ITwitterConf config = new TConfig(properties);
-
+        // init lang detect
+        CybozuLangDetect.setProfiles(config.getLangDetectionProfiles());
         TwitterListenerFactory factory = new TwitterListenerFactory(config);
 
         ITwitterRestConsumer crawler;
@@ -106,7 +114,8 @@ public class CrawlSchedule {
 
         // load properties
         ITwitterConf config = new TConfig(properties);
-
+        // init lang detect
+        CybozuLangDetect.setProfiles(config.getLangDetectionProfiles());
         TwitterListenerFactory factory = new TwitterListenerFactory(config);
 
         IStreamConsumer stream = null;
@@ -191,6 +200,9 @@ public class CrawlSchedule {
         } catch (IOException ex) {
             throw new IllegalArgumentException("please provide a queries file for the crawler", ex);
         }
+
+
     }
+
 
 }

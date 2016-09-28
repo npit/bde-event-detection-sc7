@@ -143,4 +143,9 @@ public class BaseConfiguration implements IBaseConf {
     public String getStopwordsFilePath() {
         return properties.getProperty("stopwords_file_path", "./res/stopwords_en.txt");
     }
+    @Override
+    public String getLangDetectionProfiles()
+    {
+        return properties.getProperty("lang_detection_profiles", "./res/profiles");
+    }
 }
