@@ -23,6 +23,9 @@ import gr.demokritos.iit.crawlers.rss.repository.IRepository;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.beans.PropertyVetoException;
 
+import gr.demokritos.iit.base.util.langdetect.CybozuLangDetect;
+
+
 public class BlogCrawler extends AbstractCrawler {
 
     public BlogCrawler(RSSCrawlFactory factory, IRSSConf configuration) throws Exception {
@@ -47,6 +50,8 @@ public class BlogCrawler extends AbstractCrawler {
         if(args.length > 0) configFile=args[0];
         else configFile= DEFAULT_BLOG_CONFIGURATION;
         configuration = new RSSConf(configFile);
+        // init lang detect
+        CybozuLangDetect.setProfiles(configuration.getLangDetectionProfiles());
         RSSCrawlFactory factory = null;
         try {
             factory = new RSSCrawlFactory(configuration);
