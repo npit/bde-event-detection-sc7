@@ -14,6 +14,7 @@
  */
 package gr.demokritos.iit.crawlers.rss;
 
+import gr.demokritos.iit.base.util.langdetect.CybozuLangDetect;
 import gr.demokritos.iit.crawlers.rss.factory.conf.IRSSConf;
 import gr.demokritos.iit.crawlers.rss.factory.RSSCrawlFactory;
 import gr.demokritos.iit.crawlers.rss.factory.conf.RSSConf;
@@ -26,6 +27,7 @@ import java.io.File;
  * User: ade
  */
 public class NewsCrawler extends AbstractCrawler {
+
 
     public NewsCrawler(RSSCrawlFactory factory, IRSSConf configuration) throws Exception {
         super(factory, configuration, true);
@@ -43,10 +45,13 @@ public class NewsCrawler extends AbstractCrawler {
     }
 
     public static void main(String[] args) {
+
         if (args.length == 0) {
             throw new IllegalArgumentException(USAGE);
         }
         IRSSConf configuration = new RSSConf(args[0]);
+        // init lang detect
+        CybozuLangDetect.setProfiles(configuration.getLangDetectionProfiles());
         RSSCrawlFactory factory = null; 
         try {
             factory = new RSSCrawlFactory(configuration);

@@ -306,6 +306,10 @@ public class RSSCrawlFactory implements IRSSFactory {
         cpds.setUser(conf.getDatabaseUserName());
         cpds.setPassword(conf.getDatabasePassword());
 
+        System.out.println("host:["+cpds.getJdbcUrl()+"]");
+        System.out.println("user:["+cpds.getUser()+"]");
+        System.out.println("pwd:["+cpds.getPassword()+"]");
+
         // the settings below are optional -- c3p0 can work with defaults
         cpds.setMinPoolSize(conf.getDataSourceMinPoolSize());
         cpds.setAcquireIncrement(conf.getDataSourceAcquireIncrement());

@@ -6,6 +6,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Map;
 
 
@@ -153,12 +154,26 @@ public class GeometryFormatTransformer {
      */
 
     // popeye, meaning strabon
-    public static String EventRowToPopeyeProcess(String id, String title, String date, Map<String,String> locpoly) throws IOException, ParseException {
+    public static String EventRowToStrabonJSON(String id, String title, String date, Map<String,String> locpoly) throws IOException, ParseException {
         JSONObject obj = new JSONObject();
-//        String outputformat = "YYYY-MM-DDThh:mm:ssZ";
-//        String inputformat = "YYYY-MM-DDThh:mm:ssZ";
-//        SimpleDateFormat sf = new SimpleDateFormat();asd
-//        sf.parse(date);
+        // date format  in the repository is like:
+        // 2016-09-28T08:32+0000
+        String sourceFormat = "yyyy-MM-dd'T'hh:mmZ";
+        SimpleDateFormat sf = new SimpleDateFormat(sourceFormat);
+        Date date_ = new Date();
+        try {
+            date_ = sf.parse(date);
+        } catch (java.text.ParseException e) {
+            System.err.println("Parse date format exception.");
+            e.printStackTrace();
+            return "";
+        }
+        // strabon expects format
+        //
+        String targetFormat = "yyyy-MM-dd'T'hh:mm:ssZ";
+        sf.applyPattern(targetFormat);
+        date = sf.format(date_);
+
         obj.put("id",id);
         obj.put("title",title);
         obj.put("eventDate",date);
@@ -182,8 +197,9 @@ public class GeometryFormatTransformer {
             area.put("geometry",geomobject);
             array.add(area);
         }
-
+        array = new JSONArray();
         obj.put("areas",array);
+
         String output = obj.toJSONString();
         return output;
     }

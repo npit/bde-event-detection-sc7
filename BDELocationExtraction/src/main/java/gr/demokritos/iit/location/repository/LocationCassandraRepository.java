@@ -38,7 +38,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 
-import java.sql.Timestamp;
 import java.util.*;
 
 /**
@@ -424,7 +423,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
             String payload="";
             try
             {
-                payload = GeometryFormatTransformer.EventRowToPopeyeProcess(id,title,date,locpoly);
+                payload = GeometryFormatTransformer.EventRowToStrabonJSON(id,title,date,locpoly);
 
             }
             catch (ParseException e)
@@ -436,14 +435,13 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
                 e.printStackTrace();
             }
 
-            System.out.println("payload is:" + payload); // debugprint
+            System.out.println("payload is:<" + payload + ">"); // debugprint
             if(payload.isEmpty())
             {
                 System.out.println("Empty payload, won't send anything.");
                 return;
             }
 
-            //payload = payload.replaceAll("\\\\","");
             // send http request
             // TODO: make new connection for each send or make connection out of loop?
             // TODO: put target url in the properties file on the module this function will
