@@ -197,9 +197,7 @@ public class GeometryFormatTransformer {
             area.put("geometry",geomobject);
             array.add(area);
         }
-        array = new JSONArray();
         obj.put("areas",array);
-
         String output = obj.toJSONString();
         return output;
     }
