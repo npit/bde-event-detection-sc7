@@ -3,16 +3,9 @@ http://feeds.reuters.com/reuters/topNews
 http://feeds.reuters.com/Reuters/domesticNews
 http://feeds.reuters.com/reuters/environment
 http://feeds.reuters.com/reuters/technologyNews
-# cnn
-http://rss.cnn.com/rss/edition_world.rss
-http://rss.cnn.com/rss/edition_space.rss
-http://rss.cnn.com/rss/cnn_world.rss
-http://rss.cnn.com/rss/cnn_tech.rss
-# bbc
-http://feeds.bbci.co.uk/news/world/rss.xml
-http://feeds.bbci.co.uk/news/business/rss.xml
-http://feeds.bbci.co.uk/news/health/rss.xml
-http://feeds.bbci.co.uk/news/video_and_audio/science_and_environment/rss.xml
-#misc
-http://news.hse.gov.uk/category/topic/fire-and-explosion/feed/
-http://www.disaster.net/feed.rss
+http://feeds.reuters.com/news/artsculture
+http://feeds.reuters.com/reuters/businessNews
+http://feeds.reuters.com/reuters/companyNews
+http://feeds.reuters.com/reuters/entertainment
+http://feeds.reuters.com/Reuters/PoliticsNews
+http://feeds.reuters.com/reuters/financialsNews
