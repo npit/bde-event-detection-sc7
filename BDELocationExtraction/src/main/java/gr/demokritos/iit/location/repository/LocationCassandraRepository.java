@@ -433,7 +433,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
                 e.printStackTrace();
             }
 
-            System.out.println("payload is:<" + payload + ">"); // debugprint
+            //System.out.println("payload is:<" + payload + ">"); // debugprint
             if(payload.isEmpty())
             {
                 System.out.println("Empty payload, won't send anything.");
