@@ -67,12 +67,11 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
         Calendar two_months_ago = Calendar.getInstance();
         two_months_ago.set(Calendar.MONTH, two_months_ago.get(Calendar.MONTH) - 2);
         long last_parsed = two_months_ago.getTimeInMillis();
-        System.out.println("Two months ago tstamp: "  + last_parsed);
+
         Row one = results.one();
         if (one != null) {
             max_existing = one.getLong(Cassandra.Location.TBL_LOCATION_LOG.FLD_SCHEDULE_ID.getColumnName());
             last_parsed = one.getLong(Cassandra.Location.TBL_LOCATION_LOG.FLD_LAST_PARSED.getColumnName());
-            System.out.println("Overwriting with one from table:Two months ago tstamp: "  + last_parsed);
         }
         long current = max_existing + 1;
         LocSched curSched = new LocSched(mode, current, last_parsed);
@@ -140,7 +139,6 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
         session.execute(upsert);
         Statement insert;
         for (String place : places) {
-            System.out.println("Updating place " + place + " with poly " + places_polygons.get(place));
             insert = QueryBuilder
                     .insertInto(session.getLoggedKeyspace(), Cassandra.RSS.Tables.NEWS_ARTICLES_PER_PLACE.getTableName())
                     .value(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_PLACE_LITERAL.getColumnName(), place)

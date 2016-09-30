@@ -88,6 +88,9 @@ public class LocalPolygonExtraction implements IPolygonExtraction {
             if (poly != null && !poly.isEmpty()) {
                 res.put(loc, poly);
             }
+            else
+                Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "Polygon extraction failed for ["+loc+"]");
+
         }
         return res;
     }

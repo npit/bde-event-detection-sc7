@@ -80,7 +80,7 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
         //Set<Long> tweetIDs = tweetIDsPerTopicID.get(topicID);
         Map<Long,String> tweetIDsUsers = extractRelatedTweetIDsTitlesPerTopicID(topicID,relatedTweets,
                 tweetURLtoPostIDMapping,tweetURLtoUserIDMapping);
-        if(tweetIDsUsers == null) System.out.println("Null tweet ids");
+        if(tweetIDsUsers == null) System.out.println("> The event has no assigned tweets.");
         // news : updated to extract URL + title pairs
         //Set<String> topicSourceURLs = extractSourceURLs(t);
         Map<String,String> topicSourceURL_Titles = extractSourceURLTitlePairs(t);

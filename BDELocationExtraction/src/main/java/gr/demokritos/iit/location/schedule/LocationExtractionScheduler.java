@@ -104,6 +104,7 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
         long max_published = Long.MIN_VALUE;
         System.out.println("Initial max published: " + max_published);
         int i = 0;
+        int noLocationCount = 0;
         switch (mode) {
             case ARTICLES:
                 // for each article
@@ -128,6 +129,8 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                     else
                         System.out.println("\tNo location found for article " + permalink); //debugprint
                 }
+                System.out.println("\tLocation literal found for " + (items.size() - noLocationCount) + " / " + items.size() + " articles.");
+
                 break;
             case TWEETS:
                 // for each tweet
@@ -150,8 +153,9 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                         i++;
                     }
                     else
-                        System.out.println("\tNo location found for tweet " + post_id); //debugprint
+                        noLocationCount++;
                 }
+                System.out.println("\tLocation literal found for " + (items.size() - noLocationCount)  + " / " + items.size() + " tweets ");
                 break;
         }
         return new ExecRes(max_published, i);

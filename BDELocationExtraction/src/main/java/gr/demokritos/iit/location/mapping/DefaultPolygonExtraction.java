@@ -76,19 +76,15 @@ public class DefaultPolygonExtraction implements IPolygonExtraction {
         if (locationEntity == null || locationEntity.trim().isEmpty()) {
             return "";
         }
-        System.out.print("Location extraction POST for " + locationEntity + "... ");
         // ask cache
         String geoloc = location_cache.getIfPresent(locationEntity);
 
         if (geoloc != null) {
-            System.out.println("Cache hit!");
             return geoloc;
         }
         String res = "";
         // API accepts only JsonArray
         final Collection<String> input = new ArrayList() {{add(locationEntity);}};
-        System.out.println("Cache miss!\n\tLocation extraction POST ...");
-        long startTime = System.currentTimeMillis(); //debugprint , timing
         try {
             Response response = client.execJSONPost(polURL, gs.toJson(input, Collection.class), String.class);
 
@@ -111,9 +107,6 @@ public class DefaultPolygonExtraction implements IPolygonExtraction {
             Logger.getLogger(DefaultPolygonExtraction.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        long duration = (System.currentTimeMillis() - startTime);
-        System.out.println("\ttime took " + Long.toString(duration) + " msec");
-
         return res;
     }
 
@@ -126,6 +119,8 @@ public class DefaultPolygonExtraction implements IPolygonExtraction {
             if (poly != null && !poly.isEmpty()) {
                 res.put(loc, poly);
             }
+            else
+                Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "Polygon extraction failed for ["+loc+"]");
         }
         return res;
     }

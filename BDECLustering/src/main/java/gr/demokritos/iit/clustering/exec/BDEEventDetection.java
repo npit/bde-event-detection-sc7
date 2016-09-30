@@ -76,6 +76,7 @@ public class BDEEventDetection {
 
     public static void main(String[] args) {
 
+
         // we require one argument, the config file
         if (args.length < 1 ) {
             throw new IllegalArgumentException(String.format("USAGE: %s <PATH_TO_CONFIGURATION_FILE> " +
@@ -105,7 +106,7 @@ public class BDEEventDetection {
         boolean SendToStrabon = configuration.sendToStrabon();
         boolean onlySendToStrabon = configuration.justSendToStrabon();
 
-	
+
 	
         DemoClusteringFactory factory = null;
         DemoCassandraRepository repository;
@@ -178,8 +179,10 @@ public class BDEEventDetection {
         System.out.println("Classifying tweets...");
         //IClassifier smClassifier = factory.getSocialMediaClassifierForTwitter(plainTextSummaries, tweetClusters, tsStemmer);
         // default thresholds are
-        double min_assign_sim_threshold = 0.01D;
-        double min_assign_titlesim_threshold = 0.1D;
+
+        double min_assign_sim_threshold = configuration.getTwitterMappingSimilarityThreshold();
+        double min_assign_titlesim_threshold = configuration.getTwitterMappingTitleSimilarityThreshold();
+
         IClassifier smClassifier = factory.getSocialMediaClassifierForTwitter(min_assign_sim_threshold, min_assign_titlesim_threshold,plainTextSummaries, tweetClusters, tsStemmer);
         Map<Topic, List<String>> related = smClassifier.getRelated();
 

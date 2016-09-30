@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 #base="$(pwd)/BDEEventDetection"
+editor="$EDITOR"
 base="$(pwd)"
 P=""
 P+=" $base/BDECLustering/res/clustering.properties"
@@ -12,5 +13,5 @@ P+=" $base/BDETwitterListener/res/twitter.queries"
 for p in $P; 
 do
 	[ ! -f $p ] && echo 2>&1 "File $p does not exists"
-	/home/nik/Software/Sublime/sublime_text_3/sublime_text $p
+	$editor $p
 done

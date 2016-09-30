@@ -34,6 +34,24 @@ public class clusteringConf extends BaseConfiguration implements IClusteringConf
     {
 	return properties.getProperty("strabon_url");
     }
+    @Override
+    public double getTwitterMappingSimilarityThreshold()
+    {
+        double value = 0.063D;
+        String inputThresh = properties.getProperty("twitter_sim_threshold","");
+        if(!inputThresh.isEmpty())
+            value = Double.parseDouble(inputThresh);
+        return value;
+    }
+    @Override
+    public double getTwitterMappingTitleSimilarityThreshold()
+    {
+        double value = 0.4D;
+        String inputThresh = properties.getProperty("twitter_title_sim_threshold","");
+        if(!inputThresh.isEmpty())
+            value = Double.parseDouble(inputThresh);
+        return value;
+    }
 
 
 }
