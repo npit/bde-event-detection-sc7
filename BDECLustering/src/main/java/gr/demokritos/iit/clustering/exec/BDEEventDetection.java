@@ -197,6 +197,10 @@ public class BDEEventDetection {
             System.out.print("Finally,sending events to strabon to url ["+strabonURL+"].");
             repository.storeAndChangeDetectionEvents(strabonURL);
         }
+        else
+        {
+            System.out.println("Sending events to Strabon is disabled.");
+        }
         if(factory != null)
         {
             System.out.println("Releasing resources.");
