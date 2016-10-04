@@ -18,6 +18,7 @@ import gr.demokritos.iit.location.sentsplit.ISentenceSplitter;
 import gr.demokritos.iit.location.sentsplit.OpenNLPSentenceSplitter;
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.namefind.TokenNameFinderModel;
+import opennlp.tools.util.HashList;
 import opennlp.tools.util.Span;
 
 import java.io.*;
@@ -46,6 +47,7 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
         DEFAULT_NE_MODELS_PATH = modelsPath;
         DEFAULT_SENT_SPLIT_MODEL_PATH = splitterPath;
     }
+
 //    private Set<String> extraNames;
     /**
      *
@@ -70,26 +72,39 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
         this.sentenceSplitter = sentenceSplitter;
         this.prob_cutoff = prob_cutoff;
 
-	/* naive additions from GPapadakis' dataset
-        // get extra names
-        extraNames = new HashSet<String>();
-        String extrapath="/home/npittaras/Documents/project/BDE/BDEproject/BDEEventDetection/BDELocationExtraction/res/local/namestotal";
-        //read file into stream, try-with-resources
-        System.out.print("Reading extra names file...");
-        try (BufferedReader br = new BufferedReader(new FileReader(extrapath))) {
-
-            String line;
-            while ((line = br.readLine()) != null) {
-                //System.out.println("line : [" + line + "]");
-                if(line.trim().isEmpty()) continue;
-                extraNames.add(line.toLowerCase());
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        System.out.println("done");
-	*/
+//	    // naive additions from GPapadakis' dataset
+//        // get extra names
+//        //extraNames = new ArrayList<String>();
+//        extraNames = new HashSet<String>();
+//
+//        String extrapath="/home/nik/work/iit/BDE/bde-event-detection-sc7/skel_property_files/test/gadm28.csv";
+//        //read file into stream, try-with-resources
+//        System.out.print("Reading extra names file...");
+//        int count = 1;
+//        try (BufferedReader br = new BufferedReader(new FileReader(extrapath))) {
+//
+//            String line;
+//            while ((line = br.readLine()) != null) {
+//                //System.out.println("line : [" + line + "]");
+//                String [] tokens = line.split("\\;");
+//                // keep all non-empties, but the last, which is the polygon
+//                for(int i=0;i<tokens.length-1; ++ i)
+//                {
+//                    if(tokens[i].isEmpty()) break; // no more data in row
+//                    String lname = tokens[i].trim().toLowerCase();
+//                    if(!extraNames.contains(lname))
+//                    {
+//                        System.out.println("\t" + count++ + " [" + lname+"]");
+//                        extraNames.add(lname);
+//                    }
+//                }
+//            }
+//
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        System.out.println("done, read " + extraNames.size() + " additional location names.");
+//        //Collections.sort(extraNames);
 
 
     }
@@ -199,30 +214,28 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
                 }
             }
 
-/* naive additions from GPapadakis' dataset
-            Set<String> added = new HashSet<>();
-            for(int idx=0;idx <ss.length; ++idx)
-            {
-                String token = ss[idx].toLowerCase();
-                // TYPE_LOCATION
+//            // naive additions from GPapadakis' dataset
+//            // iterate through each token
+//            Set<String> added = new HashSet<>();
+//            for(int idx=0;idx <ss.length; ++idx)
+//            {
+//                String token = ss[idx].toLowerCase();
+//                if (token.isEmpty()) continue;
+//                // TYPE_LOCATION
+//                if(extraNames.contains(token))
+//                {
+//                    if (res.keySet().contains(token)) continue;
+//                    //System.out.println("Adding extra name [" + extraname + "] ");
+//                    res.put(token, TYPE_LOCATION);
+//                    added.add(token);
+//                }
+//                //res.put("Sardegna",TYPE_LOCATION); // test multipolygon
+//            }
+//            //if(added.size() > 0)
+//            //System.out.println("done. (added " + added.size() + ") extra names in total.");
+//            //for(String addition : added)
+//            //    System.out.print("[" + addition + "] " );
 
-//                System.out.println("Starting extra-parsing, token " + token + "...");
-
-                if(extraNames.contains(token))
-                {
-                    if (res.keySet().contains(token)) continue;
-                    //System.out.println("Adding extra name [" + extraname + "] ");
-                    res.put(token, TYPE_LOCATION);
-                    added.add(token);
-                }
-
-                //res.put("Sardegna",TYPE_LOCATION); // test multipolygon
-            }
-            //if(added.size() > 0)
-            //System.out.println("done. (added " + added.size() + ") extra names in total.");
-            //for(String addition : added)
-            //    System.out.print("[" + addition + "] " );
-*/
         }
         return res;
     }
