@@ -7,26 +7,27 @@ package gr.demokritos.iit.clustering.config;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
+import org.apache.spark.api.java.JavaSparkContext;
 
 /**
  *
  * @author George K. <gkiom@iit.demokritos.gr>
  */
-public class BDESpark {
+public class BDESparkContextContainer {
 
-    private final SparkContext ctx;
+    private final JavaSparkContext ctx;
 
-    public BDESpark(ISparkConf config) {
+    public BDESparkContextContainer(ISparkConf config) {
         SparkConf conf = new SparkConf(true)
                 .setMaster(config.getMaster())
                 .setAppName(config.getAppName())
                 .set(ISparkConf.SPARK_EXECUTOR_MEMORY, config.getClusterExecutorMemory())
                 .set(ISparkConf.SPARK_CASSANDRA_CONNECTION_HOST, config.getCassandraHosts()[0]) // TODO FIXME
                 .set(ISparkConf.SPARK_CASSANDRA_CONNECTION_PORT, String.valueOf(config.getCassandraPort()));
-        this.ctx = new SparkContext(conf);
+        this.ctx = new JavaSparkContext(conf);
     }
 
-    public SparkContext getContext() {
+    public JavaSparkContext getContext() {
         return ctx;
     }
 }

@@ -11,7 +11,7 @@ import gr.demokritos.iit.clustering.structs.SimilarityMode;
 /**
  * @author George K. <gkiom@iit.demokritos.gr>
  */
-public class BDESparkConf extends BaseConfiguration implements ISparkConf {
+public class BDESparkConf extends clusteringConf implements ISparkConf {
 
     public BDESparkConf(String configurationFileName) {
         super(configurationFileName);
@@ -31,6 +31,7 @@ public class BDESparkConf extends BaseConfiguration implements ISparkConf {
         properties.setProperty("cassandra_keyspace", "bde");
         properties.setProperty("cassandra_cluster_name", "Test Cluster");
     }
+
 
     @Override
     public String getMaster() {

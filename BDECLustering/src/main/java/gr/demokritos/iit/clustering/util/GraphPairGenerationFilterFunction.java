@@ -15,29 +15,31 @@
 package gr.demokritos.iit.clustering.util;
 
 import gr.demokritos.iit.clustering.model.DPair;
-import java.util.HashSet;
-import java.util.Set;
 import org.apache.spark.api.java.function.Function;
+import org.apache.spark.graphx.Graph;
 import scala.Tuple2;
 import scala.Tuple4;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  *
  * @author George K. <gkiom@iit.demokritos.gr>
  */
-public class DocumentPairGenerationFilterFunction implements
-        Function<Tuple2<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>>, Boolean> {
+public class GraphPairGenerationFilterFunction implements Function<Tuple2<Graph<String, Object>, Graph<String, Object>>, Boolean> {
 
     // keep a hash reference in RAM of each pair, and return item if the hash of each other is not equal or the pair does not exist
     private final Set<Integer> hash_cache;
 
-    public DocumentPairGenerationFilterFunction() {
+    public GraphPairGenerationFilterFunction() {
         this.hash_cache = new HashSet();
     }
     // expects the full combination list of n articles (n*n). Filters the same instances of (i,j) - i.e where i=j and the 
     // around ones i.e. i, j = j, i
     @Override
-    public Boolean call(Tuple2<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>> v1) throws Exception {
-        return !v1._1._1().equals(v1._2._1()) && hash_cache.add(new DPair(v1._1._1(), v1._2._1()).hashCode());
+    public Boolean call(Tuple2<Graph<String, Object>,Graph<String, Object>> v1) throws Exception {
+
+        return !v1._1().equals(v1._2()) && hash_cache.add(new DPair(v1._1(), v1._2()).hashCode());
     }
 }

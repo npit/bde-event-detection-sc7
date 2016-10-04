@@ -13,6 +13,10 @@ public class clusteringConf extends BaseConfiguration implements IClusteringConf
     {
         super(path);
     }
+    public clusteringConf()
+    {
+        super();
+    }
     @Override
     public boolean sendToStrabon()
     {

@@ -14,66 +14,51 @@
  */
 package gr.demokritos.iit.clustering.exec;
 
-import gr.demokritos.iit.base.conf.BaseConfiguration;
-import gr.demokritos.iit.base.conf.IBaseConf;
-import gr.demokritos.iit.base.repository.BaseCassandraRepository;
-import gr.demokritos.iit.base.repository.IBaseRepository;
 import gr.demokritos.iit.clustering.clustering.BaseSparkClusterer;
-import gr.demokritos.iit.clustering.config.BDESpark;
+import gr.demokritos.iit.clustering.config.BDESparkContextContainer;
 import gr.demokritos.iit.clustering.config.BDESparkConf;
 import gr.demokritos.iit.clustering.config.ISparkConf;
-import gr.demokritos.iit.clustering.factory.DemoClusteringFactory;
 import gr.demokritos.iit.clustering.model.BDEArticle;
-import gr.demokritos.iit.clustering.newsum.ExtractMatchingPairsFunc;
-import gr.demokritos.iit.clustering.newsum.IClusterer;
-import gr.demokritos.iit.clustering.newsum.NSClusterer;
 import gr.demokritos.iit.clustering.repository.CassandraSparkRepository;
-import gr.demokritos.iit.clustering.repository.DemoCassandraRepository;
-import gr.demokritos.iit.clustering.structs.SimilarityMode;
-import gr.demokritos.iit.clustering.util.DocumentPairGenerationFilterFunction;
 
 import java.util.*;
-import java.util.logging.Level;
 
+import gr.demokritos.iit.clustering.util.ArticleGraphCalculator;
 import gr.demokritos.iit.clustering.util.StructUtils;
 import org.apache.spark.SparkContext;
-import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.graphx.Graph;
 import org.scify.asset.server.model.datacollections.CleanResultCollection;
 import org.scify.asset.server.model.structures.social.TwitterResult;
-import org.scify.asset.social.classification.IClassifier;
-import org.scify.asset.social.clustering.SocialMediaClusterer;
-import org.scify.asset.social.data.preprocessing.DefaultSocialMediaCleaner;
-import org.scify.asset.social.data.preprocessing.ISocialMediaCleaner;
-import org.scify.asset.social.data.preprocessing.IStemmer;
-import org.scify.asset.social.data.preprocessing.TwitterStemmer;
-import org.scify.newsum.server.clustering.ArticleMCLClusterer;
-import org.scify.newsum.server.clustering.BaseArticleClusterer;
-import org.scify.newsum.server.clustering.IArticleClusterer;
 import org.scify.newsum.server.model.structures.Article;
 import org.scify.newsum.server.model.structures.Sentence;
 import org.scify.newsum.server.model.structures.Summary;
 import org.scify.newsum.server.model.structures.Topic;
-import org.scify.newsum.server.nlp.sentsplit.DefaultSentenceSplitter;
-import org.scify.newsum.server.nlp.sentsplit.ISentenceSplitter;
-import org.scify.newsum.server.summarization.ISummarizer;
-import org.scify.newsum.server.summarization.Summarizer;
+import scala.Serializable;
 import scala.Tuple2;
 import scala.Tuple4;
 
 /**
  * @author George K. <gkiom@iit.demokritos.gr>
  */
+
+class test implements Serializable
+{
+    public int a;
+    public int b;
+    public test(int aa,int bb){ a=aa;b=bb;}
+}
 public class BDEEventDetectionSpark {
 
     //    private final SparkContext sc;
-    private final BDESpark sp;
+    private final BDESparkContextContainer sp;
 
-    public BDEEventDetectionSpark(BDESpark bdes) {
+    public BDEEventDetectionSpark(BDESparkContextContainer bdes) {
         this.sp = bdes;
     }
 
-    public SparkContext getContext() {
+    public JavaSparkContext getContext() {
         return sp.getContext();
     }
 
@@ -96,27 +81,73 @@ public class BDEEventDetectionSpark {
         // init configuration
         ISparkConf conf = new BDESparkConf(args[0]);
         // init sparkConf (holds the spark context object)
-        BDESpark bdes = new BDESpark(conf);
+        BDESparkContextContainer bdes = new BDESparkContextContainer(conf);
         // instantiate us
         BDEEventDetectionSpark bdedet = new BDEEventDetectionSpark(bdes);
         // keep context to pass around
-        SparkContext sc = bdedet.getContext();
+        JavaSparkContext sc = bdedet.getContext();
         // get the spark repository class
-        CassandraSparkRepository repo = new CassandraSparkRepository(sc, conf);
+        CassandraSparkRepository repo = new CassandraSparkRepository(JavaSparkContext.toSparkContext(sc), conf);
         // get a timestamp : TODO: FIXME
-        long timestamp = repo.getLatestTimestamp("event_detection_log"); // TODO: add table(?) or use parameter days_back.
+        long timestamp = repo.getLatestTimestamp("event_detection_log");
+
         System.out.println("timestamp: " + new Date(timestamp).toString());
         System.out.println("LOADING ARTICLES");
         // load batch. The quadruple represents <entry_url, title, clean_text, timestamp>
-        // entry URL is supposed to be the unique identifier of an article (though for reuters many articles with same body
+        // entry URL is supposed to be the unique identifier of an article
+        // (though for reuters many articles with same body
         // are republished under different URLs)
 
         // load articles as RDD 4-tuples
-        JavaRDD<Tuple4<String, String, String, Long>> RDDbatch = repo.loadArticlesPublishedLaterThan(timestamp);
-        StructUtils.printArticles(RDDbatch);
+        JavaRDD<Tuple4<String, String, String, Long>> articles = repo.loadArticlesPublishedLaterThan(timestamp);
+        BaseSparkClusterer clusterer = new BaseSparkClusterer(JavaSparkContext.toSparkContext(sc),conf.getSimilarityMode(),conf.getCutOffThreshold(), conf.getNumPartitions());
+
+        // // precompute graphs approach
+        JavaRDD<Graph<String, Object>> graphs = articles.map(new ArticleGraphCalculator(JavaSparkContext.toSparkContext(sc),conf.getNumPartitions()));
+        // force computation
+        System.out.println("Graphs are : " + graphs.count());
+
+        // there is a difficulty computing combinations (filter the cartesian) of graphs like above
+        // doing it manually
+        List<Graph<String,Object>> graphsList = graphs.collect();
+        ArrayList<Tuple2<Graph<String,Object>,Graph<String,Object>>> graphsTuples = new ArrayList<>();
+
+        for(int i=0;i<graphsList.size();++i)
+        {
+            for(int j=i+1;j<graphsList.size();++j) {
+                graphsTuples.add(new Tuple2(graphsList.get(i), graphsList.get(j)));
+
+                System.out.println(i + " - " + j);
+            }
+        }
+        // put the graphs to the spark workers
+
+        StructUtils.printArticles(articles);
         // generate all article pairs
-        BaseSparkClusterer clusterer = new BaseSparkClusterer(sc,conf.getSimilarityMode(),conf.getCutOffThreshold(), conf.getNumPartitions());
-        clusterer.calculateClusters(RDDbatch);
+
+        JavaRDD<Tuple2<Graph<String, Object>,Graph<String, Object>>>  graphsTuplesRDD =  sc.parallelize(graphsTuples);
+
+        List<Tuple2<Graph<String, Object>,Graph<String, Object>>> c = graphsTuplesRDD.collect();
+        if(c.get(0)._1().edges() == null) System.out.println("it's null");
+       // clusterer.calculateClusters_graphs(articles,graphsTuplesRDD);
+
+     // the below works, though.
+        ArrayList<test> testlist = new ArrayList<>();
+        testlist.add(new test(1,2));
+        testlist.add(new test(3,4));
+
+        ArrayList<Tuple2<test,test>> alist = new ArrayList<>();
+        alist.add(new Tuple2<test,test>(testlist.get(0),testlist.get(1)));
+
+
+        JavaRDD<Tuple2<test,test>> parall = sc.parallelize(alist);
+        List<Tuple2<test,test>> cc = parall.collect();
+        if(cc.get(0)._1() == null) System.out.println("it's null!!");
+        if(cc.get(0)._1()== null) System.out.println("it's null!!");
+        if(cc.get(0)._1() == null) System.out.println("it's null!!");
+        clusterer.calculateClusters_graphs(articles,graphsTuplesRDD);
+
+        clusterer.calculateClusters(articles);
 
         Map<String, Topic> res = clusterer.getArticlesPerCluster();
         System.out.println("Printing clustering results.");
@@ -129,7 +160,7 @@ public class BDEEventDetectionSpark {
             }
         }
 
-        int a=2;
+
         return;
 
     }

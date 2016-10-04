@@ -66,7 +66,7 @@ public class CrawlSchedulerTask implements DescribableRunnable {
         String url;
         while (null != (url = crawlSchedule.nextUrl())) {
             Item item = new Item(url, currentCrawlId);
-            System.out.println("doCrawl() : enqueueing ["+item.toString()+"]");
+            //System.out.println("doCrawl() : enqueueing ["+item.toString()+"]");
             enqueue(item);
         }
         //Add the end sentinel

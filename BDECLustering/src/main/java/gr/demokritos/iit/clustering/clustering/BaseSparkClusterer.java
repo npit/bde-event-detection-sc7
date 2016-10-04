@@ -1,12 +1,15 @@
 package gr.demokritos.iit.clustering.clustering;
+import gr.demokritos.iit.clustering.newsum.ExtractMatchingGraphPairsFunc;
 import gr.demokritos.iit.clustering.newsum.ExtractMatchingPairsFunc;
 import gr.demokritos.iit.clustering.newsum.IClusterer;
 import gr.demokritos.iit.clustering.structs.SimilarityMode;
 import gr.demokritos.iit.clustering.util.DocumentPairGenerationFilterFunction;
+import gr.demokritos.iit.clustering.util.GraphPairGenerationFilterFunction;
 import gr.demokritos.iit.clustering.util.StructUtils;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.graphx.Graph;
 import org.scify.newsum.server.model.structures.Article;
 import org.scify.newsum.server.model.structures.Topic;
 import org.scify.newsum.server.model.structures.URLImage;
@@ -94,7 +97,49 @@ public class BaseSparkClusterer implements IClusterer {
         ArticlesPerCluster =  bs.getArticlesPerCluster();
 
     }
+    public void calculateClusters_graphs(JavaRDD<Tuple4<String, String, String, Long>> articles, JavaRDD<Tuple2<Graph<String, Object>,Graph<String, Object>>> graphPairs) {
 
+        // create pairs
+        // graphs pairs are already generated
+        JavaPairRDD<Tuple4<String, String, String, Long>,Tuple4<String, String, String, Long>> articlePairs
+                = articles.cartesian(articles).filter(new DocumentPairGenerationFilterFunction());
+
+        System.out.println("Graphs cart:" + graphPairs.count());
+        System.out.println("Articles cart:" + articlePairs.count());
+        // debug
+        //StructUtils.printArticlePairs(RDDPairs, 5);
+        // get matching mapping
+        System.out.println("Mapping to boolean similarity...");
+        long startTime = System.currentTimeMillis();
+
+        // TODO: use flatMap?? we want for the full pairs rdd, each item mapped to a boolean value.
+        JavaRDD<Boolean> matchesrdd = graphPairs.map(new ExtractMatchingGraphPairsFunc(sc, mode, simCutOff, numPartitions));
+
+        // spark parallelization ends here.
+        // collect matches values
+
+        org.apache.log4j.Logger L = org.apache.log4j.Logger.getRootLogger();
+        L.setLevel(org.apache.log4j.Level.ERROR);
+
+        List<Boolean> matches = matchesrdd.collect();
+        int c=0;
+        for(Boolean b : matches)
+        {
+            System.out.println(c++ + " " + b.toString());
+
+        }
+        long endTime = System.currentTimeMillis();
+        System.out.println("Ttook " + Long.toString((endTime - startTime)/1000l) + " sec");
+
+        baseclusterer bs = new baseclusterer();
+        System.out.println("Calculating clusters.");
+        startTime = System.currentTimeMillis();
+        bs.calculateClusters(matches,articlePairs);
+        endTime = System.currentTimeMillis();
+        System.out.println("Took " + Long.toString((endTime - startTime)/1000l) + " sec");
+        ArticlesPerCluster =  bs.getArticlesPerCluster();
+
+    }
     private class baseclusterer {
         protected HashMap<Article, String> hsClusterPerArticle;
         protected HashMap<String, Topic> hsArticlesPerCluster;

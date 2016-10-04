@@ -12,7 +12,7 @@ import gr.demokritos.iit.clustering.structs.SimilarityMode;
  *
  * @author George K. <gkiom@iit.demokritos.gr>
  */
-public interface ISparkConf extends IBaseConf {
+public interface ISparkConf extends IClusteringConf {
 
     String SPARK_EXECUTOR_MEMORY = "spark.executor.memory";
     String SPARK_CASSANDRA_CONNECTION_HOST = "spark.cassandra.connection.host";

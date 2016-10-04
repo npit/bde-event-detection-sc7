@@ -14,28 +14,15 @@
  */
 package gr.demokritos.iit.clustering.exec;
 
-import gr.demokritos.iit.base.conf.BaseConfiguration;
-import gr.demokritos.iit.base.conf.IBaseConf;
-import gr.demokritos.iit.base.repository.BaseCassandraRepository;
-import gr.demokritos.iit.base.repository.IBaseRepository;
 import gr.demokritos.iit.clustering.config.*;
 import gr.demokritos.iit.clustering.factory.DemoClusteringFactory;
 import gr.demokritos.iit.clustering.model.BDEArticle;
-import gr.demokritos.iit.clustering.newsum.ExtractMatchingPairsFunc;
-import gr.demokritos.iit.clustering.newsum.IClusterer;
-import gr.demokritos.iit.clustering.newsum.NSClusterer;
-import gr.demokritos.iit.clustering.repository.CassandraSparkRepository;
 import gr.demokritos.iit.clustering.repository.DemoCassandraRepository;
-import gr.demokritos.iit.clustering.structs.SimilarityMode;
-import gr.demokritos.iit.clustering.util.DocumentPairGenerationFilterFunction;
 
 import java.util.*;
-import java.util.logging.Level;
 
-import gr.demokritos.iit.clustering.util.StructUtils;
 import org.apache.spark.SparkContext;
-import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
 import org.scify.asset.server.model.datacollections.CleanResultCollection;
 import org.scify.asset.server.model.structures.social.TwitterResult;
 import org.scify.asset.social.classification.IClassifier;
@@ -44,7 +31,6 @@ import org.scify.asset.social.data.preprocessing.DefaultSocialMediaCleaner;
 import org.scify.asset.social.data.preprocessing.ISocialMediaCleaner;
 import org.scify.asset.social.data.preprocessing.IStemmer;
 import org.scify.asset.social.data.preprocessing.TwitterStemmer;
-import org.scify.newsum.server.clustering.ArticleMCLClusterer;
 import org.scify.newsum.server.clustering.BaseArticleClusterer;
 import org.scify.newsum.server.clustering.IArticleClusterer;
 import org.scify.newsum.server.model.structures.Article;
@@ -55,8 +41,6 @@ import org.scify.newsum.server.nlp.sentsplit.DefaultSentenceSplitter;
 import org.scify.newsum.server.nlp.sentsplit.ISentenceSplitter;
 import org.scify.newsum.server.summarization.ISummarizer;
 import org.scify.newsum.server.summarization.Summarizer;
-import scala.Tuple2;
-import scala.Tuple4;
 
 /**
  * @author George K. <gkiom@iit.demokritos.gr>
@@ -64,13 +48,13 @@ import scala.Tuple4;
 public class BDEEventDetection {
 
     //    private final SparkContext sc;
-    private final BDESpark sp;
+    private final BDESparkContextContainer sp;
 
-    public BDEEventDetection(BDESpark bdes) {
+    public BDEEventDetection(BDESparkContextContainer bdes) {
         this.sp = bdes;
     }
 
-    public SparkContext getContext() {
+    public JavaSparkContext getContext() {
         return sp.getContext();
     }
 
@@ -217,7 +201,7 @@ public class BDEEventDetection {
         // init configuration
         ISparkConf conf = new BDESparkConf(args[0]);
         // init sparkConf (holds the spark context object)
-        BDESpark bdes = new BDESpark(conf);
+        BDESparkContextContainer bdes = new BDESparkContextContainer(conf);
         // instantiate us
         BDEEventDetection bdedet = new BDEEventDetection(bdes);
         // keep context to pass around

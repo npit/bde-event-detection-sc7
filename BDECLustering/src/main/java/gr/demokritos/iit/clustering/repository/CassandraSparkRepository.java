@@ -64,7 +64,7 @@ public class CassandraSparkRepository {
      */
     public JavaRDD<Tuple4<String, String, String, Long>> loadArticlesPublishedLaterThan(long timestamp) {
         // TODO improve query: try to filter by timestamp on cassandra, not afterwards
-        System.out.println("DEBUG - LIMIT up to 20 articles"); // fixme
+        //System.out.println("DEBUG - LIMIT up to 20 articles"); // fixme
         JavaRDD<CassandraRow> filter = scjf
                 .cassandraTable(keyspace, Cassandra.RSS.Tables.NEWS_ARTICLES_PER_PUBLISHED_DATE.getTableName())
         .select(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName(),
@@ -72,9 +72,9 @@ public class CassandraSparkRepository {
                 Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CLEAN_TEXT.getColumnName(),
                 Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PUBLISHED.getColumnName())
                 // DEBUG // TODO: COMMENT OUT! - gets the first 20
-                                //.limit(5l);
+                                .limit(5l);
                 // DEBUG // TODO: UNCOMMENT!
-                .filter(new FilterByAfterTimeStamp(timestamp));
+                //.filter(new FilterByAfterTimeStamp(timestamp));
         JavaRDD<Tuple4<String, String, String, Long>> extracted = filter.map(new CassandraArticleRowToTuple4RDD(
                 Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName(),
                 Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_TITLE.getColumnName(),

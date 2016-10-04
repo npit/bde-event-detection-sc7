@@ -14,7 +14,7 @@
  */
 package gr.demokritos.iit.clustering.exec;
 
-import gr.demokritos.iit.clustering.config.BDESpark;
+import gr.demokritos.iit.clustering.config.BDESparkContextContainer;
 import gr.demokritos.iit.clustering.config.BDESparkConf;
 import gr.demokritos.iit.clustering.config.ISparkConf;
 import gr.demokritos.iit.clustering.parallelngg.graph.GraphSimilarityCalculator;
@@ -22,8 +22,8 @@ import gr.demokritos.iit.clustering.parallelngg.graph.NGramGraphCreator;
 import gr.demokritos.iit.clustering.parallelngg.structs.StringEntity;
 import gr.demokritos.iit.clustering.parallelngg.traits.Similarity;
 import org.apache.spark.SparkContext;
+import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.graphx.Graph;
-import org.apache.spark.rdd.RDD;
 
 /**
  * test scala integration
@@ -34,11 +34,11 @@ public class TestParallelNGG {
     public static void main(String[] args) {
         //        ISparkConf conf = new BDESparkConf("spark.properties");
         ISparkConf conf = new BDESparkConf();
-        BDESpark bdes = new BDESpark(conf);
+        BDESparkContextContainer bdes = new BDESparkContextContainer(conf);
 
         BDEEventDetection bdedet = new BDEEventDetection(bdes);
 
-        SparkContext sc = bdedet.getContext();
+        SparkContext sc = JavaSparkContext.toSparkContext(bdedet.getContext());
 
         long start = System.currentTimeMillis();
 
