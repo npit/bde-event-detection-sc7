@@ -229,6 +229,57 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
         return res;
     }
 
+
+    public List<BDEArticle> loadArticlesAsDemo_crawledInfo(long timestamp, int maxNumber) {
+
+
+        ArrayList<BDEArticle> articles = new ArrayList<>();
+        ArrayList<Long> crawled_dates = new ArrayList<>();
+        // npit edit : load all articles
+        //Collection<Map<String, Object>> items = loadAllArticles(-1);
+        Collection<Map<String, Object>> items = loadArticles(timestamp);
+        // wrap to Article instances
+        for (Map<String, Object> eachItem : items) {
+            String source_url = (String) eachItem.get(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName());
+            String title = (String) eachItem.get(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_TITLE.getColumnName());
+            String clean_text = (String) eachItem.get(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CLEAN_TEXT.getColumnName());
+            String feed_url = (String) eachItem.get(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_FEED_URL.getColumnName());
+            long published = (long) eachItem.get(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PUBLISHED.getColumnName());
+            long crawled = (long) eachItem.get(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CRAWLED.getColumnName());
+            Date d = new Date();
+            d.setTime(published);
+            Set<String> place_literal = (Set<String>) eachItem.get(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PLACE_LITERAL.getColumnName());
+            Map<String, String> places_to_polygons = new HashMap();
+            for (String eachPlace : place_literal) {
+                Map<String, Object> article = loadArticlePerPlace(eachPlace, source_url);
+                places_to_polygons.put(eachPlace, (String) article.get(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_BOUNDING_BOX.getColumnName()));
+            }
+            articles.add(new BDEArticle(source_url, title, clean_text, "Europe", feed_url, null, d, places_to_polygons));
+            crawled_dates.add(crawled);
+
+        }
+
+        // get at most maxNumber articles, the most recent
+
+        ArrayList<Long> crawledDatesSorted = (ArrayList) crawled_dates.clone();
+        Collections.sort(crawledDatesSorted);
+
+        ArrayList<BDEArticle> resultArticles = new ArrayList<>();
+        // for each crawled timestamp
+        for(int i=0;i<crawledDatesSorted.size();++i)
+        {
+            // get index of the curr crawled date on the original list
+            int articleIndex  = crawled_dates.indexOf(crawledDatesSorted.get(i));
+            // get corresponding article, add it to the results
+            resultArticles.add(articles.get(articleIndex));
+            // limit max number
+            if (i > maxNumber) break;
+        }
+
+        return resultArticles;
+    }
+
+
     public Collection<TwitterResult> loadTweetsAsDemo(long timestamp) {
         Collection<TwitterResult> res = new ArrayList();
 

@@ -15,6 +15,7 @@ public interface ILocConf extends IBaseConf {
 
     String getPolygonExtractionSourceFile();
     String getPolygonExtractionImpl();
+    String getLocationNameDatasetFile();
 
     String getLocationExtractionImpl();
 

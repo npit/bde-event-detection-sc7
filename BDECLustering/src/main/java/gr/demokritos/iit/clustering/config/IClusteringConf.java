@@ -11,4 +11,5 @@ public interface IClusteringConf extends IBaseConf {
     String getStrabonURL();
     double getTwitterMappingSimilarityThreshold();
     double getTwitterMappingTitleSimilarityThreshold();
+    int getMaxNumberOfArticles();
 }

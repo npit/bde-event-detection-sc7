@@ -70,4 +70,7 @@ public class LocConf extends BaseConfiguration implements ILocConf {
     {
         return properties.getProperty("polygon_extraction_sourcefile");
     }
+
+    @Override
+    public String getLocationNameDatasetFile(){ return properties.getProperty("location_extraction_dataset");}
 }

@@ -91,10 +91,8 @@ public class BDEEventDetection {
         boolean onlySendToStrabon = configuration.justSendToStrabon();
 
 
-	
-        DemoClusteringFactory factory = null;
         DemoCassandraRepository repository;
-        factory = new DemoClusteringFactory(configuration);
+        DemoClusteringFactory factory = new DemoClusteringFactory(configuration);
         repository = factory.createDemoCassandraRepository();
 
         // just send to strabon, if that mode is specified
@@ -116,7 +114,7 @@ public class BDEEventDetection {
         long tstamp = now.getTimeInMillis();
         System.out.println("loading articles");
         long startTime = System.currentTimeMillis();
-        List<BDEArticle> articles = repository.loadArticlesAsDemo(tstamp);
+        List<BDEArticle> articles = repository.loadArticlesAsDemo_crawledInfo(tstamp, configuration.getMaxNumberOfArticles());
         long endTime = System.currentTimeMillis();
         System.out.println("Took " + Long.toString((endTime - startTime)/1000l) + " sec");
 
@@ -194,66 +192,8 @@ public class BDEEventDetection {
         System.out.println("Done");
         return;
 
-
-
-        /*
-
-        // init configuration
-        ISparkConf conf = new BDESparkConf(args[0]);
-        // init sparkConf (holds the spark context object)
-        BDESparkContextContainer bdes = new BDESparkContextContainer(conf);
-        // instantiate us
-        BDEEventDetection bdedet = new BDEEventDetection(bdes);
-        // keep context to pass around
-        SparkContext sc = bdedet.getContext();
-        // get the spark repository class
-        CassandraSparkRepository repo = new CassandraSparkRepository(sc, conf);
-        // get a timestamp : TODO: FIXME
-        long timestamp = repo.getLatestTimestamp("event_detection_log"); // TODO: add table(?) or use parameter days_back.
-        System.out.println(new Date(timestamp).toString());
-        System.out.println("LOADING ARTICLES");
-        // load batch. The quadruple represents <entry_url, title, clean_text, timestamp>
-        // entry URL is supposed to be the unique identifier of an article (though for reuters many articles with same body
-        // are republished under different URLs)
-        JavaRDD<Tuple4<String, String, String, Long>> RDDbatch = repo.loadArticlesPublishedLaterThan(timestamp);
-
-//        // instantiate a clusterer
-//        IClusterer clusterer = new NSClusterer(sc, conf.getSimilarityMode(), conf.getCutOffThreshold(), conf.getNumPartitions());
-//
-//        // TODO: we should return the clusters (e.g. a map RDD of ID, List<Tuple4<>>)
-//        clusterer.calculateClusters(RDDbatch);
-
-        //StructUtils.printArticles(RDDbatch);
-        // create pairs
-        System.out.println("EXTRACTING PAIRS");
-        // get pairs of articles
-        JavaPairRDD<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>> RDDPairs
-                = RDDbatch.cartesian(RDDbatch).filter(new DocumentPairGenerationFilterFunction());
-        // debug
-        StructUtils.printArticlePairs(RDDPairs, 5);
-        // get matching mapping
-
-       // TODO: use flatMap?? we want for the full pairs rdd, each item mapped to a boolean value.
-        // the next call returns true on the pairs that are similar enough, based on the similarity
-        // cutoff value
-        JavaRDD<Boolean> map = RDDPairs.map(new ExtractMatchingPairsFunc(sc, conf.getSimilarityMode(),
-                conf.getCutOffThreshold(), conf.getNumPartitions()));
-        // generate clusters
-        IClusterer clusterer = new NSClusterer(sc,conf.getSimilarityMode(),conf.getCutOffThreshold(), conf.getNumPartitions());
-        clusterer.calculateClusters(RDDbatch);
-        // TODO: change method signature: return smth (not void)
-
-        // get matching mappings
-
-
-        // generate clusters
-
-        // save clusters
-        int a=2;
-
-
-        */
     }
+
 
     private static Map<String, Map<String, String>> getPlaceMappings(List<BDEArticle> articles, Map<String, Topic> clusters) {
 
