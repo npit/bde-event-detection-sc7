@@ -54,8 +54,11 @@ public class BaseTwitterRestConsumer extends AbstractTwitterRestConsumer impleme
         long engine_id = repository.scheduleInitialized(CrawlEngine.MONITOR);
         // get accounts to monitor from the database
         Collection<SourceAccount> accounts = repository.getAccounts();
+        LOGGER.info(String.format("Fetched %d accounts from the repository.", (accounts.size())));
+
         // filter accounts according to policy provided
         policy.filter(accounts);
+        LOGGER.info(String.format("%d accounts left post-filtering.", (accounts.size())));
         int iCount = 1;
         int iTotal = accounts.size();
         int iResetCount = 1;
@@ -75,7 +78,7 @@ public class BaseTwitterRestConsumer extends AbstractTwitterRestConsumer impleme
                 LOGGER.severe(ex.getMessage());
             }
         }
-
+        LOGGER.info(String.format("Proceeding to monitor %d accounts .", (accounts.size())));
         // for each account
         for (SourceAccount sourceAccount : accounts) {
             try {

@@ -14,6 +14,7 @@
  */
 package gr.demokritos.iit.clustering.exec;
 
+import gr.demokritos.iit.base.util.Utils;
 import gr.demokritos.iit.clustering.config.*;
 import gr.demokritos.iit.clustering.factory.DemoClusteringFactory;
 import gr.demokritos.iit.clustering.model.BDEArticle;
@@ -108,10 +109,13 @@ public class BDEEventDetection {
             }
             return;
         }
-        Calendar now = Calendar.getInstance();
-        now.set(Calendar.MONTH, now.get(Calendar.MONTH) - 1);
+        // specify the range of news articles to extract from, for clustering
+        Calendar cal = Utils.getCalendarFromStringTimeWindow(configuration.getDocumentRetrievalTimeWindow());
+//        Calendar now = Calendar.getInstance();
+//        now.set(Calendar.MONTH, now.get(Calendar.MONTH) - 1);
+        System.out.println("calendar retrieval setting: " + cal.getTime());
 
-        long tstamp = now.getTimeInMillis();
+        long tstamp = cal.getTimeInMillis();
         System.out.println("loading articles");
         long startTime = System.currentTimeMillis();
         List<BDEArticle> articles = repository.loadArticlesAsDemo_crawledInfo(tstamp, configuration.getMaxNumberOfArticles());
@@ -164,7 +168,8 @@ public class BDEEventDetection {
 
         double min_assign_sim_threshold = configuration.getTwitterMappingSimilarityThreshold();
         double min_assign_titlesim_threshold = configuration.getTwitterMappingTitleSimilarityThreshold();
-
+        System.out.println("Text similarity thesh:" + min_assign_sim_threshold );
+        System.out.println("Text title similarity thesh:" + min_assign_titlesim_threshold );
         IClassifier smClassifier = factory.getSocialMediaClassifierForTwitter(min_assign_sim_threshold, min_assign_titlesim_threshold,plainTextSummaries, tweetClusters, tsStemmer);
         Map<Topic, List<String>> related = smClassifier.getRelated();
 

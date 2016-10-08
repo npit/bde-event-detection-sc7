@@ -112,6 +112,56 @@ public class Utils {
         return res;
     }
 
+    /**
+     *
+     * @param window : specifier for time window to extract articles/tweets from
+     *               <integer>_<days/months/hours/years>
+     * @return
+     */
+    public static Calendar getCalendarFromStringTimeWindow(String window)
+    {
+        // default : 1 month
+        Calendar cal = Calendar.getInstance();
+
+        if (window.isEmpty())
+        {
+            System.err.println("No time window specified, using default 1 month window.");
+            cal.set(Calendar.MONTH,cal.get(Calendar.MONTH )-1);
+            return cal;
+        }
+        System.out.println("Using document retrieval window : [" + window + "]");
+        String [] tokens = window.split("_");
+        int offset = Integer.parseInt(tokens[0]);
+        tokens[1] = tokens[1].toLowerCase();
+        if(tokens[1].equals("months") || tokens[1].equals("month"))
+        {
+            cal.set(Calendar.MONTH,cal.get(Calendar.MONTH ) - offset);
+        }
+        else if(tokens[1].equals("weeks") || tokens[1].equals("week"))
+        {
+            cal.set(Calendar.DAY_OF_MONTH,cal.get(Calendar.DAY_OF_MONTH ) - 7*offset);
+        }
+        else if(tokens[1].equals("days") || tokens[1].equals("day"))
+        {
+            cal.set(Calendar.DAY_OF_MONTH,cal.get(Calendar.DAY_OF_MONTH ) - offset);
+        }
+        else if(tokens[1].equals("years") || tokens[1].equals("year"))
+        {
+            cal.set(Calendar.YEAR,cal.get(Calendar.YEAR ) - offset);
+        }
+        else
+        {
+            System.err.println("Unspecified time window type [" + tokens[1] + "].");
+            System.err.println("Available are [days weeks months years]");
+            System.err.println("Using default 1 month window.");
+
+            cal.set(Calendar.MONTH,cal.get(Calendar.MONTH ) -1);
+
+        }
+
+        return cal;
+
+    }
     public static String cleanTweet(String tweet) {
         // apart from noise removal, do we need anything else?
         return removeNoise(tweet);

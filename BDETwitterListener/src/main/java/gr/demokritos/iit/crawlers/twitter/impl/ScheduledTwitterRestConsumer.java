@@ -87,8 +87,12 @@ public class ScheduledTwitterRestConsumer extends AbstractTwitterRestConsumer im
     public void run() {
         LOGGER.info(String.format("initializing scheduled monitor_forever [%d:%d] at %s", engine_id, counter.incrementAndGet(), new Date().toString()));
         Collection<SourceAccount> accounts = repository.getAccounts();
+        LOGGER.info(String.format("Fetched %d accounts from the repository.", (accounts.size())));
+
         // filter accounts to crawl
         policy.filter(accounts);
+        LOGGER.info(String.format("%d accounts left post-filtering.", (accounts.size())));
+
         int iCount = 1;
         int iResetCount = 1;
         int iTotal = accounts.size();
@@ -110,7 +114,7 @@ public class ScheduledTwitterRestConsumer extends AbstractTwitterRestConsumer im
             }
         }
         // for each account
-        System.out.println(">>> num accounts: " + accounts.size());
+        LOGGER.info(String.format("Proceeding to monitor %d accounts .", (accounts.size())));
         for (SourceAccount sourceAccount : accounts) {
             try {
                 // check rate limit status

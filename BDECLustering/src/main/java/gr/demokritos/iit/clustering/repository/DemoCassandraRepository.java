@@ -263,18 +263,20 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
 
         ArrayList<Long> crawledDatesSorted = (ArrayList) crawled_dates.clone();
         Collections.sort(crawledDatesSorted);
-
+        Collections.reverse(crawledDatesSorted);
         ArrayList<BDEArticle> resultArticles = new ArrayList<>();
         // for each crawled timestamp
         for(int i=0;i<crawledDatesSorted.size();++i)
         {
+            if (i >= maxNumber) break;
+
             // get index of the curr crawled date on the original list
             int articleIndex  = crawled_dates.indexOf(crawledDatesSorted.get(i));
             // get corresponding article, add it to the results
             resultArticles.add(articles.get(articleIndex));
             // limit max number
-            if (i > maxNumber) break;
         }
+        System.out.println("Limiting article set to the " + maxNumber +  " most recently crawled articles");
 
         return resultArticles;
     }

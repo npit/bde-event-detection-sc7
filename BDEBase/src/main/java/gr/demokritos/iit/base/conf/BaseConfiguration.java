@@ -148,4 +148,11 @@ public class BaseConfiguration implements IBaseConf {
     {
         return properties.getProperty("lang_detection_profiles", "./res/profiles");
     }
+    @Override
+    public String getDocumentRetrievalTimeWindow()
+    {
+        return properties.getProperty("retrieval_time_window","");
+    }
+
+
 }
