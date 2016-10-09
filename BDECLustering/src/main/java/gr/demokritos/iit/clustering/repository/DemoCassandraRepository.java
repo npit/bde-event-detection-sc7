@@ -13,6 +13,7 @@ import gr.demokritos.iit.location.repository.LocationCassandraRepository;
 import org.apache.commons.collections.map.HashedMap;
 import org.scify.asset.server.model.structures.social.TwitterResult;
 import org.scify.newsum.server.model.structures.Article;
+import org.scify.newsum.server.model.structures.Sentence;
 import org.scify.newsum.server.model.structures.Summary;
 import org.scify.newsum.server.model.structures.Topic;
 
@@ -68,7 +69,13 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
         String title = t.getTitle();
         System.out.println(String.format("saving event id: %s with title: %s", topicID, title));
         // set top sentence as description
-        String description = s.asSummaryData().getAllSentences().get(0).getSnippet();
+        List<Sentence> sentences = s.asSummaryData().getAllSentences();
+        if(sentences.isEmpty())
+        {
+            System.out.println("Sentences list for event is empty. Skipping.");
+            return;
+        }
+        String description = sentences.get(0).getSnippet();
         Calendar cDate = t.getDate();
         // get ISO 8601 date format
         String sUTCEventDate = Utils.toTimezoneFormattedStr(cDate, TIMEZONE_ID_UTC, DATE_FORMAT_ISO_8601);

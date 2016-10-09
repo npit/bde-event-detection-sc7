@@ -127,7 +127,11 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                         i++;
                     }
                     else
+                    {
+                        noLocationCount++;
                         System.out.println("\tNo location found for article " + permalink); //debugprint
+                    }
+
                 }
                 System.out.println("\tLocation literal found for " + (items.size() - noLocationCount) + " / " + items.size() + " articles.");
 

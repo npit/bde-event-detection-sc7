@@ -63,6 +63,7 @@ public class LocationExtraction {
             ILocationRepository repos = factory.createLocationCassandraRepository();
             // init location extractor
             ILocationExtractor locExtractor = factory.createDefaultLocationExtractor();
+            locExtractor.configure(conf);
             // load polygon extraction client
             IPolygonExtraction poly = factory.createPolygonExtractionClient();
             // according to mode, execute location extraction schedule.
