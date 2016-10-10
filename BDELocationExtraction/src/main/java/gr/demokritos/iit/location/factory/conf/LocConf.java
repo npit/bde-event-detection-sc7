@@ -73,4 +73,13 @@ public class LocConf extends BaseConfiguration implements ILocConf {
 
     @Override
     public String getLocationNameDatasetFile(){ return properties.getProperty("location_extraction_dataset");}
+    @Override
+    public boolean useAdditionalExternalNames(){
+        String value = properties.getProperty("use_additional_external_location_src","");
+        if(!value.isEmpty())
+        {
+            if(value.toLowerCase().equals("yes")) return true;
+        }
+        return false;
+    }
 }

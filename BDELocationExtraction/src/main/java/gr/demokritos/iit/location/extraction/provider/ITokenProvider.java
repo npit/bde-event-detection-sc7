@@ -14,6 +14,8 @@
  */
 package gr.demokritos.iit.location.extraction.provider;
 
+import gr.demokritos.iit.location.factory.conf.ILocConf;
+
 import java.util.Set;
 
 /**
@@ -40,4 +42,5 @@ public interface ITokenProvider {
      * @return
      */
     Set<String> getLocationTokens(String text);
+    void configure(ILocConf conf);
 }

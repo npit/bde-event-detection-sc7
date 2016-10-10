@@ -161,12 +161,14 @@ public class HttpFetcher implements Fetcher {
 
             //TODO(ade) Add support for GZIP encoding and decoding
             httpGet = new HttpGet(url);
+
             setHeaders(url, httpGet);
 
             //Make the request
             HttpResponse response = client.execute(httpGet);
             StatusLine statusLine = response.getStatusLine();
             if (NOT_MODIFIED == statusLine.getStatusCode() || NOT_FOUND == statusLine.getStatusCode()) {
+
                 return null;
             }
 
@@ -178,6 +180,7 @@ public class HttpFetcher implements Fetcher {
             Date crawledDate = new Date();
             return createContent(url, response, writer.toString(), crawledDate);
         } finally {
+
             if (httpEntity != null) {
                 EntityUtils.consumeQuietly(httpEntity);
             }
@@ -206,6 +209,9 @@ public class HttpFetcher implements Fetcher {
     }
 
     private void setHeaders(String url, HttpRequestBase httpMethod) {
+        System.out.println("NOTE >>>>>>>>>>>>  HTTPfetcher : setHeaders, bypassed setting of header filters.");
+
+        if(true)return;
         UrlMetaData urlMetadata = repository.getFeedMetadata(url);
         if (urlMetadata != null) {
             httpMethod.setHeader("If-None-Match", urlMetadata.getEtag());// Typically this is a hash of the content

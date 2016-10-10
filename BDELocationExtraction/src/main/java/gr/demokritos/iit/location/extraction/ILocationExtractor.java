@@ -14,6 +14,8 @@
  */
 package gr.demokritos.iit.location.extraction;
 
+import gr.demokritos.iit.location.factory.conf.ILocConf;
+
 import java.util.Set;
 
 /**
@@ -29,4 +31,5 @@ public interface ILocationExtractor {
      * @return
      */
     Set<String> extractLocation(String document);
+    void configure(ILocConf conf);
 }

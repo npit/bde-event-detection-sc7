@@ -16,6 +16,7 @@ package gr.demokritos.iit.location.extraction;
 
 import gr.demokritos.iit.location.extraction.provider.EnhancedOpenNLPTokenProvider;
 import gr.demokritos.iit.location.extraction.provider.ITokenProvider;
+import gr.demokritos.iit.location.factory.conf.ILocConf;
 import gr.demokritos.iit.location.sentsplit.OpenNLPSentenceSplitter;
 import org.apache.commons.lang3.text.WordUtils;
 
@@ -31,6 +32,10 @@ import java.util.Set;
  */
 public class DefaultLocationExtractor implements ILocationExtractor {
 
+    public void configure(ILocConf conf)
+    {
+        token_provider.configure(conf);
+    }
     /**
      * The interface for token extraction
      */

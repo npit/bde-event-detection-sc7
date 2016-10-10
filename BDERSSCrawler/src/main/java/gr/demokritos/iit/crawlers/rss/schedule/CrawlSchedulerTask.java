@@ -51,7 +51,6 @@ public class CrawlSchedulerTask implements DescribableRunnable {
     }
 
     private void doCrawl() throws RuntimeException{
-        System.out.println("Running doCrawl().");
         CrawlId currentCrawlId = null;
         try {
             currentCrawlId = generator.createNewCrawlId();

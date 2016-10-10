@@ -97,4 +97,6 @@ public interface IBaseConf {
 
     String getLangDetectionProfiles();
 
+    String getDocumentRetrievalTimeWindow();
+
 }

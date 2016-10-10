@@ -16,6 +16,7 @@ public interface ILocConf extends IBaseConf {
     String getPolygonExtractionSourceFile();
     String getPolygonExtractionImpl();
     String getLocationNameDatasetFile();
+    boolean useAdditionalExternalNames();
 
     String getLocationExtractionImpl();
 
@@ -32,4 +33,6 @@ public interface ILocConf extends IBaseConf {
     double getNEConfidenceCutOffThreshold();
 
     String getOperationMode();
+
+
 }
