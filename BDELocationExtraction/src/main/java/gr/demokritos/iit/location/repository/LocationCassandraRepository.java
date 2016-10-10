@@ -461,7 +461,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
 
                 connection.setUseCaches(false);
                 connection.setDoOutput(true);
-                System.out.println("Sending event.");
+                System.out.println("Sending event + [" + id + "].");
                 //Send request
                 DataOutputStream wr = new DataOutputStream (
                         connection.getOutputStream());
