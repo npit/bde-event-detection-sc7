@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+cfile="../BDETwitterListener/res/twitter.properties"
+qfile="../BDETwitterListener/res/twitter.queries"
+mode="$1"
+
+if [ "$mode" == "search" ]; then
+	java -cp $(cat classpathfile | tr '\n' ':') gr.demokritos.iit.crawlers.twitter.CrawlSchedule -o "$mode"  -p  "$cfile" -q "$qfile"
+else
+	java -cp $(cat classpathfile | tr '\n' ':') gr.demokritos.iit.crawlers.twitter.CrawlSchedule -o "$mode"  -p  "$cfile" 
+fi

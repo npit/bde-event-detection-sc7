@@ -60,6 +60,8 @@ public class LocationFactory implements ILocFactory {
         Session session = cluster.connect(conf.getCassandraKeyspace());
         System.out.println("connected to: " + session.getState().getConnectedHosts().toString());
         repository = new LocationCassandraRepository(session);
+
+        //repository.setDataRetrievalWindow(conf.getRetrievalTimeWindow());
         return repository;
     }
 

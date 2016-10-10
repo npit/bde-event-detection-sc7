@@ -88,30 +88,36 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
         // get extra names
         extraNames = new HashSet<String>();
 
-        String extrapath=conf.getLocationNameDatasetFile();
+        String extrapath=conf.getLocationExtractionSourceFile();
         //read file into stream, try-with-resources
-        System.out.print("Reading extra names file...");
-        int count = 1;
+        System.out.print("Reading extra names file [" + extrapath + "].");
         try (BufferedReader br = new BufferedReader(new FileReader(extrapath))) {
-
+            // read newline delimited source names file
             String line;
             while ((line = br.readLine()) != null) {
+                line = line.trim();
+                if(!extraNames.contains(line))
+                    {
+                        extraNames.add(line);
+                    }
+
                 //System.out.println("line : [" + line + "]");
-                String [] tokens = line.split("\\;");
+                //String [] tokens = line.split("\\n");
+
                 // keep all non-empties, but the last 2,
                 // the last is the polygon
                 // the second to last, is often corrupted
                 // above fails. keep first 2/3?
-                for(int i=0;i<2; ++ i)
-                {
-                    if(tokens[i].isEmpty()) break; // no more data in row
-                    String lname = tokens[i].trim();
-                    if(!extraNames.contains(lname))
-                    {
-                       // System.out.println("\t" + count++ + " [" + lname+"]");
-                        extraNames.add(lname);
-                    }
-                }
+//                for(int i=0;i<2; ++ i)
+//                {
+//                    if(tokens[i].isEmpty()) break; // no more data in row
+//                    String lname = tokens[i].trim();
+//                    if(!extraNames.contains(lname))
+//                    {
+//                       // System.out.println("\t" + count++ + " [" + lname+"]");
+//                        extraNames.add(lname);
+//                    }
+//                }
             }
 
         } catch (IOException e) {
@@ -119,16 +125,7 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
         }
         System.out.println("done, read " + extraNames.size() + " additional location names.");
         //Collections.sort(extraNames);
-        try{
-            FileWriter f = new FileWriter("/home/nik/work/iit/BDE/bde-event-detection-sc7/sensitive/outfile");
-            for(String pl : extraNames)
-            {
-                f.write(pl + "\n");
-            }
-            f.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
         useAdditionalSources = true;
     }
     /**
@@ -213,12 +210,12 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
     private static final String TYPE_LOCATION = "location";
 
     protected Map<String, String> getTokenMap(String text) {
+
         if (text == null || text.isEmpty()) {
             return Collections.EMPTY_MAP;
         }
         Map<String, String> res = new HashMap();
         String[] ss = text.split("\\s+");
-
         for (NameFinderME model : models) {
             Span[] found_spans = model.find(ss);
             int s = 0;
@@ -241,21 +238,27 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
             if( useAdditionalSources ) {
                 // additions from GPapadakis' dataset
                 // iterate through each token
-                Set<String> added = new HashSet<>();
-                for(int idx=0;idx <ss.length; ++idx)
-                {
-                    String token = ss[idx];//.toLowerCase();
-                    if (token.isEmpty()) continue;
-                    if(extraNames.contains(token))
-                    {
-                        if (res.keySet().contains(token)) continue;
-                        res.put(token, TYPE_LOCATION);
-                        added.add(token);
-                    }
-                    if(added.size() > 0 ) {
-                        System.out.print("Added from extra  : {");
-                        for (String k : added) { System.out.println(k + " , "); }
-                        System.out.println("}");
+//                Set<String> added = new HashSet<>();
+//                for(int idx=0;idx <ss.length; ++idx)
+//                {
+//                    String token = ss[idx];//.toLowerCase();
+//                    if (token.isEmpty()) continue;
+//                    if(extraNames.contains(token))
+//                    {
+//                        if (res.keySet().contains(token)) continue;
+//                        res.put(token, TYPE_LOCATION);
+//                        added.add(token);
+//                    }
+//                    if(added.size() > 0 ) {
+//                        System.out.print("Added from extra  : {");
+//                        for (String k : added) { System.out.println(k + " , "); }
+//                        System.out.println("}");
+//                    }
+//                }
+                // just check the text
+                for(String extraname : extraNames) {
+                    if (text.contains(extraname) || text.contains(extraname.toLowerCase()) || text.contains(extraname.toUpperCase())) {
+                        res.put(extraname.trim(), TYPE_LOCATION);
                     }
                 }
 

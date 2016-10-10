@@ -304,6 +304,7 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
             String lang = (String) eachItem.get(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_LANGUAGE.getColumnName());
             // add extra entries to use twitter_results's constructor with the username field
             String user_name = (String) eachItem.get(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_ACCOUNT_NAME.getColumnName());
+	    System.out.println("created-at : " + created_at);
             res.add(new TwitterResult(post_id, 0l, permalink, tweet, new Timestamp(created_at).toString(), lang,new ArrayList<String>(),user_name,""));
         }
         return res;

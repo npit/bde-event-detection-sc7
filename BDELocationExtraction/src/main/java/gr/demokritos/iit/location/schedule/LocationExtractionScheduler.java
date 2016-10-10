@@ -23,10 +23,7 @@ import gr.demokritos.iit.location.repository.ILocationRepository;
 import gr.demokritos.iit.location.structs.LocSched;
 import gr.demokritos.iit.location.util.GeometryFormatTransformer;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author George K.<gkiom@iit.demokritos.gr>
@@ -65,6 +62,9 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
     }
 
     private void executeSchedule(OperationMode mode) {
+
+
+
         LocSched sched;
         // register starting operation
         sched = repos.scheduleInitialized(mode);
@@ -104,11 +104,16 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
         long max_published = Long.MIN_VALUE;
         System.out.println("Initial max published: " + max_published);
         int i = 0;
+        int count = 0;
         int noLocationCount = 0;
         switch (mode) {
             case ARTICLES:
+                ArrayList<String> permalinks = new ArrayList<>();
+                ArrayList<Map<String,String>> article_geometries = new ArrayList<>();
                 // for each article
                 for (Map<String, Object> article : items) {
+
+                    ++count;
                     String permalink;
                     long published = (long) article.get(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PUBLISHED.getColumnName());
                     max_published = Math.max(max_published, published);
@@ -116,7 +121,11 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                     permalink = (String) article.get(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName());
                     String clean_text = (String) article.get(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CLEAN_TEXT.getColumnName());
                     // extract location entities
+                    //System.out.println("Extracting location for article " + permalink);
+
                     Set<String> locationsFound = locExtractor.extractLocation(clean_text);
+                    System.out.print("\tArticle " + count +  "/" +  items.size() + " : "  + permalink); //debugprint
+
                     if (!locationsFound.isEmpty()) {
                         Map<String, String> places_polygons = poly.extractPolygon(locationsFound);
                         // update entry
@@ -124,21 +133,29 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                         places_polygons = poly.postProcessGeometries(places_polygons);
 
                         repos.updateArticlesWithReferredPlaceMetadata(permalink, places_polygons);
+                        article_geometries.add(places_polygons);
+
                         i++;
                     }
                     else
                     {
+                        article_geometries.add(new HashMap<String,String>());
                         noLocationCount++;
-                        System.out.println("\tNo location found for article " + permalink); //debugprint
+                        System.out.println(" - no location found");
                     }
+                    permalinks.add(permalink);
 
                 }
                 System.out.println("\tLocation literal found for " + (items.size() - noLocationCount) + " / " + items.size() + " articles.");
+                repos.updateEventsWithAllLocationPolygonPairs(mode, null, null,article_geometries,permalinks);
 
                 break;
             case TWEETS:
+                ArrayList<Long> post_ids = new ArrayList<>();
+                ArrayList<Map<String,String>> tweet_geometries = new ArrayList<>();
                 // for each tweet
                 for (Map<String, Object> item : items) {
+                    ++count;
                     long published = (long) item.get(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_CREATED_AT.getColumnName());
                     max_published = Math.max(max_published, published);
 
@@ -147,19 +164,30 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                     // clean tweet
                     String clean_tweet = Utils.cleanTweet(tweet);
                     // extract location entities
+                    //System.out.println("Extracting location for tweet " + post_id);
                     Set<String> locationsFound = locExtractor.extractLocation(clean_tweet);
                     // extract coordinates for each entity
+                    System.out.print("\tTweet " + count +  "/" +  items.size() + " : "  + post_id); //debugprint
+
                     if (!locationsFound.isEmpty()) {
                         Map<String, String> places_polygons = poly.extractPolygon(locationsFound);
                         places_polygons = poly.postProcessGeometries(places_polygons);
                         // update entry (tweets_per_referred_place)
                         repos.updateTweetsWithReferredPlaceMetadata(post_id, places_polygons);
+                        tweet_geometries.add(places_polygons);
+
                         i++;
                     }
-                    else
+                    else {
                         noLocationCount++;
+                        tweet_geometries.add(new HashMap<String, String>());
+                        System.out.println(" - no location found");
+                    }
+                    post_ids.add(post_id);
                 }
                 System.out.println("\tLocation literal found for " + (items.size() - noLocationCount)  + " / " + items.size() + " tweets ");
+                repos.updateEventsWithAllLocationPolygonPairs(mode, tweet_geometries, post_ids,null, null);
+
                 break;
         }
         return new ExecRes(max_published, i);

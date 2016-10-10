@@ -1,0 +1,13 @@
+find /home/npittaras/Documents/project/BDE/BDEproject/BDEEventDetection/ -iname '*.jar' > temp
+conflictingJars="httpcore-4.1.2.jar httpclient-4.1.2.jar cassandra-driver-core-2.1.7.1.jar guava-14.0.1.jar jersey-server-1.9.jar"
+wc -l temp
+for confl in $conflictingJars; do
+	n1="$(wc -l < temp)"
+	cat temp | grep -v $confl > temp2
+	cat temp2 > temp
+	echo "Dropping $(( $n1 - $(wc -l < temp) )) occurences of $confl"
+done
+
+cat temp  > classpathfile
+rm temp temp2
+wc -l classpathfile

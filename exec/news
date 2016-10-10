@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+cfile="../BDERSSCrawler/res/newscrawler_configuration.properties"
+
+java -cp $(cat classpathfile | tr '\n' ':') gr.demokritos.iit.crawlers.rss.NewsCrawler $cfile

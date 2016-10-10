@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+cfile="../BDELocationExtraction/res/location_extraction.properties"
+java -cp $(cat classpathfile | tr '\n' ':') gr.demokritos.iit.location.schedule.LocationExtraction $cfile

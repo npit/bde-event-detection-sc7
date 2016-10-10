@@ -177,7 +177,6 @@ public class BDEEventDetection {
         Map<String, String> tweetURLtoUserMapping = getTweetClustersToUsersMappings(cleanTweets);
         System.out.println("saving events...");
 
-
         repository.saveEvents(articlesPerCluster, summaries, related, place_mappings, tweetURLtoPostIDMapping, tweetURLtoUserMapping, 2);
         if (SendToStrabon) {
 	    String strabonURL=configuration.getStrabonURL();

@@ -18,6 +18,7 @@ import gr.demokritos.iit.base.repository.IBaseRepository;
 import gr.demokritos.iit.location.mode.OperationMode;
 import gr.demokritos.iit.location.structs.LocSched;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
@@ -62,5 +63,6 @@ public interface ILocationRepository extends IBaseRepository {
 
     void updateEventsWithArticleLocationPolygonPairs(Map<String,String> places_polygons, String permalink);
     void updateEventsWithTweetLocationPolygonPairs(Map<String,String> places_polygons, long post_id);
+    void updateEventsWithAllLocationPolygonPairs(OperationMode mode, ArrayList<Map<String,String>> tweet_places_polygons, ArrayList<Long> post_ids, ArrayList<Map<String,String>> article_places_polygons, ArrayList<String> permalinks);
 
 }
