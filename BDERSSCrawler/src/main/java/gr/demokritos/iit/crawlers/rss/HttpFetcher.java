@@ -209,9 +209,9 @@ public class HttpFetcher implements Fetcher {
     }
 
     private void setHeaders(String url, HttpRequestBase httpMethod) {
-        System.out.println("NOTE >>>>>>>>>>>>  HTTPfetcher : setHeaders, bypassed setting of header filters.");
-
-        if(true)return;
+//        System.out.println("NOTE >>>>>>>>>>>>  HTTPfetcher : setHeaders, bypassed setting of header filters.");
+//
+//        if(true)return;
         UrlMetaData urlMetadata = repository.getFeedMetadata(url);
         if (urlMetadata != null) {
             httpMethod.setHeader("If-None-Match", urlMetadata.getEtag());// Typically this is a hash of the content
