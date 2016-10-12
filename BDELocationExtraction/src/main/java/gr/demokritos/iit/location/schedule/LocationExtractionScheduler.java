@@ -147,7 +147,7 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
 
                 }
                 System.out.println("\tLocation literal found for " + (items.size() - noLocationCount) + " / " + items.size() + " articles.");
-                repos.updateEventsWithAllLocationPolygonPairs(mode, null, null,article_geometries,permalinks);
+                //repos.updateEventsWithAllLocationPolygonPairs(mode, null, null,article_geometries,permalinks);
 
                 break;
             case TWEETS:
@@ -186,7 +186,7 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                     post_ids.add(post_id);
                 }
                 System.out.println("\tLocation literal found for " + (items.size() - noLocationCount)  + " / " + items.size() + " tweets ");
-                repos.updateEventsWithAllLocationPolygonPairs(mode, tweet_geometries, post_ids,null, null);
+                //repos.updateEventsWithAllLocationPolygonPairs(mode, tweet_geometries, post_ids,null, null);
 
                 break;
         }

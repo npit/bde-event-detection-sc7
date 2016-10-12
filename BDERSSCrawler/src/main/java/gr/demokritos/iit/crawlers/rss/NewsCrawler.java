@@ -30,8 +30,9 @@ public class NewsCrawler extends AbstractCrawler {
 
 
     public NewsCrawler(RSSCrawlFactory factory, IRSSConf configuration) throws Exception {
-        super(factory, configuration, false);
-        System.out.println("NOTE >>>>>>>>>>>>  disabling robots exclusion.");
+        super(factory, configuration, true);
+  //      super(factory, configuration, false);
+//        System.out.println("NOTE >>>>>>>>>>>>  disabling robots exclusion.");
 
     }
 
