@@ -17,9 +17,6 @@ package gr.demokritos.iit.location.repository;
 import com.datastax.driver.core.*;
 import com.datastax.driver.core.exceptions.InvalidQueryException;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.gte;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.set;
 
 import com.vividsolutions.jts.io.ParseException;
 import gr.demokritos.iit.base.repository.BaseCassandraRepository;
@@ -28,6 +25,7 @@ import gr.demokritos.iit.base.util.Utils;
 import gr.demokritos.iit.location.mode.OperationMode;
 import gr.demokritos.iit.location.structs.LocSched;
 import gr.demokritos.iit.location.util.GeometryFormatTransformer;
+import org.omg.CORBA.DynAnyPackage.Invalid;
 
 import java.io.IOException;
 // dependencies of json POST
@@ -40,6 +38,8 @@ import java.io.InputStreamReader;
 import java.net.URL;
 
 import java.util.*;
+
+import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
 
 /**
  * handles the persistence of items (i.e. articles/tweets) updated with referrals to places.
@@ -365,6 +365,248 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
     }
 
     /**
+     * Update events table with location data from news and tweets. Location data will be fetched from the respective tables,
+     * not computed.
+     */
+    @Override
+    public void onlyUpdateEventsWithLocationInformation()
+    {
+        // get all event ids, articles per event, tweets per event
+        System.out.println("Loading event data.");
+
+        Statement query = QueryBuilder
+                .select(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName(),
+                        Cassandra.Event.TBL_EVENTS.FLD_EVENT_SOURCE_URLS.getColumnName(),
+                        Cassandra.Event.TBL_EVENTS.FLD_TWEET_IDS.getColumnName())
+                .from(session.getLoggedKeyspace(),Cassandra.Event.Tables.EVENTS.getTableName());
+        ResultSet results = session.execute(query);
+        ArrayList<String> eventIDs = new ArrayList<>();
+        ArrayList<ArrayList<String>> permalinksPerEvent = new ArrayList<>();
+        ArrayList<ArrayList<Long>> tweetsPerEvent = new ArrayList<>();
+
+        for(Row row : results)
+        {
+            eventIDs.add(row.getString(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName()));
+
+            ArrayList<String> list = new ArrayList<>();
+
+            Map<String,String> articles_queryData = row.getMap(Cassandra.Event.TBL_EVENTS.FLD_EVENT_SOURCE_URLS.getColumnName(),String.class,String.class);
+            list.addAll(articles_queryData.keySet());
+            permalinksPerEvent.add(list);
+            Map<Long,String> tweets_queryData = row.getMap(Cassandra.Event.TBL_EVENTS.FLD_TWEET_IDS.getColumnName(),Long.class,String.class);
+            ArrayList<Long> listlong = new ArrayList<>();
+
+            listlong.addAll(tweets_queryData.keySet());
+            tweetsPerEvent.add(listlong);
+        }
+
+        System.out.println("Loading article data.");
+
+        /*
+        Get article information:
+          Get all primary keys (entry_url, reversed_host) and place_literal list
+         */
+        query = QueryBuilder
+                .select(Cassandra.RSS.TBL_ARTICLES.FLD_ENTRY_URL.getColumnName(),
+                        //Cassandra.RSS.TBL_ARTICLES.FLD_REVERSED_HOST.getColumnName(),
+                        Cassandra.RSS.TBL_ARTICLES.FLD_PLACE_LITERAL.getColumnName())
+                .from(session.getLoggedKeyspace(),Cassandra.RSS.Tables.NEWS_ARTICLES.getTableName());
+        results = session.execute(query);
+
+        ArrayList<String> urls = new ArrayList<>();
+        ArrayList<ArrayList<String>>  url_places = new ArrayList<>();
+
+
+        for (Row row : results)
+        {
+            String url = row.getString(Cassandra.RSS.TBL_ARTICLES.FLD_ENTRY_URL.getColumnName());
+            ArrayList<String> places = new ArrayList<>();
+            places.addAll(row.getSet(Cassandra.RSS.TBL_ARTICLES.FLD_PLACE_LITERAL.getColumnName(),String.class));
+
+            urls.add(url);
+            url_places.add((ArrayList)places);
+        }
+        System.out.println("Loaded " + urls.size() + " distinct urls.");
+
+        /*
+            Get tweets information. We have to get quite a bit of stuff due to the primary key
+            fields of twitter posts per referred place
+
+
+         */
+        System.out.println("Loading twitter data.");
+
+        query = QueryBuilder
+                .select(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_REFERRED_PLACE.FLD_PLACE_LITERAL.getColumnName(),
+                        Cassandra.Twitter.TBL_TWITTER_POSTS_PER_REFERRED_PLACE.FLD_POST_ID.getColumnName(),
+                        Cassandra.Twitter.TBL_TWITTER_POSTS_PER_REFERRED_PLACE.FLD_CREATED_AT.getColumnName())
+                .from(session.getLoggedKeyspace(),Cassandra.Twitter.Tables.TWITTER_POSTS_PER_REFERRED_PLACE.getTableName());
+        results = session.execute(query);
+
+        ArrayList<Long> post_ids = new ArrayList<>();
+        ArrayList<ArrayList<String>> tweet_places = new ArrayList<>();
+        ArrayList<ArrayList<Long>> created_at = new ArrayList<>();
+        // populate
+        int count = 0;
+        for (Row row : results)
+        {
+            ++count;
+            String place = row.getString( Cassandra.Twitter.TBL_TWITTER_POSTS_PER_REFERRED_PLACE.FLD_PLACE_LITERAL.getColumnName());
+            Long postid = row.getLong( Cassandra.Twitter.TBL_TWITTER_POSTS_PER_REFERRED_PLACE.FLD_POST_ID.getColumnName());
+            Long createdat = row.getLong( Cassandra.Twitter.TBL_TWITTER_POSTS_PER_REFERRED_PLACE.FLD_CREATED_AT.getColumnName());
+
+            if(post_ids.contains(postid))
+            {
+                // append to existing
+                int index = post_ids.indexOf(postid);
+                tweet_places.get(index).add(place);
+                created_at.get(index).add(createdat);
+            }
+            else
+            {
+                // appent both new
+                post_ids.add(postid);
+                tweet_places.add(new ArrayList<String>());
+                created_at.add(new ArrayList<Long>());
+                tweet_places.get(tweet_places.size()-1).add(place);
+                created_at.get(created_at.size()-1).add(createdat);
+            }
+        }
+        System.out.println("Loaded " + count + " total tweet-place pairs," + post_ids.size() + " distinct tweets.");
+        HashMap<String,String> placesCache = new HashMap<>();
+        // update the events. For each event
+        System.out.println("Populating events.");
+        for(int ev=0;ev<eventIDs.size();++ev)
+        {
+            String eventID = eventIDs.get(ev);
+
+            System.out.println(String.format("***Populating event %d/%d : [%s]",ev,eventIDs.size(),eventID));
+            if(permalinksPerEvent.get(ev).isEmpty()) System.out.println("No articles");
+            // for each article in the event
+            count =1;
+            for(String article : permalinksPerEvent.get(ev))
+            {
+                System.out.print(String.format("\tpermalink  %d/%d : [%s] {",count++,permalinksPerEvent.get(ev).size(),article));
+                // index of article
+                int artidx = urls.indexOf(article);
+                if(artidx < 0)
+                {
+                    System.out.print(String.format("(!) %s was not found (no geom/place)! }\n",article));
+                    continue;
+                }
+                if( url_places.get(artidx).isEmpty()) System.out.print("No places.");
+                for(String place : url_places.get(artidx))
+                {
+                    String geometry = "";
+                    if (placesCache.containsKey(place)) {
+                        geometry = placesCache.get(place);
+                        System.out.print(" c");
+                    }
+                    else
+                    {
+                        // query it
+                        query = QueryBuilder
+                                .select(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_BOUNDING_BOX.getColumnName())
+                                .from(session.getLoggedKeyspace(), Cassandra.RSS.Tables.NEWS_ARTICLES_PER_PLACE.getTableName())
+                                .where(eq(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_PLACE_LITERAL.getColumnName(), place))
+                                .and(eq(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_ENTRY_URL.getColumnName(), article));
+
+                        results = session.execute(query);
+                        for (Row row : results) {
+                            String bbox = row.getString(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_BOUNDING_BOX.getColumnName());
+                            placesCache.put(place, bbox);
+                            geometry = bbox;
+                        }
+                        System.out.print(" q");
+
+                    } // else query it
+
+                    // insert
+                    Statement upd = QueryBuilder.update(session.getLoggedKeyspace(), Cassandra.Event.Tables.EVENTS.getTableName())
+                            .with(put(Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName(), place, geometry))
+                            .where(eq(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName(), eventID));
+                    try
+                    {
+                        session.execute(upd);
+                    }
+                    catch(InvalidQueryException ex)
+                    {
+                        System.err.print("query-failed:("+place+")");
+                    }
+
+                    System.out.print("[" + place+"]");
+
+                } // for each article place
+                System.out.println(" }");
+            } // for each article
+
+            count =1;
+            if(tweetsPerEvent.get(ev).isEmpty()) System.out.println("\tNo tweets");
+            for(Long tweet : tweetsPerEvent.get(ev))
+            {
+                System.out.print(String.format("tweet  %d/%d : [%d] {",count++,tweetsPerEvent.get(ev).size(),tweet));
+                // index of article
+                int tweetidx = post_ids.indexOf(tweet);
+                if(tweetidx < 0)
+                {
+                    System.out.print(String.format("(!)  %d  not found (no geom/place)! }\n",tweet));
+                    continue;
+                }
+
+                for( int tweet_inner_idx=0; tweet_inner_idx < tweet_places.get(tweetidx).size(); ++ tweet_inner_idx) {
+                    String place = tweet_places.get(tweetidx).get(tweet_inner_idx);
+                    Long createdat = created_at.get(tweetidx).get(tweet_inner_idx);
+
+                    String geometry = "";
+                    if (placesCache.containsKey(place))
+                    {
+                        geometry = placesCache.get(place);
+                        System.out.print(" c");
+                    }
+                    else
+                    {
+                        // query it
+                        query = QueryBuilder
+                                .select(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_REFERRED_PLACE.FLD_LOCATION.getColumnName())
+                                .from(session.getLoggedKeyspace(), Cassandra.Twitter.Tables.TWITTER_POSTS_PER_REFERRED_PLACE.getTableName())
+                                .where(eq(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_REFERRED_PLACE.FLD_CREATED_AT.getColumnName(), createdat))
+                                .and(eq(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_REFERRED_PLACE.FLD_POST_ID.getColumnName(), tweet))
+                                .and(eq(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_REFERRED_PLACE.FLD_PLACE_LITERAL.getColumnName(), place));
+
+                        results = session.execute(query);
+                        for (Row row : results)
+                        {
+                            String bbox = row.getString(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_REFERRED_PLACE.FLD_LOCATION.getColumnName());
+                            placesCache.put(place, bbox);
+                            geometry = bbox;
+                        }
+                        System.out.print(" q");
+                    } // else query it
+
+                    // insert
+
+
+                    Statement upd = QueryBuilder.update(session.getLoggedKeyspace(), Cassandra.Event.Tables.EVENTS.getTableName())
+                            .with(put(Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName(), place, geometry))
+                            .where(eq(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName(), eventID));
+                    try
+                    {
+                        session.execute(upd);
+                    }
+                    catch(InvalidQueryException ex)
+                    {
+                        System.err.print("query-failed:("+place+")");
+                    }
+                    System.out.print("[" + place+"]");
+
+                } // for each place for that tweet
+                System.out.println(" }");
+            } // for each tweet
+
+        } // for each event
+    }
+
+    /**
      * Method to efficiently populate events table with newly extracted location data. Input collections are essentialy
      * the data that location extraction fetched and processed. If an element of an event is not found, consider
      * increasing the time-window in the loc.extr. properties or reset the loc. extr. log, so as to fetch the omitted document.
@@ -417,8 +659,9 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
                 for(int ev=0;ev < eventIDs.size(); ++ ev) {
 
                     String event_id = eventIDs.get(ev);
-                    System.out.println("Inserting location data into event [" + event_id + "]");
+                    System.out.println("Inserting article location data into event " + ev + "/" + eventIDs.size() + ": [" + event_id + "]");
                     // add all permalinks
+                    int permalinkCount = 1;
                     for (String perml : permalinksPerEvent.get(ev)) {
                         // find idx of perm
                         int idx = permalinks.indexOf(perml);
@@ -427,19 +670,27 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
                             continue;
                         }
                         // add all its geometries
-                        System.out.println("\t\t>>> Inserting from url " + perml);
+                        if(article_places_polygons.get(idx).keySet().size() > 0)
+                            System.out.print("\t\t>>> Inserting from url " + permalinkCount++ + "/" + permalinksPerEvent.get(ev).size() + " : "  + perml);
                         for (String locname : article_places_polygons.get(idx).keySet()) {
                             String geom = article_places_polygons.get(idx).get(locname);
 
-                            System.out.println("\t\t\tplace :" + locname + " geom: " + geom);
+                            System.out.println("  " + locname );
 
 
                             HashMap<String,String> tempmap = new HashMap<>();
                             tempmap.put(locname,geom);
-                            Statement ins = QueryBuilder.insertInto(session.getLoggedKeyspace(), Cassandra.Event.Tables.EVENTS.getTableName())
-                                    .value(Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName(), tempmap)
-                                    .value(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName(),event_id);
-                                session.execute(ins);
+                            Statement upd = QueryBuilder.update(session.getLoggedKeyspace(), Cassandra.Event.Tables.EVENTS.getTableName())
+                                    .with(set(Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName(), tempmap))
+                                    .where(eq(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName(),event_id));
+                            try {
+                                session.execute(upd);
+                            }
+                            catch(InvalidQueryException ex)
+                            {
+                                System.err.println("ERROR : update query failed for location: " +locname );
+
+                            }
 
 
                         }
@@ -471,7 +722,8 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
                 for(int ev=0;ev < eventIDs.size(); ++ ev)
                 {
                     String event_id = eventIDs.get(ev);
-
+                    System.out.println("Inserting tweet location data into event " + ev + "/" + eventIDs.size() + ": [" + event_id + "]");
+                    int tweetCount=1;
                     for (long post_id : tweetsPerEvent.get(ev)) {
                         // find idx of perm
                         int idx = post_ids.indexOf(post_id);
@@ -479,18 +731,27 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
                             System.err.println("ERROR : could not find tweet id " + post_id);
                             continue;
                         }
-                        System.out.println("\t\t>>> Inserting from tweet " + post_id);
+                        if(tweet_places_polygons.get(idx).keySet().size() > 0)
+                        System.out.print("\t\t>>> Inserting from tweet " + tweetCount++ + "/" + tweetsPerEvent.get(ev).size() + " : "  + post_id);
                         // add all its geometries
                         for (String locname : tweet_places_polygons.get(idx).keySet()) {
                             String geom = tweet_places_polygons.get(idx).get(locname);
-                            System.out.println("\t\t\tplace :" + locname );
+                            System.out.println("  " + locname );
 
                             HashMap<String,String> tempmap = new HashMap<>();
                             tempmap.put(locname,geom);
-                            Statement ins = QueryBuilder.insertInto(session.getLoggedKeyspace(), Cassandra.Event.Tables.EVENTS.getTableName())
-                                    .value(Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName(), tempmap)
-                                    .value(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName(),event_id);
-                            session.execute(ins);
+                            Statement upd = QueryBuilder.update(session.getLoggedKeyspace(), Cassandra.Event.Tables.EVENTS.getTableName())
+                                    .with(set(Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName(), tempmap))
+                                    .where(eq(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName(),event_id));
+                            try
+                            {
+                                session.execute(upd);
+                            }
+                            catch(InvalidQueryException ex)
+                            {
+                                System.err.println("ERROR : update query failed for location: " +locname );
+
+                            }
                         }
                     }
                 }

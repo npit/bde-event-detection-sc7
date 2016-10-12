@@ -61,19 +61,31 @@ public class LocationExtraction {
             factory = new LocationFactory(conf);
             // init connection pool to the repository
             ILocationRepository repos = factory.createLocationCassandraRepository();
-            // init location extractor
-            ILocationExtractor locExtractor = factory.createDefaultLocationExtractor();
-            locExtractor.configure(conf);
-            // load polygon extraction client
-            IPolygonExtraction poly = factory.createPolygonExtractionClient();
-            // according to mode, execute location extraction schedule.
-            ILocationExtractionScheduler scheduler = new LocationExtractionScheduler(
-                operationMode, repos, locExtractor, poly
-            );
-            scheduler.executeSchedule();
+
+
+            if(conf.onlyUpdateEvents())
+            {
+                repos.onlyUpdateEventsWithLocationInformation();
+            }
+            else
+            {
+                // init location extractor
+                ILocationExtractor locExtractor = factory.createDefaultLocationExtractor();
+                locExtractor.configure(conf);
+                // load polygon extraction client
+                IPolygonExtraction poly = factory.createPolygonExtractionClient();
+                // according to mode, execute location extraction schedule.
+                ILocationExtractionScheduler scheduler = new LocationExtractionScheduler(
+                        operationMode, repos, locExtractor, poly
+                );
+
+                scheduler.executeSchedule();
+            }
         } catch (NoSuchMethodException | ClassNotFoundException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             LOG.log(Level.SEVERE, ex.getMessage(), ex);
-        } finally {
+        }
+        finally
+        {
             if (factory != null) {
                 // release connection with cluster
                 factory.releaseResources();

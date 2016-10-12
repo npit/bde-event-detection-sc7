@@ -82,4 +82,14 @@ public class LocConf extends BaseConfiguration implements ILocConf {
         }
         return false;
     }
+    @Override
+    public boolean onlyUpdateEvents()
+    {
+        String value = properties.getProperty("only_update_events","");
+        if(!value.isEmpty())
+        {
+            if(value.toLowerCase().equals("yes")) return true;
+        }
+        return false;
+    }
 }

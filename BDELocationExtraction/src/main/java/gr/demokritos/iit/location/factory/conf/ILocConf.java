@@ -13,6 +13,7 @@ import gr.demokritos.iit.base.conf.IBaseConf;
  */
 public interface ILocConf extends IBaseConf {
 
+    boolean onlyUpdateEvents();
     String getPolygonExtractionSourceFile();
     String getPolygonExtractionImpl();
     String getLocationExtractionSourceFile();
