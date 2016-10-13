@@ -37,4 +37,8 @@ public interface IRSSConf extends IBaseConf {
     public int getHttpTimeoutInSeconds();
 
     public boolean runForever();
+
+    boolean getRespectRobots();
+    boolean applyHTTPFetchRestrictions();
+
 }

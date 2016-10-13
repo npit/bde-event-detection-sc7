@@ -17,6 +17,7 @@ package gr.demokritos.iit.location.schedule;
 import gr.demokritos.iit.base.repository.views.Cassandra;
 import gr.demokritos.iit.base.util.Utils;
 import gr.demokritos.iit.location.extraction.ILocationExtractor;
+import gr.demokritos.iit.location.factory.conf.ILocConf;
 import gr.demokritos.iit.location.mapping.IPolygonExtraction;
 import gr.demokritos.iit.location.mode.OperationMode;
 import gr.demokritos.iit.location.repository.ILocationRepository;
@@ -34,12 +35,14 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
     private final ILocationRepository repos;
     private final ILocationExtractor locExtractor;
     private final IPolygonExtraction poly;
+    private final ILocConf conf;
 
-    public LocationExtractionScheduler(OperationMode opMode, ILocationRepository repo, ILocationExtractor locExt, IPolygonExtraction pol) {
+    public LocationExtractionScheduler(OperationMode opMode, ILocationRepository repo, ILocationExtractor locExt, IPolygonExtraction pol, ILocConf conf) {
         this.opMode = opMode;
         this.repos = repo;
         this.locExtractor = locExt;
         this.poly = pol;
+        this.conf = conf;
     }
 
     @Override
@@ -67,7 +70,7 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
 
         LocSched sched;
         // register starting operation
-        sched = repos.scheduleInitialized(mode);
+        sched = repos.scheduleInitialized(mode,Utils.getCalendarFromStringTimeWindow(conf.getDocumentRetrievalTimeWindow()));
         System.out.println("last parsed: " + new Date(sched.getLastParsed()).toString());
         Collection<Map<String, Object>> items = null;
         // npit switched loadArticles/loadTweets to loadAllArticles/loadAllTweets

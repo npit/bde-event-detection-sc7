@@ -51,6 +51,7 @@ public interface ILocationRepository extends IBaseRepository {
      * execution
      */
     LocSched scheduleInitialized(OperationMode mode);
+    LocSched scheduleInitialized(OperationMode mode, java.util.Calendar window);
 
     /**
      * register schedule completed

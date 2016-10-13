@@ -44,10 +44,12 @@ public class HttpFetcher implements Fetcher {
     private final HttpClient client;
     private final IRepository repository;
     private final boolean shouldApplyRobotsExclusionRules;
+    private final boolean shouldApplyHeaderRestrictions;
     private static final int NOT_MODIFIED = 304;
     private static final int NOT_FOUND = 404;
     private String previousRobotsTxtUrl;
     private final RobotsTxtParser robotsTxtParser;
+
 
     /**
      * Create an HttpFetcher which doesn't obey the robots.txt exclusion rules.
@@ -59,6 +61,7 @@ public class HttpFetcher implements Fetcher {
         this.client = client;
         this.repository = repository;
         this.shouldApplyRobotsExclusionRules = false;
+        this.shouldApplyHeaderRestrictions = true;
         this.robotsTxtParser = new RobotsTxtParser("");
     }
 
@@ -70,10 +73,11 @@ public class HttpFetcher implements Fetcher {
      * @param repository
      * @param shouldApplyRobotsExclusionRules
      */
-    public HttpFetcher(HttpClient client, IRepository repository, boolean shouldApplyRobotsExclusionRules) {
+    public HttpFetcher(HttpClient client, IRepository repository, boolean shouldApplyRobotsExclusionRules,boolean shouldApplyHeaderRestrictions) {
         this.client = client;
         this.repository = repository;
         this.shouldApplyRobotsExclusionRules = shouldApplyRobotsExclusionRules;
+        this.shouldApplyHeaderRestrictions = shouldApplyHeaderRestrictions;
         this.robotsTxtParser = new RobotsTxtParser("");
     }
 
@@ -209,9 +213,10 @@ public class HttpFetcher implements Fetcher {
     }
 
     private void setHeaders(String url, HttpRequestBase httpMethod) {
-//       System.out.println("NOTE >>>>>>>>>>>>  HTTPfetcher : setHeaders, bypassed setting of header filters.");
-
-//        if(true)return;
+        if(!shouldApplyHeaderRestrictions)
+        {
+            return;
+        }
         UrlMetaData urlMetadata = repository.getFeedMetadata(url);
         if (urlMetadata != null) {
             httpMethod.setHeader("If-None-Match", urlMetadata.getEtag());// Typically this is a hash of the content

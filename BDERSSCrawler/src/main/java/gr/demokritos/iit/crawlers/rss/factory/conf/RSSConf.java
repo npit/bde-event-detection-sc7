@@ -73,4 +73,26 @@ public class RSSConf extends BaseConfiguration implements IRSSConf {
     public boolean runForever() {
         return Boolean.parseBoolean(properties.getProperty("run_forever", "false"));
     }
+
+    @Override
+    public boolean getRespectRobots()
+    {
+        String value = properties.getProperty("respect_robots","");
+        if(!value.isEmpty())
+        {
+            if(value.equals("no")) return false;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean applyHTTPFetchRestrictions()
+    {
+        String value = properties.getProperty("apply_http_restrictions","");
+        if(!value.isEmpty())
+        {
+            if(value.equals("no")) return false;
+        }
+        return true;
+    }
 }
