@@ -8,6 +8,9 @@ import java.util.Properties;
  * Created by npittaras on 12/9/2016.
  */
 public class clusteringConf extends BaseConfiguration implements IClusteringConf {
+    public static final String ARTICLES="articles";
+    public static final String TWEETS="both";
+    public static final String BOTH="tweets";
 
     public clusteringConf(String path)
     {
@@ -65,6 +68,22 @@ public class clusteringConf extends BaseConfiguration implements IClusteringConf
         if(! readValue.isEmpty())
             value = Integer.parseInt(readValue);
         return value;
+    }
+    @Override
+    public String getClusteringMode()
+    {
+        String value = properties.getProperty("mode",BOTH);
+        if(value.equals(BOTH));
+        else if (value.equals(ARTICLES));
+        else if(value.equals(BOTH));
+        else
+        {
+            System.err.println("Undefined supplied clustering mode: [" + value + "]");
+            System.err.println("Using default [both]");
+            return BOTH;
+        }
+        return value;
+
     }
 
 }
