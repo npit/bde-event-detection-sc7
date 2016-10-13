@@ -267,6 +267,7 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
         }
 
         // get at most maxNumber articles, the most recent
+        System.out.println("Limiting article set to the " + maxNumber +  " most recently crawled articles");
 
         ArrayList<Long> crawledDatesSorted = (ArrayList) crawled_dates.clone();
         Collections.sort(crawledDatesSorted);
@@ -283,8 +284,7 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
             resultArticles.add(articles.get(articleIndex));
             // limit max number
         }
-        System.out.println("Limiting article set to the " + maxNumber +  " most recently crawled articles");
-
+        System.out.println("Limited to " + resultArticles.size() + " items.");
         return resultArticles;
     }
 

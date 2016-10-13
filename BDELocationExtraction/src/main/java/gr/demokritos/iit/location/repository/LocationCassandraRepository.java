@@ -55,7 +55,13 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
     }
 
     @Override
-    public LocSched scheduleInitialized(OperationMode mode) {
+    public LocSched scheduleInitialized(OperationMode mode)
+    {
+        java.util.Calendar window = Calendar.getInstance();
+        return scheduleInitialized(mode,window);
+    }
+        @Override
+    public LocSched scheduleInitialized(OperationMode mode,java.util.Calendar window) {
         String schedule_type = new StringBuilder().append(SCHEDULE_TYPE_BASE).append("_").append(mode.getMode()).toString();
         Statement select = QueryBuilder
                 .select(Cassandra.Location.TBL_LOCATION_LOG.FLD_SCHEDULE_ID.getColumnName(), Cassandra.Location.TBL_LOCATION_LOG.FLD_LAST_PARSED.getColumnName())
@@ -64,12 +70,13 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
         ResultSet results = session.execute(select);
 
         long max_existing = 0l;
+        // replaced with argument
         // set initial last 2 months ago
-        Calendar two_months_ago = Calendar.getInstance();
-        System.out.println("*****************SETTING 1 year as time window");
-        two_months_ago.set(Calendar.MONTH, two_months_ago.get(Calendar.MONTH) - 12);
-        long last_parsed = two_months_ago.getTimeInMillis();
-        System.out.println("Default data retrieval span is:" + new Date(last_parsed).toString());
+//        Calendar two_months_ago = Calendar.getInstance();
+//        System.out.println("*****************SETTING 1 year as time window");
+//        two_months_ago.set(Calendar.MONTH, two_months_ago.get(Calendar.MONTH) - 1);
+        long last_parsed = window.getTimeInMillis();
+        System.out.println("Data retrieval window set from now to :" + new Date(last_parsed).toString());
 
         Row one = results.one();
         if (one != null) {

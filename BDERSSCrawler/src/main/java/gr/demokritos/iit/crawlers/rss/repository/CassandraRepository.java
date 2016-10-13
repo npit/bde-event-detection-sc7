@@ -84,7 +84,7 @@ public class CassandraRepository extends AbstractRepository implements IReposito
     }
 
     private void insertPage(Item item, String title, Content content, long pub_date, String year_month_day) throws BoilerpipeProcessingException, MalformedURLException {
-//        System.out.println("save content: " + content.getUrl()); // debug
+//        System.out.println("Inserting page: " + content.getUrl()); // debug
         CrawlId crawlId = item.getCrawlId();
         String cleanText = extractor.getText(content.getRawText());
         // identify language

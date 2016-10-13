@@ -54,8 +54,8 @@ public abstract class AbstractCrawler {
     // run forever or for a single time 
     protected boolean bRunForever;
 
-    public AbstractCrawler(RSSCrawlFactory factory, IRSSConf configuration,
-            boolean shouldApplyRobotsExclusionRules) throws Exception {
+    public AbstractCrawler(RSSCrawlFactory factory, IRSSConf configuration) throws Exception {
+
         eventSink = factory.createEventSink();
         queue = factory.createBlockingQueue();
         IRepository repository = createRepository(factory);
@@ -65,7 +65,7 @@ public abstract class AbstractCrawler {
         consumerExecutorService = factory.createConsumerExecutorService();
         LoadRegistry loadRegistry = new DomainLoadRegistry(new DomainExtractor());
         CrawlExecutor crawlExecutor = new DefaultCrawlExecutor(consumerExecutorService, repository, httpClient,
-                loadRegistry, eventSink, shouldApplyRobotsExclusionRules);
+                loadRegistry, eventSink, configuration.getRespectRobots(),configuration.applyHTTPFetchRestrictions());
         consumer = new Consumer(queue, crawlExecutor, loadRegistry, repository, eventSink, bRunForever);
 
         // disabled status server: 21/05/14

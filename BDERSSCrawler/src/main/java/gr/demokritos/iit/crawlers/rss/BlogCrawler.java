@@ -29,7 +29,7 @@ import gr.demokritos.iit.base.util.langdetect.CybozuLangDetect;
 public class BlogCrawler extends AbstractCrawler {
 
     public BlogCrawler(RSSCrawlFactory factory, IRSSConf configuration) throws Exception {
-        super(factory, configuration, false);
+        super(factory, configuration);
     }
 
     @Override

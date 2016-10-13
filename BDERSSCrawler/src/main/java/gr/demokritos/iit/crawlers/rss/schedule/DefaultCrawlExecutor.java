@@ -34,15 +34,17 @@ public class DefaultCrawlExecutor implements CrawlExecutor {
     private final LoadRegistry loadRegistry;
     private final EventSink eventSink;
     private final boolean shouldApplyRobotsExclusionRules;
+    private final boolean shouldApplyHeaderRestrictions;
 
     public DefaultCrawlExecutor(ExecutorService executorService, IRepository repository, HttpClient client,
-            LoadRegistry loadRegistry, EventSink eventSink, boolean shouldApplyRobotsExclusionRules) {
+            LoadRegistry loadRegistry, EventSink eventSink, boolean shouldApplyRobotsExclusionRules, boolean shouldApplyHeaderRestrictions) {
         this.executorService = executorService;
         this.repository = repository;
         this.client = client;
         this.loadRegistry = loadRegistry;
         this.eventSink = eventSink;
         this.shouldApplyRobotsExclusionRules = shouldApplyRobotsExclusionRules;
+        this.shouldApplyHeaderRestrictions = shouldApplyHeaderRestrictions;
     }
 
     @Override
@@ -52,7 +54,7 @@ public class DefaultCrawlExecutor implements CrawlExecutor {
 
     private Runnable newCrawlTask(Item item) {
         // There should be one HttpFetcher per crawl task invocation.
-        Fetcher fetcher = new HttpFetcher(client, repository, shouldApplyRobotsExclusionRules);
+        Fetcher fetcher = new HttpFetcher(client, repository, shouldApplyRobotsExclusionRules,shouldApplyHeaderRestrictions);
         // TODO: CHECK if should be some other type of task
         FeedFetchTask feedFetchTask = new FeedFetchTask(item, fetcher, repository, eventSink);
         return new LoadTrackingDecorator(item, loadRegistry, new LoggingRunnableDecorator(feedFetchTask, eventSink));

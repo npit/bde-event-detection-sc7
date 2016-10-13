@@ -44,7 +44,6 @@ public class DefaultCrawlSchedule implements CrawlSchedule {
 
         if (urls.hasNext()) {
             String url = urls.next();
-            System.out.println("CrawlSchedule returning url [" + url + "].");
             return url;
         }
         urls = null;
