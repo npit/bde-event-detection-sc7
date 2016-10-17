@@ -62,7 +62,6 @@ public class LocationExtraction {
             // init connection pool to the repository
             ILocationRepository repos = factory.createLocationCassandraRepository();
 
-
             if(conf.onlyUpdateEvents())
             {
                 repos.onlyUpdateEventsWithExistingLocationInformation();

@@ -18,6 +18,7 @@ public interface ILocConf extends IBaseConf {
     String getPolygonExtractionImpl();
     String getLocationExtractionSourceFile();
     boolean useAdditionalExternalNames();
+    boolean onlyUseAdditionalExternalNames();
 
     String getLocationExtractionImpl();
 

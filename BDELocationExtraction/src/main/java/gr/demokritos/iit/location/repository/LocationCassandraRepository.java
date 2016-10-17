@@ -166,7 +166,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
 
         }
         // this populates existing events table with locations/polygons pairs from news. It's a hotfix
-        //updateEventsWithArticleLocationPolygonPairs(places_polygons, permalink);
+        updateEventsWithArticleLocationPolygonPairs(places_polygons, permalink);
     }
 
     @Override
@@ -196,13 +196,13 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
             session.execute(insert);
         }
         // this populates existing events table with locations/polygons pairs from tweets. It's a hotfix
-        //updateEventsWithTweetLocationPolygonPairs(places_polygons,post_id);
+        updateEventsWithTweetLocationPolygonPairs(places_polygons,post_id);
     }
 
     @Override
     public void updateEventsWithArticleLocationPolygonPairs(Map<String,String> places_polygons, String permalink)
     {
-        System.out.println("\t>Updating events with places of article permalink: " + permalink); //debugprint
+        System.out.println("\t>>> Starting updating events with places of article permalink: " + permalink); //debugprint
         long startTime = System.currentTimeMillis();
         Set<String> places = places_polygons.keySet();
         // this is an ugly workaround. a table events per article would be superb
@@ -286,7 +286,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
     public void updateEventsWithTweetLocationPolygonPairs(Map<String,String> places_polygons, long post_id)
     {
         String strpostid = Long.toString(post_id);
-        System.out.println("\t>Updating events with places of tweet post id: " + strpostid); //debugprint
+        System.out.println("\t>>>Updating events with places of tweet post id: " + strpostid); //debugprint
 
         long startTime = System.currentTimeMillis();
 
@@ -434,7 +434,6 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
         query = QueryBuilder
                 .select(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CRAWLED.getColumnName(),
                         Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName(),
-                        Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CRAWL_ID.getColumnName(),
                         Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.getColumnName())
                 .from(session.getLoggedKeyspace(),Cassandra.RSS.Tables.NEWS_ARTICLES_PER_CRAWLED_DATE.getTableName());
         results = session.execute(query);
@@ -454,9 +453,8 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
         ArrayList<String> yeardaymonth_per_published = new ArrayList<>();
 
         query = QueryBuilder
-                .select(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CRAWLED.getColumnName(),
+                .select(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PUBLISHED.getColumnName(),
                         Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName(),
-                        Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CRAWL_ID.getColumnName(),
                         Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.getColumnName())
                 .from(session.getLoggedKeyspace(),Cassandra.RSS.Tables.NEWS_ARTICLES_PER_PUBLISHED_DATE.getTableName());
         results = session.execute(query);
@@ -537,6 +535,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
         // get events
         /////////////////////////////////////
         System.out.println("Getting events.");
+        int removedEvents = 0;
         query = QueryBuilder.select(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName(),
                 Cassandra.Event.TBL_EVENTS.FLD_EVENT_SOURCE_URLS.getColumnName()
                 ).
@@ -564,7 +563,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
         for(int ev=0;ev<eventIDs.size();++ev)
         {
             String eventID = eventIDs.get(ev);
-            System.out.println(String.format("Checking event %d/%d [%s]",1+ev,eventIDs.size(),eventIDs.get(ev)));
+            //System.out.println(String.format("Checking event %d/%d [%s]",1+ev,eventIDs.size(),eventIDs.get(ev)));
             int numRemoved = 0;
             // if it contains a removed article
             for(int art=0;art<event_sources.get(ev).size();++art)
@@ -577,7 +576,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
                     // remove the article
                     System.out.print(String.format("\tArticle %d/%d : [%s] of event %d/%d : [%s] needs deletion.", 1 + art, event_sources.get(ev).size(), source_article,
                             1 + ev, eventIDs.size(), eventIDs.get(ev)));
-                    System.out.print("\tIts places are " + placesPerArticle.get(articleIndex));
+                    System.out.println("\tIts places are " + placesPerArticle.get(articleIndex));
                     if(doDelete)
                     {
                         // remove it from the map at the events table
@@ -600,6 +599,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
             // if all sources got deleted, remove event
             if(numRemoved == event_sources.get(ev).size())
             {
+                ++removedEvents;
                 deletedEvents.set(ev,true);
                 System.out.println(String.format(">>>Deleting event  %d/%d [%s], as all its %d articles got deleted. ",ev,eventIDs.size(),eventIDs.get(ev),numRemoved));
                 if(doDelete) {
@@ -633,7 +633,8 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
                 } // for each event place
             } // if delete event
 
-        }
+        } // for each event
+        System.out.println("Removed " + removedEvents + " events total.");
 
         // after article deletion, check whether a place in the events table has no source article left
         // get events
@@ -674,6 +675,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
             HashSet<String> actualPlaces = new HashSet<String>();
             for(String source : event_sources.get(ev))
             {
+                if(articlesToRemove.contains(source)) continue;
                 // get article index
                 int artIdx = urls.indexOf(source);
                 if(artIdx < 0 )
@@ -691,11 +693,14 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
                 System.out.println("Removing places " + event_places.get(ev) + " from event " + eventID);
             for(String place2remove : event_places.get(ev))
             {
-                query = QueryBuilder.delete()
-                        .mapElt(Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName(),place2remove)
-                        .from(session.getLoggedKeyspace(),Cassandra.Event.Tables.EVENTS.getTableName())
-                        .where(eq(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName(), eventID));
-                session.execute(query);
+                if(doDelete)
+                {
+                    query = QueryBuilder.delete()
+                            .mapElt(Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName(), place2remove)
+                            .from(session.getLoggedKeyspace(), Cassandra.Event.Tables.EVENTS.getTableName())
+                            .where(eq(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName(), eventID));
+                    session.execute(query);
+                }
             }
 
         }
@@ -1146,7 +1151,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
     @Override
     public void storeAndChangeDetectionEvents(String strabonURL)
     {
-        System.out.println("Sending events to Strabon.");
+        System.out.println("Sending events to Strabon. url:[" + strabonURL + "]");
         // get all events, fields: id, title, date, placemappings
         // store each field of interest in an arraylist
 
@@ -1156,7 +1161,8 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
                         Cassandra.Event.TBL_EVENTS.FLD_TITLE.getColumnName(),
                         Cassandra.Event.TBL_EVENTS.FLD_DATE_LITERAL.getColumnName(),
                         Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName())
-                .from(session.getLoggedKeyspace(),Cassandra.Event.Tables.EVENTS.getTableName());
+                .from(session.getLoggedKeyspace(),Cassandra.Event.Tables.EVENTS.getTableName())
+        .where(eq(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName(),"bde0026c-f2c8-445b-acd0-e8f65378340d"));
         ResultSet results = session.execute(query);
         int count = 1;
         // for each event
@@ -1200,7 +1206,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
                 System.out.println("Empty payload, won't send anything.");
                 return;
             }
-
+            //payload="{\"id\":\"1\",\"title\":\"test event\",\"eventDate\":\"2016-02-25T17:48:49+0000\",\"referenceDate\":\"2016-02-25T17:48:49+0000\",\n" +                    "\"areas\":[{\"name\":\"Athens\",\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[35.31,25.3],[35.31,19.25],[41.09,19.25],[41.09,25.3],[35.31,25.3]]]}}]}";
             // send http request
             // TODO: make new connection for each send or make connection out of loop?
             // TODO: put target url in the properties file on the module this function will
@@ -1222,7 +1228,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
 
                 connection.setUseCaches(false);
                 connection.setDoOutput(true);
-                System.out.println("Sending event + [" + id + "].");
+                System.out.println("Sending event  [" + id + "].");
                 //Send request
                 DataOutputStream wr = new DataOutputStream (
                         connection.getOutputStream());
@@ -1475,3 +1481,4 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
     }
 
 }
+    // test only

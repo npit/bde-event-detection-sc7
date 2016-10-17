@@ -23,6 +23,7 @@ import gr.demokritos.iit.location.mapping.client.DebugRestClient;
 import gr.demokritos.iit.location.mapping.client.IRestClient;
 import gr.demokritos.iit.location.mapping.client.JBossRestClient;
 import gr.demokritos.iit.location.util.GeometryFormatTransformer;
+import org.json.simple.parser.ParseException;
 
 import javax.ws.rs.core.Response;
 import java.io.IOException;
@@ -188,6 +189,23 @@ public class DefaultPolygonExtraction implements IPolygonExtraction {
 
         }
         return out;
+    }
+
+    public static void main(String [] args)
+    {
+
+        DefaultPolygonExtraction dpe = new DefaultPolygonExtraction("http://teleios4.di.uoa.gr:8080/changeDetection/location/geocode");
+        String poly = dpe.extractPolygon("Barcelona");
+        try {
+            poly = GeometryFormatTransformer.GeoJSONtoWKT(poly);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println(poly);
+
     }
 
 }

@@ -34,7 +34,7 @@ import java.util.*;
  */
 public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
 
-    boolean useAdditionalSources;
+    boolean useAdditionalSources, onlyUseAdditionalSources;
     private ISentenceSplitter sentenceSplitter;
 
     private final NameFinderME[] models;
@@ -75,7 +75,7 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
         this.prob_cutoff = prob_cutoff;
 
         useAdditionalSources = false;
-
+        onlyUseAdditionalSources = false;
 
 
     }
@@ -127,6 +127,8 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
         //Collections.sort(extraNames);
 
         useAdditionalSources = true;
+        if(conf.onlyUseAdditionalExternalNames())
+            onlyUseAdditionalSources = true;
     }
     /**
      *
@@ -211,9 +213,11 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
 
     protected Map<String, String> getTokenMap(String text) {
 
+        String text_lowercase = new String(text).toLowerCase();
         if (text == null || text.isEmpty()) {
             return Collections.EMPTY_MAP;
         }
+        Map<String,String> additional_res = new HashMap<>();
         Map<String, String> res = new HashMap();
         String[] ss = text.split("\\s+");
         for (NameFinderME model : models) {
@@ -257,14 +261,32 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
 //                }
                 // just check the text
                 for(String extraname : extraNames) {
-                    if (text.contains(extraname) || text.contains(extraname.toLowerCase()) || text.contains(extraname.toUpperCase())) {
-                        res.put(extraname.trim(), TYPE_LOCATION);
+                    //if (text.contains(extraname) || text_lowercase.contains(extraname.toLowerCase()) || text.contains(extraname.toUpperCase())) {
+                    String extranameTrimmed=extraname.trim();
+                    if(!additional_res.containsKey(extranameTrimmed))
+                    {
+                        if (text_lowercase.contains(extraname.toLowerCase()))
+                        {
+                            additional_res.put(extraname.trim(), TYPE_LOCATION);
+                        }
+
                     }
+
                 }
 
             }
 
         }
+        if( useAdditionalSources )
+        {
+            if(onlyUseAdditionalSources)
+            {
+                res.clear();
+            }
+
+            res.putAll(additional_res);
+        }
+
         return res;
     }
 }

@@ -48,3 +48,5 @@ timingParallelSpark.txt
 sensitive/*
 BDELocationExtraction/res/local/
 installPOMs/
+*res/locationnames
+BDELocationExtraction/res/locationnames
