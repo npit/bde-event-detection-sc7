@@ -32,7 +32,7 @@ import static jdk.nashorn.internal.runtime.regexp.joni.Config.log;
 public class hotfix {
 
     public static void main(String[] args) {
-        String path = "/home/nik/work/iit/BDE/bde-event-detection-sc7/BDELocationExtraction/res/location_extraction.properties";
+        String path = "/home/npittaras/Documents/project/BDE/BDEproject/BDEEventDetection/BDELocationExtraction/res/location_extraction.properties";
 
         ILocConf conf = new LocConf(path);
         ILocFactory factory = null;

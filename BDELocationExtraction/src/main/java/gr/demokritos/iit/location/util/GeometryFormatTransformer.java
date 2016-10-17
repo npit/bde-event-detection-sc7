@@ -102,10 +102,7 @@ public class GeometryFormatTransformer {
         Geometry geom = (gjsn.read(geomreader));
         StringWriter writer = new StringWriter();
         wktr.write(geom,writer);
-//
-//        System.out.println("GEOJSON to WKT:");
-//        System.out.println(input);
-//        System.out.println(writer.toString());
+
         return writer.toString();
     }
 
@@ -158,9 +155,9 @@ public class GeometryFormatTransformer {
         JSONObject obj = new JSONObject();
         // date format  in the repository is like:
         // 2016-09-28T08:32+0000
-        String sourceFormat = "yyyy-MM-dd'T'hh:mmZ";
+        String sourceFormat = "yyyy-MM-dd'T'HH:mmZ";
         SimpleDateFormat sf = new SimpleDateFormat(sourceFormat);
-        Date date_ = new Date();
+        Date date_;
         try {
             date_ = sf.parse(date);
         } catch (java.text.ParseException e) {
@@ -170,7 +167,7 @@ public class GeometryFormatTransformer {
         }
         // strabon expects format
         //
-        String targetFormat = "yyyy-MM-dd'T'hh:mm:ssZ";
+        String targetFormat = "yyyy-MM-dd'T'HH:mm:ssZ";
         sf.applyPattern(targetFormat);
         date = sf.format(date_);
 
@@ -248,5 +245,23 @@ public class GeometryFormatTransformer {
         return null;
     }
 
-
+    public static void main(String [] args)
+    {
+        String date = "2016-10-17T09:22+0000";
+        String sourceFormat = "yyyy-MM-dd'T'HH:mmZ";
+        SimpleDateFormat sf = new SimpleDateFormat(sourceFormat);
+        Date date_;
+        try {
+            date_ = sf.parse(date);
+        } catch (java.text.ParseException e) {
+            System.err.println("Parse date format exception.");
+            e.printStackTrace();
+            return ;
+        }
+        // strabon expects format
+        //
+        String targetFormat = "yyyy-MM-dd'T'HH:mm:ssZ";
+        sf.applyPattern(targetFormat);
+        date = sf.format(date_);
+    }
 }

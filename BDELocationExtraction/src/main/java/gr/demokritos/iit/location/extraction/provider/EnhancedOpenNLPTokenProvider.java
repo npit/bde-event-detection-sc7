@@ -34,7 +34,7 @@ import java.util.*;
  */
 public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
 
-    boolean useAdditionalSources;
+    boolean useAdditionalSources, onlyUseAdditionalSources;
     private ISentenceSplitter sentenceSplitter;
 
     private final NameFinderME[] models;
@@ -75,7 +75,7 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
         this.prob_cutoff = prob_cutoff;
 
         useAdditionalSources = false;
-
+        onlyUseAdditionalSources = false;
 
 
     }
@@ -127,6 +127,8 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
         //Collections.sort(extraNames);
 
         useAdditionalSources = true;
+        if(conf.onlyUseAdditionalExternalNames())
+            onlyUseAdditionalSources = true;
     }
     /**
      *
@@ -214,6 +216,7 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
         if (text == null || text.isEmpty()) {
             return Collections.EMPTY_MAP;
         }
+        Map<String,String> additional_res = new HashMap<>();
         Map<String, String> res = new HashMap();
         String[] ss = text.split("\\s+");
         for (NameFinderME model : models) {
@@ -258,13 +261,22 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
                 // just check the text
                 for(String extraname : extraNames) {
                     if (text.contains(extraname) || text.contains(extraname.toLowerCase()) || text.contains(extraname.toUpperCase())) {
-                        res.put(extraname.trim(), TYPE_LOCATION);
+                        additional_res.put(extraname.trim(), TYPE_LOCATION);
                     }
                 }
 
             }
 
         }
+        if( useAdditionalSources )
+        {
+            if(onlyUseAdditionalSources)
+                res = additional_res;
+
+            else
+                res.putAll(additional_res);
+        }
+
         return res;
     }
 }
