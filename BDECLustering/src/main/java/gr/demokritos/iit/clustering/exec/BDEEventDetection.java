@@ -76,16 +76,6 @@ public class BDEEventDetection {
             properties = args[0];
         }
 
-        /*
-	if (args.length == 2) {
-            if(args[1].toString().toLowerCase().equals("strabon"))
-                SendToStrabon = true;
-            else if(args[1].toString().toLowerCase().equals("onlystrabon"))
-                onlySendToStrabon = true;
-            else
-                System.out.println(args[1].toString().toLowerCase() + " undefined.");
-        }
-	*/
         // load base configuration, initialize repository
         IClusteringConf configuration = new clusteringConf(properties);
         boolean SendToStrabon = configuration.sendToStrabon();
@@ -115,6 +105,8 @@ public class BDEEventDetection {
 //        now.set(Calendar.MONTH, now.get(Calendar.MONTH) - 1);
         System.out.println("calendar retrieval setting: " + cal.getTime());
 
+
+        String clusteringMode = configuration.getClusteringMode();
         long tstamp = cal.getTimeInMillis();
         System.out.println("loading articles");
         long startTime = System.currentTimeMillis();

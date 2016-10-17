@@ -65,7 +65,7 @@ public class LocationExtraction {
 
             if(conf.onlyUpdateEvents())
             {
-                repos.onlyUpdateEventsWithLocationInformation();
+                repos.onlyUpdateEventsWithExistingLocationInformation();
             }
             else
             {

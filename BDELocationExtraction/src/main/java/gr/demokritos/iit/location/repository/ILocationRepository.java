@@ -28,7 +28,6 @@ import java.util.Map;
  */
 public interface ILocationRepository extends IBaseRepository {
 
-    void doHotfix();
 
     void storeAndChangeDetectionEvents(String strabonURL);
     /**
@@ -66,5 +65,11 @@ public interface ILocationRepository extends IBaseRepository {
     void updateEventsWithTweetLocationPolygonPairs(Map<String,String> places_polygons, long post_id);
     void updateEventsWithAllLocationPolygonPairs(OperationMode mode, ArrayList<Map<String,String>> tweet_places_polygons, ArrayList<Long> post_ids, ArrayList<Map<String,String>> article_places_polygons, ArrayList<String> permalinks);
 
-    void onlyUpdateEventsWithLocationInformation();
+
+    // hotfixes:
+    // -----------------------------------------------
+    void doHotfix();
+    void onlyUpdateEventsWithExistingLocationInformation();
+    void removeUndesirableArticles();
+    // -----------------------------------------------
 }

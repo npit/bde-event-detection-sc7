@@ -371,12 +371,343 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
 
     }
 
+    boolean articleRemovalCondition(String text,ArrayList<String> faulty)
+    {
+        // also checks if it's empty
+        for(String faultyText : faulty)
+        {
+            if(text.contains(faultyText))
+                return true;
+        }
+        if(text.isEmpty())
+            return true;
+        return false;
+    }
+    /**
+     * Remove articles based on a condition, from all tables.
+     */
+    @Override
+    public void removeUndesirableArticles()
+    {
+
+
+        boolean doDelete = true; // perform deletion or just simulate
+        ArrayList<String> undesirable_raw_text = new ArrayList<>();
+        undesirable_raw_text.add("503 Service Temporarily Unavailable");
+        undesirable_raw_text.add("You're seeing this error because you use\nRack::ShowStatus\n");
+
+        ArrayList<String> articlesToRemove = new ArrayList<>();
+
+        // get articles
+        ///////////////////////////////
+        Statement query = QueryBuilder
+                .select(Cassandra.RSS.TBL_ARTICLES.FLD_ENTRY_URL.getColumnName(),
+                        Cassandra.RSS.TBL_ARTICLES.FLD_CLEAN_TEXT.getColumnName(),
+                        Cassandra.RSS.TBL_ARTICLES.FLD_REVERSED_HOST.getColumnName(),
+                        Cassandra.RSS.TBL_ARTICLES.FLD_PLACE_LITERAL.getColumnName())
+                .from(session.getLoggedKeyspace(),Cassandra.RSS.Tables.NEWS_ARTICLES.getTableName());
+        ResultSet results = session.execute(query);
+
+        ArrayList<String> urls = new ArrayList<>();
+        ArrayList<String> revhosts = new ArrayList<>();
+        ArrayList<String>  cleanTexts = new ArrayList<>();
+        ArrayList<ArrayList<String>>  placesPerArticle = new ArrayList<>();
+
+        for (Row row : results)
+        {
+            urls.add(row.getString(Cassandra.RSS.TBL_ARTICLES.FLD_ENTRY_URL.getColumnName()));
+            revhosts.add(row.getString(Cassandra.RSS.TBL_ARTICLES.FLD_REVERSED_HOST.getColumnName()));
+            cleanTexts .add(row.getString(Cassandra.RSS.TBL_ARTICLES.FLD_CLEAN_TEXT.getColumnName()));
+
+            placesPerArticle.add(new ArrayList<String>());
+            placesPerArticle.get(placesPerArticle.size()-1).addAll(row.getSet(Cassandra.RSS.TBL_ARTICLES.FLD_PLACE_LITERAL.getColumnName(),String.class));
+        }
+        System.out.println("Loaded " + urls.size() + " distinct urls.");
+        ///////////////////////////////
+
+        // get articles per crawled date
+        ///////////////////////////////
+        ArrayList<String> urls_per_crawled = new ArrayList<>();
+        ArrayList<Long> date_per_crawled = new ArrayList<>();
+        ArrayList<String> yeardaymonth_per_crawled = new ArrayList<>();
+
+        query = QueryBuilder
+                .select(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CRAWLED.getColumnName(),
+                        Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName(),
+                        Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CRAWL_ID.getColumnName(),
+                        Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.getColumnName())
+                .from(session.getLoggedKeyspace(),Cassandra.RSS.Tables.NEWS_ARTICLES_PER_CRAWLED_DATE.getTableName());
+        results = session.execute(query);
+
+        for (Row row : results)
+        {
+            urls_per_crawled.add(row.getString(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName()));
+            date_per_crawled.add(row.getLong(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CRAWLED.getColumnName()));
+            yeardaymonth_per_crawled.add(row.getString(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.getColumnName()));
+        }
+        ///////////////////////////////
+
+        // get articles per publ date
+        ///////////////////////////////
+        ArrayList<String> urls_per_published = new ArrayList<>();
+        ArrayList<Long> date_per_published = new ArrayList<>();
+        ArrayList<String> yeardaymonth_per_published = new ArrayList<>();
+
+        query = QueryBuilder
+                .select(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CRAWLED.getColumnName(),
+                        Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName(),
+                        Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CRAWL_ID.getColumnName(),
+                        Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.getColumnName())
+                .from(session.getLoggedKeyspace(),Cassandra.RSS.Tables.NEWS_ARTICLES_PER_PUBLISHED_DATE.getTableName());
+        results = session.execute(query);
+        for (Row row : results)
+        {
+            urls_per_published.add(row.getString(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName()));
+            date_per_published.add(row.getLong(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CRAWLED.getColumnName()));
+            yeardaymonth_per_published.add(row.getString(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.getColumnName()));
+        }
+        ///////////////////////////////
+
+
+        // check which articles have to be deleted
+        ///////////////////////////////
+        int index=0;
+        for(;index < urls.size(); ++index)
+        {
+            if(articleRemovalCondition(cleanTexts.get(index),undesirable_raw_text))
+                articlesToRemove.add(urls.get(index));
+        }
+        System.out.println(String.format("Need to remove %d/%d articles.",articlesToRemove.size(),urls.size()));
+        // iterate over articles to delete, delete from each table.
+        ///////////////////////////////
+        for(index=0;index<articlesToRemove.size();++index)
+        {
+
+            String url = articlesToRemove.get(index);
+            String revhost = revhosts.get(index);
+            Set<String> placesSet = new HashSet<String>(placesPerArticle.get(index));
+
+            int crawledIndex = urls_per_crawled.indexOf(url);
+            long date_crawled = date_per_crawled.get(crawledIndex);
+            String ydm_crawled = yeardaymonth_per_crawled.get(crawledIndex);
+
+            int publIndex = urls_per_published.indexOf(url);
+            long date_published = date_per_published.get(publIndex);
+            String ydm_publ= yeardaymonth_per_published.get(publIndex);
+            System.out.println(String.format("Deleting article %d/%d [%s]",index+1,articlesToRemove.size(),url));
+            // delete from news articles
+            if(doDelete)
+            {
+                query = QueryBuilder.delete().from(
+                        session.getLoggedKeyspace(),
+                        Cassandra.RSS.Tables.NEWS_ARTICLES.getTableName())
+                        .where(eq(Cassandra.RSS.TBL_ARTICLES.FLD_REVERSED_HOST.getColumnName(), revhost))
+                        .and(eq(Cassandra.RSS.TBL_ARTICLES.FLD_ENTRY_URL.getColumnName(), url));
+                session.execute(query);
+
+                    // delete from news articles per place
+                query = QueryBuilder.delete().from(
+                        session.getLoggedKeyspace(),
+                        Cassandra.RSS.Tables.NEWS_ARTICLES_PER_PLACE.getTableName())
+                        .where(eq(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_ENTRY_URL.getColumnName(), url))
+                        .and(in(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_PLACE_LITERAL.getColumnName(), placesSet));
+
+                session.execute(query);
+
+                // delete from news articles per crawled date
+                query = QueryBuilder.delete().from(
+                        session.getLoggedKeyspace(),
+                        Cassandra.RSS.Tables.NEWS_ARTICLES_PER_CRAWLED_DATE.getTableName())
+                        .where(eq(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName(), url))
+                        .and(eq(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CRAWLED.getColumnName(), date_crawled))
+                        .and(eq(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.getColumnName(), ydm_crawled));
+                session.execute(query);
+
+                // delete from news articles per published date
+                query = QueryBuilder.delete().from(
+                        session.getLoggedKeyspace(),
+                        Cassandra.RSS.Tables.NEWS_ARTICLES_PER_PUBLISHED_DATE.getTableName())
+                        .where(eq(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName(), url))
+                        .and(eq(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PUBLISHED.getColumnName(), date_published))
+                        .and(eq(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.getColumnName(), ydm_publ));
+                session.execute(query);
+            }
+        }
+
+        // get events
+        /////////////////////////////////////
+        System.out.println("Getting events.");
+        query = QueryBuilder.select(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName(),
+                Cassandra.Event.TBL_EVENTS.FLD_EVENT_SOURCE_URLS.getColumnName()
+                ).
+                from(session.getLoggedKeyspace(),Cassandra.Event.Tables.EVENTS.getTableName());
+        results = session.execute(query);
+        ArrayList<String> eventIDs = new ArrayList<>();
+        ArrayList<ArrayList<String>> event_sources = new ArrayList<>();
+
+
+        for (Row row : results)
+        {
+            eventIDs.add(row.getString(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName()));
+            event_sources.add(new ArrayList<String>(
+                    row.getMap(Cassandra.Event.TBL_EVENTS.FLD_EVENT_SOURCE_URLS.getColumnName(),String.class,String.class).keySet()
+            )
+            );
+
+        }
+        ArrayList<Boolean> deletedEvents = new ArrayList<>();
+        for(String u : eventIDs)
+        {
+            deletedEvents.add(false);
+        }
+        // for each event
+        for(int ev=0;ev<eventIDs.size();++ev)
+        {
+            String eventID = eventIDs.get(ev);
+            System.out.println(String.format("Checking event %d/%d [%s]",1+ev,eventIDs.size(),eventIDs.get(ev)));
+            int numRemoved = 0;
+            // if it contains a removed article
+            for(int art=0;art<event_sources.get(ev).size();++art)
+            {
+                String source_article = event_sources.get(ev).get(art);
+                int articleIndex = urls.indexOf(source_article);
+                if (articlesToRemove.contains(source_article))
+                {
+                    ++numRemoved;
+                    // remove the article
+                    System.out.print(String.format("\tArticle %d/%d : [%s] of event %d/%d : [%s] needs deletion.", 1 + art, event_sources.get(ev).size(), source_article,
+                            1 + ev, eventIDs.size(), eventIDs.get(ev)));
+                    System.out.print("\tIts places are " + placesPerArticle.get(articleIndex));
+                    if(doDelete)
+                    {
+                        // remove it from the map at the events table
+                        System.out.println(" Deleting...");
+                        query = QueryBuilder.delete()
+                                .mapElt(Cassandra.Event.TBL_EVENTS.FLD_EVENT_SOURCE_URLS.getColumnName(),source_article)
+                                .from(session.getLoggedKeyspace(),Cassandra.Event.Tables.EVENTS.getTableName())
+                                .where(eq(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName(), eventID));
+                        session.execute(query);
+
+                        // remove it from the map at the events per place table
+                        Set<String> articlePlaces = new HashSet<>();
+                        articlePlaces.addAll(placesPerArticle.get(articleIndex));
+
+                    }
+                }
+            } // for each source article
+
+            // ...
+            // if all sources got deleted, remove event
+            if(numRemoved == event_sources.get(ev).size())
+            {
+                deletedEvents.set(ev,true);
+                System.out.println(String.format(">>>Deleting event  %d/%d [%s], as all its %d articles got deleted. ",ev,eventIDs.size(),eventIDs.get(ev),numRemoved));
+                if(doDelete) {
+                    // remove from events
+                    query = QueryBuilder.delete().from(
+                            session.getLoggedKeyspace(),
+                            Cassandra.Event.Tables.EVENTS.getTableName())
+                            .where(eq(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName(), eventID));
+                    session.execute(query);
+                }
+                // remove from events per place. get place of each article
+                Set <String> curr_event_places = new HashSet<>();
+                for(int a=0;a<event_sources.get(ev).size();++a)
+                {
+                    String eventarticle = event_sources.get(ev).get(a);
+                    int urlIndex = urls.indexOf(eventarticle);
+                    curr_event_places.addAll(placesPerArticle.get(urlIndex));
+                }
+                for(String place : curr_event_places)
+                {
+                    System.out.println(String.format("\tDeleting events per place. Event : [%s] , place [%s].",eventID,place));
+                    if(doDelete)
+                    {
+                        query = QueryBuilder.delete().from(
+                                    session.getLoggedKeyspace(),
+                                    Cassandra.Event.Tables.EVENTS_PER_PLACE.getTableName())
+                                    .where(eq(Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_EVENT_ID.getColumnName(), eventID))
+                                    .and(eq(Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_PLACE_LITERAL.getColumnName(), place));
+                            session.execute(query);
+                    }
+                } // for each event place
+            } // if delete event
+
+        }
+
+        // after article deletion, check whether a place in the events table has no source article left
+        // get events
+        /////////////////////////////////////
+
+        System.out.println("Getting events places");
+        query = QueryBuilder.select(
+                Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_EVENT_ID.getColumnName(),
+                Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_PLACE_LITERAL.getColumnName(),
+                Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_EVENT_SOURCE_URLS.getColumnName()
+        ).
+                from(session.getLoggedKeyspace(),Cassandra.Event.Tables.EVENTS_PER_PLACE.getTableName());
+        results = session.execute(query);
+
+        ArrayList<Set<String>> event_places = new ArrayList<>();
+        for (String u : eventIDs) {
+            event_places.add(new HashSet<String>());
+        }
+
+        for (Row row : results) {
+            String e = row.getString(Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_EVENT_ID.getColumnName());
+            String plc = row.getString(Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_PLACE_LITERAL.getColumnName());
+            //Set<String> sources = row.getMap(Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_EVENT_SOURCE_URLS.getColumnName(),String.class,String.class).keySet();
+            int idx = eventIDs.indexOf(e);
+            event_places.get(idx).add(plc);
+        }
+
+
+        for(int ev=0;ev<eventIDs.size();++ev)
+        {
+            String eventID=eventIDs.get(ev);
+
+            if(deletedEvents.get(ev)) {
+                System.out.println(String.format("Skipping deleted event %d/%d : [%s] ", ev, eventIDs.size(), eventID));
+                continue;
+            }
+            // get places that current event sources contain
+            HashSet<String> actualPlaces = new HashSet<String>();
+            for(String source : event_sources.get(ev))
+            {
+                // get article index
+                int artIdx = urls.indexOf(source);
+                if(artIdx < 0 )
+                {
+                    System.err.println("Article " + source + " not found.");
+                    continue;
+                }
+
+                actualPlaces.addAll(placesPerArticle.get(artIdx));
+            }
+            // remove all places without sources
+            event_places.get(ev).removeAll(actualPlaces);
+            // delete them from the column
+            if( ! event_places.get(ev).isEmpty())
+                System.out.println("Removing places " + event_places.get(ev) + " from event " + eventID);
+            for(String place2remove : event_places.get(ev))
+            {
+                query = QueryBuilder.delete()
+                        .mapElt(Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName(),place2remove)
+                        .from(session.getLoggedKeyspace(),Cassandra.Event.Tables.EVENTS.getTableName())
+                        .where(eq(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName(), eventID));
+                session.execute(query);
+            }
+
+        }
+        System.out.println("Done removing undesirable articles.");
+
+    }
     /**
      * Update events table with location data from news and tweets. Location data will be fetched from the respective tables,
      * not computed.
      */
     @Override
-    public void onlyUpdateEventsWithLocationInformation()
+    public void onlyUpdateEventsWithExistingLocationInformation()
     {
         // get all event ids, articles per event, tweets per event
         System.out.println("Loading event data.");
