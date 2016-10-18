@@ -270,6 +270,7 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
                             additional_res.put(extraname.trim(), TYPE_LOCATION);
                         }
 
+
                     }
 
                 }
@@ -285,6 +286,7 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
             }
 
             res.putAll(additional_res);
+
         }
 
         return res;
