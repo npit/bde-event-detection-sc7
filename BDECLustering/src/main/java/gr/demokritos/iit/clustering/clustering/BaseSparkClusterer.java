@@ -1,4 +1,5 @@
 package gr.demokritos.iit.clustering.clustering;
+import gr.demokritos.iit.clustering.model.BDEArticle;
 import gr.demokritos.iit.clustering.newsum.ExtractMatchingGraphPairsFunc;
 import gr.demokritos.iit.clustering.newsum.ExtractMatchingPairsFunc;
 import gr.demokritos.iit.clustering.newsum.IClusterer;
@@ -67,6 +68,8 @@ public class BaseSparkClusterer implements IClusterer {
         StructUtils.printArticlePairs(RDDPairs, 5);
         // get matching mapping
         System.out.println("Mapping to boolean similarity...");
+        System.out.println("Calculate clusters, using " + mode + " " + simCutOff + " " + numPartitions);
+
         long startTime = System.currentTimeMillis();
 
         // TODO: use flatMap?? we want for the full pairs rdd, each item mapped to a boolean value.
@@ -75,8 +78,7 @@ public class BaseSparkClusterer implements IClusterer {
         // spark parallelization ends here.
         // collect matches values
 
-        org.apache.log4j.Logger L = org.apache.log4j.Logger.getRootLogger();
-        L.setLevel(org.apache.log4j.Level.WARN);
+
 
         List<Boolean> matches = matchesrdd.collect();
         int c=0;
@@ -86,7 +88,7 @@ public class BaseSparkClusterer implements IClusterer {
 
         }
         long endTime = System.currentTimeMillis();
-        System.out.println("Ttook " + Long.toString((endTime - startTime)/1000l) + " sec");
+        System.out.println("Took " + Long.toString((endTime - startTime)/1000l) + " sec");
 
         baseclusterer bs = new baseclusterer();
         System.out.println("Calculating clusters.");
@@ -97,15 +99,14 @@ public class BaseSparkClusterer implements IClusterer {
         ArticlesPerCluster =  bs.getArticlesPerCluster();
 
     }
-    public void calculateClusters_graphs(JavaRDD<Tuple4<String, String, String, Long>> articles, JavaRDD<Tuple2<Graph<String, Object>,Graph<String, Object>>> graphPairs) {
+    //public void calculateClusters_graphs(JavaRDD<Tuple4<String, String, String, Long>> articles, List<Tuple2<Graph<String, Object>,Graph<String, Object>>> graphPairs) {
+     public void calculateClusters_graphs(List<Tuple2<BDEArticle,BDEArticle>> articlePairs, List<Tuple2<Graph<String, Object>,Graph<String, Object>>> graphPairs) {
 
         // create pairs
         // graphs pairs are already generated
-        JavaPairRDD<Tuple4<String, String, String, Long>,Tuple4<String, String, String, Long>> articlePairs
-                = articles.cartesian(articles).filter(new DocumentPairGenerationFilterFunction());
+//        JavaPairRDD<Tuple4<String, String, String, Long>,Tuple4<String, String, String, Long>> articlePairs
+//                = articles.cartesian(articles).filter(new DocumentPairGenerationFilterFunction());
 
-        System.out.println("Graphs cart:" + graphPairs.count());
-        System.out.println("Articles cart:" + articlePairs.count());
         // debug
         //StructUtils.printArticlePairs(RDDPairs, 5);
         // get matching mapping
@@ -113,15 +114,22 @@ public class BaseSparkClusterer implements IClusterer {
         long startTime = System.currentTimeMillis();
 
         // TODO: use flatMap?? we want for the full pairs rdd, each item mapped to a boolean value.
-        JavaRDD<Boolean> matchesrdd = graphPairs.map(new ExtractMatchingGraphPairsFunc(sc, mode, simCutOff, numPartitions));
+        List<Boolean> matches = new ArrayList<>();
+         System.out.println("Calculate clusters with graphs, using " + mode + " " + simCutOff + " " + numPartitions);
+        ExtractMatchingGraphPairsFunc comparator = new ExtractMatchingGraphPairsFunc(mode,simCutOff,numPartitions);
+
+        try {
+            for(int i=0;i<graphPairs.size();++i)
+                    matches.add(comparator.call(graphPairs.get(i)));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         // spark parallelization ends here.
         // collect matches values
 
-        org.apache.log4j.Logger L = org.apache.log4j.Logger.getRootLogger();
-        L.setLevel(org.apache.log4j.Level.ERROR);
 
-        List<Boolean> matches = matchesrdd.collect();
+
         int c=0;
         for(Boolean b : matches)
         {
@@ -134,7 +142,81 @@ public class BaseSparkClusterer implements IClusterer {
         baseclusterer bs = new baseclusterer();
         System.out.println("Calculating clusters.");
         startTime = System.currentTimeMillis();
-        bs.calculateClusters(matches,articlePairs);
+        bs.calculateClusters_graphs(matches,articlePairs);
+        endTime = System.currentTimeMillis();
+        System.out.println("Took " + Long.toString((endTime - startTime)/1000l) + " sec");
+        ArticlesPerCluster =  bs.getArticlesPerCluster();
+
+    }
+
+    public void calculateClusters_graphs_(JavaRDD<Tuple4<String, String, String, Long>> articles, JavaRDD<Tuple2<Graph<String, Object>,Graph<String, Object>>> graphPairs) {
+
+        // create pairs
+        // graphs pairs are already generated
+        JavaPairRDD<Tuple4<String, String, String, Long>,Tuple4<String, String, String, Long>> articlePairs
+                = articles.cartesian(articles).filter(new DocumentPairGenerationFilterFunction());
+
+        // debug
+        //StructUtils.printArticlePairs(RDDPairs, 5);
+        // get matching mapping
+        System.out.println("Mapping to boolean similarity...");
+        long startTime = System.currentTimeMillis();
+
+        // TODO: use flatMap?? we want for the full pairs rdd, each item mapped to a boolean value.
+        System.out.println("Calculate clusters with graphs, using " + mode + " " + simCutOff + " " + numPartitions);
+        ExtractMatchingGraphPairsFunc comparator = new ExtractMatchingGraphPairsFunc(mode,simCutOff,numPartitions);
+
+        JavaRDD<Boolean> machesrdd = graphPairs.map(new ExtractMatchingGraphPairsFunc(mode,simCutOff,numPartitions));
+        List<Boolean> matches = machesrdd.collect();
+
+
+        // spark parallelization ends here.
+        // collect matches values
+
+
+
+        int c=0;
+        for(Boolean b : matches)
+        {
+            System.out.println(c++ + " " + b.toString());
+
+        }
+        long endTime = System.currentTimeMillis();
+        System.out.println("Ttook " + Long.toString((endTime - startTime)/1000l) + " sec");
+
+        baseclusterer bs = new baseclusterer();
+        System.out.println("Calculating clusters.");
+        startTime = System.currentTimeMillis();
+        bs.calculateClusters_graphs_(matches,articlePairs);
+        endTime = System.currentTimeMillis();
+        System.out.println("Took " + Long.toString((endTime - startTime)/1000l) + " sec");
+        ArticlesPerCluster =  bs.getArticlesPerCluster();
+
+    }
+    public void calculateClusters_graphs_2(JavaRDD<Tuple4<String, String, String, Long>> articles, List<Boolean> matches) {
+
+        // create pairs
+        // graphs pairs are already generated
+        JavaPairRDD<Tuple4<String, String, String, Long>,Tuple4<String, String, String, Long>> articlePairs
+                = articles.cartesian(articles).filter(new DocumentPairGenerationFilterFunction());
+
+        // debug
+        //StructUtils.printArticlePairs(RDDPairs, 5);
+        // get matching mapping
+        long startTime = System.currentTimeMillis();
+
+
+        // spark parallelization ends here.
+        // collect matches values
+
+
+
+        long endTime = System.currentTimeMillis();
+
+        baseclusterer bs = new baseclusterer();
+        System.out.println("Calculating clusters.");
+        startTime = System.currentTimeMillis();
+        bs.calculateClusters_graphs_(matches,articlePairs);
         endTime = System.currentTimeMillis();
         System.out.println("Took " + Long.toString((endTime - startTime)/1000l) + " sec");
         ArticlesPerCluster =  bs.getArticlesPerCluster();
@@ -149,14 +231,14 @@ public class BaseSparkClusterer implements IClusterer {
             return (Map) (this.hsArticlesPerCluster != null && !this.hsArticlesPerCluster.isEmpty() ? this.hsArticlesPerCluster : Collections.EMPTY_MAP);
         }
 
-        public void calculateClusters(List<Boolean> hmResults,
-                                      JavaPairRDD<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>> RDDPairs
+        public void calculateClusters(List<Boolean> hmResults, JavaPairRDD<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>> RDDPairs
+
         ) {
 
             this.hsArticlesPerCluster = new HashMap();
             this.hsClusterPerArticle = new HashMap();
             int count = -1;
-            for (Tuple2<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>> pair : RDDPairs.collect()) {
+            for (Tuple2<Tuple4<String,String,String,Long>,Tuple4<String,String,String,Long>> pair : RDDPairs.collect()) {
                 //  The quadruple represents <entry_url, title, clean_text, timestamp>
                 //    public Article(String sSource, String Title, String Text, String Category, String Feed, URLImage imageUrl, Date date) {
 
@@ -212,7 +294,133 @@ public class BaseSparkClusterer implements IClusterer {
             return;
         }
 
+        //public void calculateClusters(List<Boolean> hmResults, JavaPairRDD<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>> RDDPairs
+        public void calculateClusters_graphs(List<Boolean> hmResults, List<Tuple2<BDEArticle,BDEArticle>> ArticlePairs
 
+        ) {
+
+            this.hsArticlesPerCluster = new HashMap();
+            this.hsClusterPerArticle = new HashMap();
+            int count = -1;
+            for (Tuple2<BDEArticle,BDEArticle> pair : ArticlePairs) {
+                //  The quadruple represents <entry_url, title, clean_text, timestamp>
+                //    public Article(String sSource, String Title, String Text, String Category, String Feed, URLImage imageUrl, Date date) {
+
+//                Article aA = new Article(pair._1()._1(), pair._1()._2(), pair._1()._3(), "", "", new URLImage(""), new Date(pair._1()._4()));
+//                Article aB = new Article(pair._2()._1(), pair._2()._2(), pair._2()._3(), "", "", new URLImage(""), new Date(pair._2()._4()));
+                Article aA = pair._1();
+                Article aB = pair._2();
+                boolean bMatch = hmResults.get(++count);
+                String sClusterID;
+                Topic tNew;
+                if (bMatch) {
+                    if (this.hsClusterPerArticle.containsKey(aA) && this.hsClusterPerArticle.containsKey(aB)) {
+                        this.collapseTopics((String) this.hsClusterPerArticle.get(aA), (String) this.hsClusterPerArticle.get(aB));
+                    } else {
+                        if (!this.hsClusterPerArticle.containsKey(aA)) {
+                            tNew = new Topic();
+                            sClusterID = tNew.getID();
+                            tNew.add(aA);
+                            this.hsArticlesPerCluster.put(sClusterID, tNew);
+                            this.hsClusterPerArticle.put(aA, sClusterID);
+                        }
+
+                        if (this.hsClusterPerArticle.containsKey(aB)) {
+                            this.collapseTopics((String) this.hsClusterPerArticle.get(aA), (String) this.hsClusterPerArticle.get(aB));
+                        } else {
+                            tNew = new Topic();
+                            sClusterID = tNew.getID();
+                            this.hsArticlesPerCluster.put(sClusterID, tNew);
+                            ((Topic) this.hsArticlesPerCluster.get(sClusterID)).add(aB);
+                            this.hsClusterPerArticle.put(aB, sClusterID);
+                        }
+                    }
+                } else {
+                    if (!this.hsClusterPerArticle.containsKey(aA)) {
+                        tNew = new Topic();
+                        sClusterID = tNew.getID();
+                        tNew.add(aA);
+                        this.hsArticlesPerCluster.put(sClusterID, tNew);
+                        this.hsClusterPerArticle.put(aA, sClusterID);
+                    }
+
+                    if (!this.hsClusterPerArticle.containsKey(aB)) {
+                        tNew = new Topic();
+                        sClusterID = tNew.getID();
+                        tNew.add(aB);
+                        this.hsArticlesPerCluster.put(sClusterID, tNew);
+                        this.hsClusterPerArticle.put(aB, sClusterID);
+                    }
+                }
+            }
+
+            this.checkForInconsistencies();
+            this.generateFinalTopics();
+            return;
+        }
+
+        public void calculateClusters_graphs_(List<Boolean> hmResults,  JavaPairRDD<Tuple4<String, String, String, Long>,Tuple4<String, String, String, Long>> ArticlePairs
+
+        ) {
+
+            this.hsArticlesPerCluster = new HashMap();
+            this.hsClusterPerArticle = new HashMap();
+            int count = -1;
+            for (Tuple2<Tuple4<String,String,String,Long>,Tuple4<String,String,String,Long>> pair : ArticlePairs.collect()) {
+                //  The quadruple represents <entry_url, title, clean_text, timestamp>
+                //    public Article(String sSource, String Title, String Text, String Category, String Feed, URLImage imageUrl, Date date) {
+
+                Article aA = new Article(pair._1()._1(), pair._1()._2(), pair._1()._3(), "", "", new URLImage(""), new Date(pair._1()._4()));
+                Article aB = new Article(pair._2()._1(), pair._2()._2(), pair._2()._3(), "", "", new URLImage(""), new Date(pair._2()._4()));
+
+                boolean bMatch = hmResults.get(++count);
+                String sClusterID;
+                Topic tNew;
+                if (bMatch) {
+                    if (this.hsClusterPerArticle.containsKey(aA) && this.hsClusterPerArticle.containsKey(aB)) {
+                        this.collapseTopics((String) this.hsClusterPerArticle.get(aA), (String) this.hsClusterPerArticle.get(aB));
+                    } else {
+                        if (!this.hsClusterPerArticle.containsKey(aA)) {
+                            tNew = new Topic();
+                            sClusterID = tNew.getID();
+                            tNew.add(aA);
+                            this.hsArticlesPerCluster.put(sClusterID, tNew);
+                            this.hsClusterPerArticle.put(aA, sClusterID);
+                        }
+
+                        if (this.hsClusterPerArticle.containsKey(aB)) {
+                            this.collapseTopics((String) this.hsClusterPerArticle.get(aA), (String) this.hsClusterPerArticle.get(aB));
+                        } else {
+                            tNew = new Topic();
+                            sClusterID = tNew.getID();
+                            this.hsArticlesPerCluster.put(sClusterID, tNew);
+                            ((Topic) this.hsArticlesPerCluster.get(sClusterID)).add(aB);
+                            this.hsClusterPerArticle.put(aB, sClusterID);
+                        }
+                    }
+                } else {
+                    if (!this.hsClusterPerArticle.containsKey(aA)) {
+                        tNew = new Topic();
+                        sClusterID = tNew.getID();
+                        tNew.add(aA);
+                        this.hsArticlesPerCluster.put(sClusterID, tNew);
+                        this.hsClusterPerArticle.put(aA, sClusterID);
+                    }
+
+                    if (!this.hsClusterPerArticle.containsKey(aB)) {
+                        tNew = new Topic();
+                        sClusterID = tNew.getID();
+                        tNew.add(aB);
+                        this.hsArticlesPerCluster.put(sClusterID, tNew);
+                        this.hsClusterPerArticle.put(aB, sClusterID);
+                    }
+                }
+            }
+
+            this.checkForInconsistencies();
+            this.generateFinalTopics();
+            return;
+        }
 
         protected void checkForInconsistencies() {
             int iCnt = 0;

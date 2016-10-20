@@ -32,7 +32,7 @@ import static jdk.nashorn.internal.runtime.regexp.joni.Config.log;
 public class hotfix {
 
     public static void main(String[] args) {
-        String path = "/home/npittaras/Documents/project/BDE/BDEproject/BDEEventDetection/BDELocationExtraction/res/location_extraction.properties";
+        String path = "/home/npittaras/Documents/project/BDE/BDEproject/BDEEventDetection/BDELocationExtraction/res/hotfix_location_extraction.properties";
 
         ILocConf conf = new LocConf(path);
         ILocFactory factory = null;
@@ -45,10 +45,12 @@ public class hotfix {
             // init connection pool to the repository
             ILocationRepository repos = factory.createLocationCassandraRepository();
 
+            // do the hotfix
+            // ------------------
             // create per published date tables
-            //repos.doHotfix();
-
-            repos.removeUndesirableArticles();
+            //repos.createPerPublishedDateTables();
+            // remove articles based on content
+            //repos.removeUndesirableArticles();
 
 
         } catch (IllegalArgumentException  ex) {

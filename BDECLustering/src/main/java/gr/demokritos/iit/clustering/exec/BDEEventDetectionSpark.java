@@ -18,37 +18,44 @@ import gr.demokritos.iit.clustering.clustering.BaseSparkClusterer;
 import gr.demokritos.iit.clustering.config.BDESparkContextContainer;
 import gr.demokritos.iit.clustering.config.BDESparkConf;
 import gr.demokritos.iit.clustering.config.ISparkConf;
+import gr.demokritos.iit.clustering.factory.DemoClusteringFactory;
 import gr.demokritos.iit.clustering.model.BDEArticle;
+import gr.demokritos.iit.clustering.newsum.ExtractMatchingGraphPairsFunc;
+import gr.demokritos.iit.clustering.newsum.ExtractMatchingPairsFunc;
+import gr.demokritos.iit.clustering.parallelngg.graph.NGramGraphCreator;
+import gr.demokritos.iit.clustering.parallelngg.structs.StringEntity;
 import gr.demokritos.iit.clustering.repository.CassandraSparkRepository;
 
 import java.util.*;
 
+import gr.demokritos.iit.clustering.repository.DemoCassandraRepository;
 import gr.demokritos.iit.clustering.util.ArticleGraphCalculator;
-import gr.demokritos.iit.clustering.util.StructUtils;
-import org.apache.spark.SparkContext;
+import gr.demokritos.iit.clustering.util.DocumentPairGenerationFilterFunction;
+import gr.demokritos.iit.clustering.util.GraphPairGenerationFilterFunction;
+import org.apache.spark.api.java.JavaNewHadoopRDD;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.python.PairwiseRDD;
+import org.apache.spark.graphx.EdgeRDD;
 import org.apache.spark.graphx.Graph;
+import org.apache.spark.graphx.VertexRDD;
+import org.apache.spark.rdd.RDD;
 import org.scify.asset.server.model.datacollections.CleanResultCollection;
 import org.scify.asset.server.model.structures.social.TwitterResult;
 import org.scify.newsum.server.model.structures.Article;
 import org.scify.newsum.server.model.structures.Sentence;
 import org.scify.newsum.server.model.structures.Summary;
 import org.scify.newsum.server.model.structures.Topic;
-import scala.Serializable;
 import scala.Tuple2;
 import scala.Tuple4;
+import scala.reflect.ClassTag;
 
 /**
  * @author George K. <gkiom@iit.demokritos.gr>
  */
 
-class test implements Serializable
-{
-    public int a;
-    public int b;
-    public test(int aa,int bb){ a=aa;b=bb;}
-}
+
 public class BDEEventDetectionSpark {
 
     //    private final SparkContext sc;
@@ -84,13 +91,14 @@ public class BDEEventDetectionSpark {
         BDESparkContextContainer bdes = new BDESparkContextContainer(conf);
         // instantiate us
         BDEEventDetectionSpark bdedet = new BDEEventDetectionSpark(bdes);
-        // keep context to pass around
+        bdedet.getContext().setLogLevel("ERROR");
+                // keep context to pass around
         JavaSparkContext sc = bdedet.getContext();
         // get the spark repository class
         CassandraSparkRepository repo = new CassandraSparkRepository(JavaSparkContext.toSparkContext(sc), conf);
+
         // get a timestamp : TODO: FIXME
         long timestamp = repo.getLatestTimestamp("event_detection_log");
-
         System.out.println("timestamp: " + new Date(timestamp).toString());
         System.out.println("LOADING ARTICLES");
         // load batch. The quadruple represents <entry_url, title, clean_text, timestamp>
@@ -102,52 +110,150 @@ public class BDEEventDetectionSpark {
         JavaRDD<Tuple4<String, String, String, Long>> articles = repo.loadArticlesPublishedLaterThan(timestamp);
         BaseSparkClusterer clusterer = new BaseSparkClusterer(JavaSparkContext.toSparkContext(sc),conf.getSimilarityMode(),conf.getCutOffThreshold(), conf.getNumPartitions());
 
-        // // precompute graphs approach
+        DemoClusteringFactory fact = new DemoClusteringFactory(conf);
+        DemoCassandraRepository repoL = fact.createDemoCassandraRepository();
+        Calendar now = Calendar.getInstance();
+        now.set(Calendar.MONTH, now.get(Calendar.MONTH) - 1);
+        long ts = now.getTimeInMillis();
+        List<BDEArticle> articlesLocally = repoL.loadArticlesAsDemo_crawledInfo(ts,5);
+
+
+        // ---------------------------------
+        // precompute graphs, "on the driver"
+        // ---------------------------------
+//        List<Graph<String,Object>> graphsList = new ArrayList<>();
+//        RDD<Tuple2<RDD,RDD>> verticesEdges = null;
+//
+//        for (BDEArticle article : articlesLocally)
+//        {
+//            StringEntity ent1 = new StringEntity();
+//            String title = articlesLocally.get(0).getTitle();
+//            String text = articlesLocally.get(0).getDescription();
+//            ent1.setString(JavaSparkContext.toSparkContext(sc), new StringBuilder().append(title).append(" ").append(text).toString());
+//            NGramGraphCreator ngc = new NGramGraphCreator(JavaSparkContext.toSparkContext(sc), conf.getNumPartitions(), 3, 3);
+//            graphsList.add(ngc.getGraph(ent1));
+//
+//
+////            Graph<String,Object> mygraph = graphsList.get(0);
+////            RDD temp = mygraph.vertices();
+////            ClassTag<RDD<Tuple2<String,String>>> tag = scala.reflect.ClassTag$.MODULE$.apply(RDD.class);
+////            RDD<Tuple2<String,String>> pair =  temp.cartesian(temp,tag);
+////            System.out.println("Vertex count : " + mygraph.vertices().count());
+////            System.out.println("NUm in count : " + pair.count());
+//        }
+//
+//        // generate the pairs
+//        ArrayList<Tuple2<Graph<String,Object>,Graph<String,Object>>> graphsTuples = new ArrayList<>();
+//        ArrayList<Tuple2<BDEArticle,BDEArticle>> articleTuples = new ArrayList<>();
+//        for(int i=0;i<graphsList.size();++i)
+//        {
+//            for(int j=i+1;j<graphsList.size();++j) {
+//                graphsTuples.add(new Tuple2(graphsList.get(i), graphsList.get(j)));
+//                articleTuples.add(new Tuple2(articlesLocally.get(i),articlesLocally.get(j)));
+//            }
+//        }
+//        //JavaRDD<Tuple2<Graph<String, Object>,Graph<String, Object>>>  graphsTuplesRDD =  sc.parallelize(graphsTuples);
+//        //JavaRDD<Tuple2<BDEArticle,BDEArticle>> articleTuplesRDD = sc.parallelize(articleTuples);
+//        clusterer.calculateClusters_graphs(articleTuples,graphsTuples);
+//
+//
+//        Map<String, Topic> res = clusterer.getArticlesPerCluster();
+//        System.out.println("Printing clustering results.");
+//        for(String clustid : res.keySet())
+//        {
+//            System.out.println("cluster " + clustid);
+//            for(Article art : res.get(clustid))
+//            {
+//                System.out.println("\t art" + art.toString());
+//            }
+//        }
+
+        // ---------------------------------
+        // end of precompute graphs, "on the driver"
+        // ---------------------------------
+
+        // ----------------------------
+        // // precompute graphs approach : compute the graph for each article, THEN upload to spark
+        // workers so they don't compute the article's graph for each combo
+        // ----------------------------
+        // this below seems to produce null graph objects (its fields are null)
+        // however in the converter class they are fine
+        // perhaps the Function interface cannot return non-primitive objects or needs a specific setting
         JavaRDD<Graph<String, Object>> graphs = articles.map(new ArticleGraphCalculator(JavaSparkContext.toSparkContext(sc),conf.getNumPartitions()));
         // force computation
         System.out.println("Graphs are : " + graphs.count());
 
-        // there is a difficulty computing combinations (filter the cartesian) of graphs like above
-        // doing it manually
-        List<Graph<String,Object>> graphsList = graphs.collect();
-        ArrayList<Tuple2<Graph<String,Object>,Graph<String,Object>>> graphsTuples = new ArrayList<>();
 
-        for(int i=0;i<graphsList.size();++i)
+        // the difficulty is handled badly here: equality checks just # of verticles and edges.
+        long startTime = System.currentTimeMillis();
+        JavaPairRDD<Graph<String,Object>,Graph<String,Object>> graphPairs = graphs.cartesian(graphs).filter(new GraphPairGenerationFilterFunction());
+        long endTime = System.currentTimeMillis();
+
+        System.out.println("Graph pair filtering took " + Long.toString((endTime - startTime)/1000l) + " sec");
+
+        System.out.println("Graphpairs count : " + graphPairs.count());
+        JavaRDD<Boolean> matchesrdd = graphPairs.map(
+                new ExtractMatchingGraphPairsFunc(conf.getSimilarityMode(),conf.getCutOffThreshold(),conf.getNumPartitions()));
+        List<Boolean> matches = matchesrdd.collect();
+        int cccc=0;
+        for(Boolean b : matches)
         {
-            for(int j=i+1;j<graphsList.size();++j) {
+            System.out.println(cccc++ + " " + b.toString());
+
+        }
+        clusterer.calculateClusters_graphs_2(articles,matches);
+        // there is a difficulty computing combinations  of graphs l4ike above
+        //  we want to do filtering to keep only the combinations from the cartesian product
+        // but we cannot use an 'equals' operator on the graph objects
+        // doing it manually
+
+        List<Graph<String,Object>> graphsList = graphs.collect();
+
+        ArrayList<Tuple2<Graph<String, Object>, Graph<String, Object>>> graphsTuples = new ArrayList<>();
+
+        for (int i = 0; i < graphsList.size(); ++i) {
+            for (int j = i + 1; j < graphsList.size(); ++j) {
                 graphsTuples.add(new Tuple2(graphsList.get(i), graphsList.get(j)));
 
                 System.out.println(i + " - " + j);
             }
         }
-        // put the graphs to the spark workers
 
-        StructUtils.printArticles(articles);
-        // generate all article pairs
-
-        JavaRDD<Tuple2<Graph<String, Object>,Graph<String, Object>>>  graphsTuplesRDD =  sc.parallelize(graphsTuples);
-
-        List<Tuple2<Graph<String, Object>,Graph<String, Object>>> c = graphsTuplesRDD.collect();
-        if(c.get(0)._1().edges() == null) System.out.println("it's null");
-       // clusterer.calculateClusters_graphs(articles,graphsTuplesRDD);
-
-     // the below works, though.
-        ArrayList<test> testlist = new ArrayList<>();
-        testlist.add(new test(1,2));
-        testlist.add(new test(3,4));
-
-        ArrayList<Tuple2<test,test>> alist = new ArrayList<>();
-        alist.add(new Tuple2<test,test>(testlist.get(0),testlist.get(1)));
+        // puth the pairs to spark
+        JavaRDD<Tuple2<Graph<String, Object>, Graph<String, Object>>> graphsTuplesRDD = sc.parallelize(graphsTuples);
+        // cluster
+        clusterer.calculateClusters_graphs_(articles, graphsTuplesRDD);
+        // get them back
+        List<Tuple2<Graph<String, Object>, Graph<String, Object>>> c = graphsTuplesRDD.collect();
+        if (c.get(0)._1().edges() == null) System.out.println("it's null");
 
 
-        JavaRDD<Tuple2<test,test>> parall = sc.parallelize(alist);
-        List<Tuple2<test,test>> cc = parall.collect();
-        if(cc.get(0)._1() == null) System.out.println("it's null!!");
-        if(cc.get(0)._1()== null) System.out.println("it's null!!");
-        if(cc.get(0)._1() == null) System.out.println("it's null!!");
-        clusterer.calculateClusters_graphs(articles,graphsTuplesRDD);
+//
+//        // ----------------------------
+//        // end of precompute graph approach
+//        // ----------------------------
+
+
+        // ----------------------------
+        // default approach:
+        // generate article pairs, for each pair compute the graph and compare, on the fly
+        // ----------------------------
+        System.out.println("DEFAUTL APPROACH");
+        startTime = System.currentTimeMillis();
+
+        JavaPairRDD<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>> articlePairs
+                = articles.cartesian(articles).filter(new DocumentPairGenerationFilterFunction());
+        endTime = System.currentTimeMillis();
+        System.out.println("Article pair filtering took " + Long.toString((endTime - startTime)/1000l) + " sec");
+        // generate clusters
 
         clusterer.calculateClusters(articles);
+
+        // ----------------------------
+        // end of default approach
+        // ----------------------------
+
+
 
         Map<String, Topic> res = clusterer.getArticlesPerCluster();
         System.out.println("Printing clustering results.");

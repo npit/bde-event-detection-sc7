@@ -68,8 +68,10 @@ public interface ILocationRepository extends IBaseRepository {
 
     // hotfixes:
     // -----------------------------------------------
-    void doHotfix();
+    void createPerPublishedDateTables();
     void onlyUpdateEventsWithExistingLocationInformation();
     void removeUndesirableArticles();
+
     // -----------------------------------------------
+    void setUpdateEvents();
 }

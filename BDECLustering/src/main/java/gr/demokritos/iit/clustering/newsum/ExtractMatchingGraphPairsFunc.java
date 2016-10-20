@@ -17,13 +17,11 @@ import scala.Tuple4;
 public class ExtractMatchingGraphPairsFunc implements Function<Tuple2<Graph<String, Object>, Graph<String, Object>>, Boolean> {
 
 
-    private static transient SparkContext sc;
     private final SimilarityMode mode;
     private final double simCutOff;
     private final int numPartitions;
 
-    public ExtractMatchingGraphPairsFunc(SparkContext sc, SimilarityMode modeArg, double simCutOffArg, int numPart) {
-        this.sc = sc;
+    public ExtractMatchingGraphPairsFunc(SimilarityMode modeArg, double simCutOffArg, int numPart) {
         this.mode = modeArg;
         this.simCutOff = simCutOffArg;
         this.numPartitions = numPart;
@@ -38,7 +36,6 @@ public class ExtractMatchingGraphPairsFunc implements Function<Tuple2<Graph<Stri
         Graph<String, Object> ngg2 = v1._2();
         if (ngg1 == null) System.out.println("graph#1 is null");
         if (ngg2 == null) System.out.println("graph#2 is null");
-
         if (ngg1.edges() == null) System.out.println("graph#1 edge is null");
         if (ngg2.edges() == null) System.out.println("graph#2 edge is null");
 

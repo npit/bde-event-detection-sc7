@@ -1,7 +1,7 @@
 package gr.demokritos.iit.clustering.parallelngg
 
 import gr.demokritos.iit.clustering.parallelngg.graph._
-import gr.demokritos.iit.clustering.parallelngg.nlp.{StringEntityTokenizer, OpenNLPSentenceSplitter}
+import gr.demokritos.iit.clustering.parallelngg.nlp.{OpenNLPSentenceSplitter, StringEntityTokenizer}
 import gr.demokritos.iit.clustering.parallelngg.structs.StringEntity
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.{SparkConf, SparkContext}

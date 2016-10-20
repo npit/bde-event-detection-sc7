@@ -52,8 +52,14 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
 
     public LocationCassandraRepository(Session session) {
         super(session);
+        shouldUpdateEvents = false;
     }
-
+    private boolean shouldUpdateEvents;
+    public void setUpdateEvents()
+    {
+        System.out.println("NOTE : Will also update events table with newly extracted location data.");
+        shouldUpdateEvents = true;
+    }
     @Override
     public LocSched scheduleInitialized(OperationMode mode)
     {
@@ -165,8 +171,9 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
             session.execute(insert);
 
         }
-        // this populates existing events table with locations/polygons pairs from news. It's a hotfix
-        updateEventsWithArticleLocationPolygonPairs(places_polygons, permalink);
+        // this populates existing events table with locations/polygons pairs from news.
+        if(shouldUpdateEvents)
+            updateEventsWithArticleLocationPolygonPairs(places_polygons, permalink);
     }
 
     @Override
@@ -195,8 +202,9 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
                     .value(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_REFERRED_PLACE.FLD_ACCOUNT_NAME.getColumnName(), tweet.get(Cassandra.Twitter.TBL_TWITTER_POST.FLD_ACCOUNT_NAME.getColumnName()));
             session.execute(insert);
         }
-        // this populates existing events table with locations/polygons pairs from tweets. It's a hotfix
-        updateEventsWithTweetLocationPolygonPairs(places_polygons,post_id);
+        // this populates existing events table with locations/polygons pairs from tweets.
+        if(shouldUpdateEvents)
+            updateEventsWithTweetLocationPolygonPairs(places_polygons,post_id);
     }
 
     @Override
@@ -1279,7 +1287,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
 
     }
     @Override
-    public void doHotfix()
+    public void createPerPublishedDateTables()
     {
         Collection<Map<String, Object>> items = loadAllArticlesHotfix(-1);
         for (Map<String, Object> article : items)

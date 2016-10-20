@@ -57,7 +57,8 @@ public class ExtractMatchingPairsFunc implements Function<Tuple2<Tuple4<String, 
         // get graph similarity
         GraphSimilarityCalculator gsc = new GraphSimilarityCalculator();
         Similarity gs = gsc.getSimilarity(ngg1, ngg2);
-
+        if(ngg2.edges() == null )
+            System.out.println("Null edges.");
         // decide based on mode
         switch (mode) {
             case NVS:

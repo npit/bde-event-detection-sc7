@@ -31,8 +31,10 @@ public class ArticleGraphCalculator implements Function<Tuple4<String,String,Str
         Graph<String, Object> graphobj = ngc.getGraph(ent1);
 //        System.out.println("Constructed graph from {" + title + "}\n{" + text+"}");
 //        System.out.println("GRAPH:\n" + graphobj.toString());
-
+        if(graphobj.edges()==null)
+            System.out.println("Null edges");
         return graphobj;
+//        return graphobj;
     }
 
 }

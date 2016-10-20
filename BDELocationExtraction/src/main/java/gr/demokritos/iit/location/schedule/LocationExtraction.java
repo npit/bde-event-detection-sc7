@@ -69,6 +69,8 @@ public class LocationExtraction {
             }
             else
             {
+                if(conf.shouldUpdateEvents())
+                    repos.setUpdateEvents();
                 // init location extractor
                 ILocationExtractor locExtractor = factory.createDefaultLocationExtractor();
                 locExtractor.configure(conf);
