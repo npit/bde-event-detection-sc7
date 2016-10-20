@@ -62,7 +62,7 @@ public class LocationExtraction {
             // init connection pool to the repository
             ILocationRepository repos = factory.createLocationCassandraRepository();
 
-            repos.storeAndChangeDetectionEvents("http://teleios4.di.uoa.gr:8080/changeDetection/event/process");
+
             if(conf.onlyUpdateEvents())
             {
                 repos.onlyUpdateEventsWithExistingLocationInformation();

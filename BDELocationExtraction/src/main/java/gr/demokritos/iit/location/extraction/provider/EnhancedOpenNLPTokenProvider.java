@@ -213,6 +213,7 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
 
     protected Map<String, String> getTokenMap(String text) {
 
+        String text_lowercase = new String(text).toLowerCase();
         if (text == null || text.isEmpty()) {
             return Collections.EMPTY_MAP;
         }
@@ -260,9 +261,18 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
 //                }
                 // just check the text
                 for(String extraname : extraNames) {
-                    if (text.contains(extraname) || text.contains(extraname.toLowerCase()) || text.contains(extraname.toUpperCase())) {
-                        additional_res.put(extraname.trim(), TYPE_LOCATION);
+                    //if (text.contains(extraname) || text_lowercase.contains(extraname.toLowerCase()) || text.contains(extraname.toUpperCase())) {
+                    String extranameTrimmed=extraname.trim();
+                    if(!additional_res.containsKey(extranameTrimmed))
+                    {
+                        if (text_lowercase.contains(extraname.toLowerCase()))
+                        {
+                            additional_res.put(extraname.trim(), TYPE_LOCATION);
+                        }
+
+
                     }
+
                 }
 
             }
@@ -271,10 +281,12 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
         if( useAdditionalSources )
         {
             if(onlyUseAdditionalSources)
-                res = additional_res;
+            {
+                res.clear();
+            }
 
-            else
-                res.putAll(additional_res);
+            res.putAll(additional_res);
+
         }
 
         return res;

@@ -166,7 +166,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
 
         }
         // this populates existing events table with locations/polygons pairs from news. It's a hotfix
-        //updateEventsWithArticleLocationPolygonPairs(places_polygons, permalink);
+        updateEventsWithArticleLocationPolygonPairs(places_polygons, permalink);
     }
 
     @Override
@@ -196,13 +196,13 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
             session.execute(insert);
         }
         // this populates existing events table with locations/polygons pairs from tweets. It's a hotfix
-        //updateEventsWithTweetLocationPolygonPairs(places_polygons,post_id);
+        updateEventsWithTweetLocationPolygonPairs(places_polygons,post_id);
     }
 
     @Override
     public void updateEventsWithArticleLocationPolygonPairs(Map<String,String> places_polygons, String permalink)
     {
-        System.out.println("\t>Updating events with places of article permalink: " + permalink); //debugprint
+        System.out.println("\t>>> Starting updating events with places of article permalink: " + permalink); //debugprint
         long startTime = System.currentTimeMillis();
         Set<String> places = places_polygons.keySet();
         // this is an ugly workaround. a table events per article would be superb
@@ -286,7 +286,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
     public void updateEventsWithTweetLocationPolygonPairs(Map<String,String> places_polygons, long post_id)
     {
         String strpostid = Long.toString(post_id);
-        System.out.println("\t>Updating events with places of tweet post id: " + strpostid); //debugprint
+        System.out.println("\t>>>Updating events with places of tweet post id: " + strpostid); //debugprint
 
         long startTime = System.currentTimeMillis();
 
