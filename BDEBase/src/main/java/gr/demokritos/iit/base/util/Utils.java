@@ -24,6 +24,23 @@ import java.util.*;
  */
 public class Utils {
 
+    private static Stack<Long> tictoc;
+    public static void tic()
+    {
+
+        if(tictoc == null) tictoc = new Stack<>();
+        tictoc.push(System.currentTimeMillis());
+
+    }
+    public static String toc()
+    {
+        if(tictoc == null) return "[tictoc not initialized]";
+        if(tictoc.isEmpty()) return "[empty tictoc]";
+        Long timenow = System.currentTimeMillis();
+        Long timethen = tictoc.pop();
+
+        return Long.toString((timenow-timethen)/1000l) + " sec ";
+    }
     /**
      * return a 'yyyy-MM-dd' represantation of the date passed. For usage in
      * cassandra key buckets

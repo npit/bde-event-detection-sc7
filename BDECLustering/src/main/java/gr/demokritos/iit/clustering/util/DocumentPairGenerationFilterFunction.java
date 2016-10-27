@@ -39,7 +39,7 @@ public class DocumentPairGenerationFilterFunction implements
     @Override
     public Boolean call(Tuple2<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>> v1) throws Exception {
         boolean value = !v1._1._1().equals(v1._2._1()) && hash_cache.add(new DPair(v1._1._1(), v1._2._1()).hashCode());
-        System.out.println("doc pair value : " + value);
+        //System.out.println("doc pair value : " + value);
         return value;
     }
 }

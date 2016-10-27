@@ -65,7 +65,7 @@ public class BaseSparkClusterer implements IClusterer {
         JavaPairRDD<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>> RDDPairs
                 = articles.cartesian(articles).filter(new DocumentPairGenerationFilterFunction());
         // debug
-        StructUtils.printArticlePairs(RDDPairs, 5);
+//        StructUtils.printArticlePairs(RDDPairs, 5);
         // get matching mapping
         System.out.println("Mapping to boolean similarity...");
         System.out.println("Calculate clusters, using " + mode + " " + simCutOff + " " + numPartitions);
@@ -88,14 +88,14 @@ public class BaseSparkClusterer implements IClusterer {
 
         }
         long endTime = System.currentTimeMillis();
-        System.out.println("Took " + Long.toString((endTime - startTime)/1000l) + " sec");
+        System.out.println("Mapping to boolean similarity took " + Long.toString((endTime - startTime)/1000l) + " sec");
 
         baseclusterer bs = new baseclusterer();
         System.out.println("Calculating clusters.");
         startTime = System.currentTimeMillis();
         bs.calculateClusters(matches,RDDPairs);
         endTime = System.currentTimeMillis();
-        System.out.println("Took " + Long.toString((endTime - startTime)/1000l) + " sec");
+        System.out.println("Clustering took " + Long.toString((endTime - startTime)/1000l) + " sec");
         ArticlesPerCluster =  bs.getArticlesPerCluster();
 
     }
@@ -200,25 +200,15 @@ public class BaseSparkClusterer implements IClusterer {
         JavaPairRDD<Tuple4<String, String, String, Long>,Tuple4<String, String, String, Long>> articlePairs
                 = articles.cartesian(articles).filter(new DocumentPairGenerationFilterFunction());
 
-        // debug
-        //StructUtils.printArticlePairs(RDDPairs, 5);
-        // get matching mapping
-        long startTime = System.currentTimeMillis();
-
-
-        // spark parallelization ends here.
-        // collect matches values
-
-
-
-        long endTime = System.currentTimeMillis();
 
         baseclusterer bs = new baseclusterer();
+        long startTime = System.currentTimeMillis();
+
         System.out.println("Calculating clusters.");
-        startTime = System.currentTimeMillis();
         bs.calculateClusters_graphs_(matches,articlePairs);
-        endTime = System.currentTimeMillis();
-        System.out.println("Took " + Long.toString((endTime - startTime)/1000l) + " sec");
+        long endTime = System.currentTimeMillis();
+
+        System.out.println("Clustering took " + Long.toString((endTime - startTime)/1000l) + " sec");
         ArticlesPerCluster =  bs.getArticlesPerCluster();
 
     }

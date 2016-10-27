@@ -50,11 +50,11 @@ public class GraphPairGenerationFilterFunction implements Function<Tuple2<Graph<
         List<Tuple2<Object,String>> vertL1 = new ArrayList<>(); vertL1.addAll(Arrays.asList(vertices1));
         List<Tuple2<Object,String>> vertL2 = new ArrayList<>(); vertL2.addAll(Arrays.asList(vertices2));
 
-        System.out.println(String.format("E/V %d/%d , E/V %d/%d",edgeL1.size(),vertL1.size(),edgeL2.size(),vertL2.size()));
+        //System.out.println(String.format("E/V %d/%d , E/V %d/%d",edgeL1.size(),vertL1.size(),edgeL2.size(),vertL2.size()));
         boolean notIdentical = true;
         if(vertL1.equals(vertL2) && edgeL1.equals(edgeL2)) {
             notIdentical = false; // same graph
-            System.out.println("EQUAL");
+            //System.out.println("EQUAL");
             return false;
         }
         int hashCode1 = new DPair(vertL1,edgeL1).hashCode();
@@ -65,8 +65,8 @@ public class GraphPairGenerationFilterFunction implements Function<Tuple2<Graph<
         // add the codes
         hash_cache.add(totalHash);
 
-        System.out.println("Obj hashcodes:" + hashCode1 + " " + hashCode2);
-        System.out.println("\tInserting. Code: " + totalHash  + " \n.\t\t Cache now: " + hash_cache);
+        //System.out.println("Obj hashcodes:" + hashCode1 + " " + hashCode2);
+        //System.out.println("\tInserting. Code: " + totalHash  + " \n.\t\t Cache now: " + hash_cache);
 
 
         return   true;

@@ -11,6 +11,8 @@ import org.apache.spark.graphx.Graph;
 import scala.Tuple2;
 import scala.Tuple4;
 
+import java.util.HashMap;
+
 /**
  * @author George K.<gkiom@iit.demokritos.gr>
  */
@@ -34,16 +36,17 @@ public class ExtractMatchingGraphPairsFunc implements Function<Tuple2<Graph<Stri
 
         Graph<String, Object> ngg1 = v1._1();
         Graph<String, Object> ngg2 = v1._2();
-        if (ngg1 == null) System.out.println("graph#1 is null");
-        if (ngg2 == null) System.out.println("graph#2 is null");
-        if (ngg1.edges() == null) System.out.println("graph#1 edge is null");
-        if (ngg2.edges() == null) System.out.println("graph#2 edge is null");
+//        if (ngg1 == null) System.out.println("graph#1 is null");
+//        if (ngg2 == null) System.out.println("graph#2 is null");
+//        if (ngg1.edges() == null) System.out.println("graph#1 edge is null");
+//        if (ngg2.edges() == null) System.out.println("graph#2 edge is null");
 
-        long c1 = ngg1.edges().distinct().count();
         // get graph similarity
         GraphSimilarityCalculator gsc = new GraphSimilarityCalculator();
         Similarity gs = gsc.getSimilarity(ngg1, ngg2);
 
+        scala.collection.immutable.Map<String,Object> M =  gs.getSimilarityComponents();
+        System.out.println("Similarity: " + (double) gs.getSimilarityComponents().get(SimilarityMode.NVS.getGraphSimilarity()).get() + " , cutoff "  + simCutOff);
         // decide based on mode
         switch (mode) {
             case NVS:

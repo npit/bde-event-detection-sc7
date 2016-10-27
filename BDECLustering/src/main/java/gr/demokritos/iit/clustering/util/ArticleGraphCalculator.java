@@ -29,10 +29,7 @@ public class ArticleGraphCalculator implements Function<Tuple4<String,String,Str
         ent1.setString(sc, new StringBuilder().append(title).append(" ").append(text).toString());
         NGramGraphCreator ngc = new NGramGraphCreator(sc, numPartitions, 3, 3);
         Graph<String, Object> graphobj = ngc.getGraph(ent1);
-//        System.out.println("Constructed graph from {" + title + "}\n{" + text+"}");
-//        System.out.println("GRAPH:\n" + graphobj.toString());
-        if(graphobj.edges()==null)
-            System.out.println("Null edges");
+
         return graphobj;
 //        return graphobj;
     }

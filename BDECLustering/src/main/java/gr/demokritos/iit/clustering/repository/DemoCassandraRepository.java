@@ -243,7 +243,7 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
         ArrayList<BDEArticle> articles = new ArrayList<>();
         ArrayList<Long> crawled_dates = new ArrayList<>();
         // npit edit : load all articles
-        //Collection<Map<String, Object>> items = loadAllArticles(-1);
+        //Collection<Map<String, Object>> items = loadAllArticles(5);
         Collection<Map<String, Object>> items = loadArticles(timestamp);
         // wrap to Article instances
         for (Map<String, Object> eachItem : items) {
