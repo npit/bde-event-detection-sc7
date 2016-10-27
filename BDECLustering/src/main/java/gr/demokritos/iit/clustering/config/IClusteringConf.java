@@ -13,4 +13,7 @@ public interface IClusteringConf extends IBaseConf {
     double getTwitterMappingTitleSimilarityThreshold();
     int getMaxNumberOfArticles();
     String getClusteringMode();
+
+    boolean getTriggerChangeDetection();
+    int getChangeDetectionThreshold();
 }

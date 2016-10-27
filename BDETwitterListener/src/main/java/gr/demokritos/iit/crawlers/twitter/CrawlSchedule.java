@@ -14,6 +14,7 @@
  */
 package gr.demokritos.iit.crawlers.twitter;
 
+import gr.demokritos.iit.base.conf.IBaseConf;
 import gr.demokritos.iit.base.util.langdetect.CybozuLangDetect;
 import gr.demokritos.iit.base.util.langdetect.ILangDetect;
 import gr.demokritos.iit.crawlers.twitter.impl.ITwitterRestConsumer;
@@ -27,9 +28,11 @@ import static gr.demokritos.iit.crawlers.twitter.factory.TwitterListenerFactory.
 import gr.demokritos.iit.crawlers.twitter.repository.IRepository.CrawlEngine;
 import gr.demokritos.iit.crawlers.twitter.stream.IStreamConsumer;
 import gr.demokritos.iit.crawlers.twitter.structures.SearchQuery;
+import gr.demokritos.iit.crawlers.twitter.structures.SourceAccount;
 import gr.demokritos.iit.crawlers.twitter.utils.QueryLoader;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashSet;
 import java.util.Set;
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
@@ -52,27 +55,45 @@ public class CrawlSchedule {
             ClassNotFoundException, InstantiationException,
             IllegalAccessException, NoSuchMethodException,
             InvocationTargetException {
-        loadCmdParams(args);
 
-
+        if(args.length < 1)
+        {
+            System.err.println("Need the configuration file path as an argument to run.");
+            return;
+        }
+        String configFile = args[0];
+//        loadCmdParams(args);
+        ITwitterConf configuration = new TConfig(configFile);
+        String operationModeStr = configuration.getOperationMode();
+        if(operationModeStr.isEmpty()) operationModeStr = CrawlEngine.MONITOR.toString();
+        CrawlEngine operation=null;
+        try
+        {
+            operation = CrawlEngine.valueOf(operationModeStr.toUpperCase());
+        }
+        catch(IllegalArgumentException ex)
+        {
+            System.err.println("Undefined crawl mode [" + operationModeStr + "]");
+        }
         switch (operation) {
             case MONITOR:
-                monitor();
+                monitor(configuration);
                 break;
             case SEARCH:
-                search();
+                search(configuration);
                 break;
             case STREAM:
-                getStream();
+                getStream(configuration);
                 break;
         }
     }
 
-    public static void monitor() {
+    public static void monitor(ITwitterConf config) {
 
         // load properties
-        ITwitterConf config = new TConfig(properties);
+        //ITwitterConf config = new TConfig(properties);
         // init lang detect
+
         CybozuLangDetect.setProfiles(config.getLangDetectionProfiles());
         // init crawl factory
         TwitterListenerFactory factory = new TwitterListenerFactory(config);
@@ -89,13 +110,15 @@ public class CrawlSchedule {
         }
     }
 
-    public static void search() throws IOException, SQLException, PropertyVetoException {
+    public static void search(ITwitterConf config) throws IOException, SQLException, PropertyVetoException {
 
         // load properties
-        ITwitterConf config = new TConfig(properties);
+        //ITwitterConf config = new TConfig(properties);
         // init lang detect
         CybozuLangDetect.setProfiles(config.getLangDetectionProfiles());
         TwitterListenerFactory factory = new TwitterListenerFactory(config);
+        Set<SearchQuery> queries = getQueries(config);
+        if(queries.isEmpty()) return;
 
         ITwitterRestConsumer crawler;
         try {
@@ -110,10 +133,10 @@ public class CrawlSchedule {
 
     }
 
-    public static void getStream() {
+    public static void getStream(ITwitterConf config) {
 
         // load properties
-        ITwitterConf config = new TConfig(properties);
+        //ITwitterConf config = new TConfig(properties);
         // init lang detect
         CybozuLangDetect.setProfiles(config.getLangDetectionProfiles());
         TwitterListenerFactory factory = new TwitterListenerFactory(config);
@@ -129,18 +152,58 @@ public class CrawlSchedule {
         } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | PropertyVetoException ex) {
             LOGGER.severe(ex.toString());
         }
-//        finally {
-//
-//            factory.releaseResources();
-//        }
+        finally {
+
+            factory.releaseResources();
+        }
 
     }
 
-    private static String properties;
-    private static Set<SearchQuery> queries;
-    private static CrawlEngine operation;
+
+
+    private static Set<SearchQuery> getQueries(ITwitterConf conf)
+    {
+        Set<SearchQuery> queries = new HashSet<>();
+        String querySourceMode  = conf.getQueriesSourceMode();
+        if(querySourceMode .equals(ITwitterConf.SourceMode.LOCAL.toString()))
+        {
+            // read queries from a file
+            String queries_file = conf.getQueriesSource();
+            try {
+                queries = QueryLoader.LoadQueriesFromFile(queries_file, null, null);
+            }
+            catch(IOException ex)
+            {
+                System.err.println("Failed to read queries from local file [" + queries_file + "]");
+            }
+        }
+        else if(querySourceMode .equals(ITwitterConf.SourceMode.REMOTE.toString()))
+        {
+            // get it from remote source
+            String querySourceURL = conf.getQueriesSource();
+            System.err.println("Remote query fetching is TODO");
+        }
+        else
+        {
+            System.err.println("Unsupported queries source argument: [" + querySourceMode + "]");
+        }
+        return queries;
+    }
+
+
+    // removed
+    //private static String properties;
+    //private static CrawlEngine operation;
+    //private static Set<SearchQuery> queries;
 
     private static void loadCmdParams(String[] args) throws IllegalArgumentException, ParseException {
+
+        // 3 below vars were class fields, moved here to allow compilation
+
+        String properties;
+        Set<SearchQuery> queries;
+        CrawlEngine operation;
+
         Options options = new Options();
         // add sources option
         options.addOption("q", "queries", true, "provide full path of the document containing the queries for the crawler. "

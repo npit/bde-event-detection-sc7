@@ -137,12 +137,12 @@ public class TwitterListenerFactory implements ITwitterFactory {
         ITwitterRestConsumer crawler;
         String crawl_decl = conf.getCrawlerImpl();
 
-        System.out.println("Disgusting hotfix, todo fix"); //fixme
-        if(crawl_decl.equals("gr.demokritos.iit.crawlers.twitter.impl.BaseTwitterRestConsumer"))
-        {
-            IRepository repository = getRepository();
-            return (ITwitterRestConsumer) new BaseTwitterRestConsumer((TConfig) conf,repository, getCrawlPolicy(repository));
-        }
+//        System.out.println("Disgusting hotfix, todo fix"); //fixme
+//        if(crawl_decl.equals("gr.demokritos.iit.crawlers.twitter.impl.BaseTwitterRestConsumer"))
+//        {
+//            IRepository repository = getRepository();
+//            return (ITwitterRestConsumer) new BaseTwitterRestConsumer((TConfig) conf,repository, getCrawlPolicy(repository));
+//        }
 
         Class sourceClass = Class.forName(crawl_decl);
         Constructor class_constructor = sourceClass.getConstructor(ITwitterConf.class, IRepository.class, ICrawlPolicy.class);

@@ -14,6 +14,12 @@
  */
 package gr.demokritos.iit.base.conf;
 
+import javax.xml.transform.Source;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  *
  * @author George K. <gkiom@iit.demokritos.gr>
@@ -98,5 +104,26 @@ public interface IBaseConf {
     String getLangDetectionProfiles();
 
     String getDocumentRetrievalTimeWindow();
+
+    public enum SourceMode
+    {
+        LOCAL("local"), REMOTE("remote"), REPOSITORY("repository");
+        private SourceMode(String s){ this.mode = s;}
+        private String mode;
+        @Override
+        public String toString() {
+            return mode;
+        }
+        public static boolean supports(String candidate)
+        {
+            for(SourceMode elem : SourceMode.values())
+            {
+                if(elem.toString().equals(candidate)) return true;
+//                System.out.println("["+elem.name() + "] =/= [" + candidate+"]");
+            }
+            return false;
+        }
+
+    }
 
 }

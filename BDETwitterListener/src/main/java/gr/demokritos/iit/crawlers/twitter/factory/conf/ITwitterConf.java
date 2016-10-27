@@ -75,4 +75,12 @@ public interface ITwitterConf extends IBaseConf {
     int getDelayBetweenCrawls();
 
     int getCrawlInitialDelay();
+
+    String getQueriesSource();
+    String getAccountsSource();
+    String getQueriesSourceMode();
+    String getAccountsSourceMode();
+    String getOperationMode();
+
+
 }

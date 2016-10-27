@@ -38,7 +38,7 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
 
     // use this class to save topics for DEMO
     // event_size_cuttof: do not save topics with size less than this value
-    public void saveEvents(Map<String, Topic> topics,
+    public ArrayList<ArrayList<Object>> saveEvents(Map<String, Topic> topics,
                            Map<String, Summary> summaries,
                            Map<Topic, List<String>> relatedTweets,
                            Map<String, Map<String, String>> place_mappings,
@@ -47,16 +47,22 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
                            int event_size_cuttof
 
     ) {
+        ArrayList<ArrayList<Object>> events = new ArrayList<>();
+
         for (Map.Entry<String, Topic> entry  : topics.entrySet()) {
             String id = entry.getKey();
             Topic t = entry.getValue();
             if (t.size() >= event_size_cuttof) {
-                saveEvent(id, t, summaries.get(id), relatedTweets, place_mappings, tweetURLtoPostIDMapping,tweetURLtoUserIDMapping);
+                ArrayList<Object> ev = saveEvent(id, t, summaries.get(id), relatedTweets, place_mappings, tweetURLtoPostIDMapping,tweetURLtoUserIDMapping);
+                if(! ev.isEmpty())
+                    events.add(ev);
             }
         }
+
+        return events;
     }
 
-    public void saveEvent(String topicID,
+    public ArrayList<Object> saveEvent(String topicID,
                           Topic t,
                           Summary s,
                           Map<Topic, List<String>> relatedTweets,
@@ -66,6 +72,13 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
 
                           ) {
 
+
+        // event container , to return event for change detection
+        // title, descr, date, tweets, sources, id, placemappings
+        ArrayList<Object> event = new ArrayList<>();
+
+
+
         String title = t.getTitle();
         System.out.println(String.format("saving event id: %s with title: %s", topicID, title));
         // set top sentence as description
@@ -73,7 +86,7 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
         if(sentences.isEmpty())
         {
             System.out.println("Sentences list for event is empty. Skipping.");
-            return;
+            return event;
         }
         String description = sentences.get(0).getSnippet();
         Calendar cDate = t.getDate();
@@ -106,6 +119,16 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
         //System.out.println(upsert.toString());
         session.execute(upsert);
 
+
+        event.add(title);
+        event.add(description);
+        event.add(sUTCEventDate);
+        event.add(tweetIDsUsers);
+        event.add(topicSourceURL_Titles);
+        event.add(topicID);
+        event.add(place_mappings);
+
+
         for (Map.Entry<String, String> entry : place_mappings.entrySet()) {
             String place_literal = entry.getKey();
             String polygon = entry.getValue();
@@ -134,6 +157,8 @@ public class DemoCassandraRepository extends LocationCassandraRepository {
             session.execute(upsert);
 
         }
+
+        return event;
     }
 
     private Map<Long,String> extractRelatedTweetIDsTitlesPerTopicID(
