@@ -17,6 +17,8 @@ package gr.demokritos.iit.crawlers.twitter.impl;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+
+import gr.demokritos.iit.crawlers.twitter.factory.conf.ITwitterConf;
 import gr.demokritos.iit.crawlers.twitter.factory.conf.TConfig;
 import static gr.demokritos.iit.crawlers.twitter.factory.TwitterListenerFactory.LOGGER;
 import static gr.demokritos.iit.crawlers.twitter.impl.AbstractTwitterRestConsumer.TWITTER_API_CALL_USER_TIMELINE;
@@ -36,11 +38,11 @@ import twitter4j.TwitterException;
 
 public class BaseTwitterRestConsumer extends AbstractTwitterRestConsumer implements ITwitterRestConsumer {
 
-    public BaseTwitterRestConsumer(TConfig config, IRepository repository) {
+    public BaseTwitterRestConsumer(ITwitterConf config, IRepository repository) {
         super(config, repository);
     }
 
-    public BaseTwitterRestConsumer(TConfig config, IRepository repository, ICrawlPolicy policy) {
+    public BaseTwitterRestConsumer(ITwitterConf config, IRepository repository, ICrawlPolicy policy) {
         super(config, repository, policy);
     }
 
@@ -53,7 +55,8 @@ public class BaseTwitterRestConsumer extends AbstractTwitterRestConsumer impleme
         LOGGER.info(String.format("Started crawl at %s", new Date().toString()));
         long engine_id = repository.scheduleInitialized(CrawlEngine.MONITOR);
         // get accounts to monitor from the database
-        Collection<SourceAccount> accounts = repository.getAccounts();
+        Collection<SourceAccount> accounts = this.getAccounts(config);
+        //Collection<SourceAccount> accounts = repository.getAccounts();
         LOGGER.info(String.format("Fetched %d accounts from the repository.", (accounts.size())));
 
         // filter accounts according to policy provided

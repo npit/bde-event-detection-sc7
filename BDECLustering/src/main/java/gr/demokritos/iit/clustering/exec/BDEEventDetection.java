@@ -169,7 +169,8 @@ public class BDEEventDetection {
         Map<String, String> tweetURLtoUserMapping = getTweetClustersToUsersMappings(cleanTweets);
         System.out.println("saving events...");
 
-        repository.saveEvents(articlesPerCluster, summaries, related, place_mappings, tweetURLtoPostIDMapping, tweetURLtoUserMapping, 2);
+        ArrayList<ArrayList<Object>> storedEvents = repository.saveEvents(articlesPerCluster, summaries, related, place_mappings, tweetURLtoPostIDMapping, tweetURLtoUserMapping, 2);
+
         if (SendToStrabon) {
 	    String strabonURL=configuration.getStrabonURL();
             System.out.print("Finally,sending events to strabon to url ["+strabonURL+"].");
@@ -179,6 +180,29 @@ public class BDEEventDetection {
         {
             System.out.println("Sending events to Strabon is disabled.");
         }
+
+        if(configuration.getTriggerChangeDetection())
+        {
+            System.out.println("Checking if change detection should be triggered for the newly generated events.");
+            int threshold = configuration.getChangeDetectionThreshold();
+            for(int ev = 0; ev < storedEvents.size(); ++ ev)
+            {
+                // event container , to return event for change detection
+                // title, descr, date, tweets, sources, id, placemappings
+                ArrayList<Object> currEvent = storedEvents.get(ev);
+                if( ((Map<String,String>)currEvent.get(4)).size() > threshold)
+                {
+                    triggerChangeDetection(currEvent);
+                }
+            }
+        }
+        else
+        {
+            System.out.println("Change detection is disabled.");
+        }
+
+        // clean up
+
         if(factory != null)
         {
             System.out.println("Releasing resources.");
@@ -190,6 +214,15 @@ public class BDEEventDetection {
 
     }
 
+    private static void triggerChangeDetection(ArrayList<Object> event)
+    {
+        // event container , to return event for change detection
+        // title, descr, date, tweets, sources, id, placemappings
+
+        // maybe we dont need the event argument ( or event returning the whole events from the saveEvents
+        // can be just boolean, if we need to only trigger the remote with no arguments
+
+    }
 
     private static Map<String, Map<String, String>> getPlaceMappings(List<BDEArticle> articles, Map<String, Topic> clusters) {
 

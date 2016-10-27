@@ -16,6 +16,8 @@ package gr.demokritos.iit.crawlers.twitter.utils;
 
 import static gr.demokritos.iit.crawlers.twitter.factory.TwitterListenerFactory.LOGGER;
 import gr.demokritos.iit.crawlers.twitter.structures.SearchQuery;
+import gr.demokritos.iit.crawlers.twitter.structures.SourceAccount;
+
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.File;
@@ -100,5 +102,50 @@ public class QueryLoader {
             LOGGER.log(Level.SEVERE, "Unable To Read From File {0}", fFile.getName());
             return null;
         }
+    }
+
+    public static Set<SourceAccount> loadAccounts(String sourceFile, String sDelimiterType, Boolean defaultAccountStatus)
+            throws FileNotFoundException, IOException {
+        if (sDelimiterType == null || sDelimiterType.trim().isEmpty()) {
+            sDelimiterType = "***";
+        }
+        File fFile = new File(sourceFile);
+        if (!fFile.exists()) {
+            throw new FileNotFoundException(fFile.getAbsolutePath() + " cannot be found.");
+        }
+        if (! fFile.canRead())
+        {
+            LOGGER.log(Level.SEVERE, "Unable To Read From File {0}", fFile.getName());
+            return null;
+        }
+        FileInputStream fstream = new FileInputStream(fFile);
+        DataInputStream in = new DataInputStream(fstream);
+        BufferedReader br = new BufferedReader(new InputStreamReader(in, Charset.forName("utf-8")));
+        String sLine;
+        Set<SourceAccount> res = new HashSet();
+        while ((sLine = br.readLine()) != null) {
+            // if a comment line
+            if (sLine.startsWith("#")) continue;
+
+            String[] params = sLine.split(sDelimiterType);
+            SourceAccount sacc = null;
+            if (params.length == 2)
+            {
+                sacc = new SourceAccount(params[0],Boolean.parseBoolean(params[1]));
+            }
+            else if (params.length == 1)
+            {
+                sacc = new SourceAccount(params[0],defaultAccountStatus);
+            }
+            else {
+                LOGGER.severe(String.format("'%s' is a malformed source account file line. Format expected is accName%saccStatus", sLine,sDelimiterType));
+            }
+            if(sacc!=null) res.add(sacc);
+
+
+        }
+        in.close();
+        return res;
+
     }
 }

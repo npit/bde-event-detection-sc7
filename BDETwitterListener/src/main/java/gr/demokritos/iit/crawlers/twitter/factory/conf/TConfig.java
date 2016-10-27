@@ -17,6 +17,8 @@ package gr.demokritos.iit.crawlers.twitter.factory.conf;
 import gr.demokritos.iit.base.conf.BaseConfiguration;
 import gr.demokritos.iit.crawlers.twitter.policy.InfluentialCrawlPolicy;
 
+import javax.xml.transform.Source;
+
 /**
  *
  * @author George K. <gkiom@iit.demokritos.gr>
@@ -102,4 +104,43 @@ public class TConfig extends BaseConfiguration implements ITwitterConf {
         String initdel = properties.getProperty("initial_delay");
         return Integer.parseInt(initdel);
     }
+
+    @Override
+    public String getQueriesSourceMode()
+    {
+        String defsrc = SourceMode.LOCAL.toString();
+        String value = properties.getProperty("queries_source_mode","");
+        if(SourceMode.supports(value)) return value;
+        return defsrc;
+    }
+
+    @Override
+    public String getAccountsSourceMode()
+    {
+        String defsrc = SourceMode.LOCAL.toString();
+        String value = properties.getProperty("accounts_source_mode","").trim();
+        if(value.isEmpty()) return defsrc;
+        if(SourceMode.supports(value))
+        {
+            return value;
+        }
+        System.out.println("Invalid accounts source mode: [" + value+ "], using default: " + "[" + defsrc + "]");
+        return defsrc;
+    }
+    @Override
+    public String getAccountsSource()
+    {
+        return  properties.getProperty("accounts_source","");
+    }
+    @Override
+    public String getQueriesSource()
+    {
+        return  properties.getProperty("queries_source","");
+    }
+    @Override
+    public String getOperationMode()
+    {
+        return properties.getProperty("operation_mode","");
+    }
+
 }

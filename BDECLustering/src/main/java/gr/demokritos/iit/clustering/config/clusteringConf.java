@@ -85,5 +85,37 @@ public class clusteringConf extends BaseConfiguration implements IClusteringConf
         return value;
 
     }
+    @Override
+    public boolean getTriggerChangeDetection()
+    {
+        String value = properties.getProperty("trigger_change_detection","");
+        if(!value.isEmpty())
+        {
+            if(value.equals("yes")) return true;
+        }
+        return false;
+    }
+
+    @Override
+    public int getChangeDetectionThreshold()
+    {
+        int defaultThreshold = 15;
+        int retVal = defaultThreshold;
+        String value = properties.getProperty("change_detection_threshold","");
+
+        if(!value.isEmpty())
+        {
+            try
+            {
+                retVal = Integer.parseInt(value);
+            }
+            catch(NumberFormatException ex)
+            {
+                System.out.println("Invalid value for [change_detection_threshold property] : [" + value + "]" );
+                System.out.println("Using default value " + defaultThreshold);
+            }
+        }
+        return retVal;
+    }
 
 }

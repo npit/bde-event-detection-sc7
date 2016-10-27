@@ -14,17 +14,20 @@
  */
 package gr.demokritos.iit.crawlers.twitter.impl;
 
+import gr.demokritos.iit.base.conf.IBaseConf;
+import gr.demokritos.iit.base.util.Utils;
 import gr.demokritos.iit.crawlers.twitter.factory.conf.ITwitterConf;
 import static gr.demokritos.iit.crawlers.twitter.factory.TwitterListenerFactory.LOGGER;
 import gr.demokritos.iit.crawlers.twitter.policy.DefensiveCrawlPolicy;
 import gr.demokritos.iit.crawlers.twitter.policy.ICrawlPolicy;
 import gr.demokritos.iit.crawlers.twitter.repository.IRepository;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
+import java.io.IOException;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
+
+import gr.demokritos.iit.crawlers.twitter.structures.SourceAccount;
+import gr.demokritos.iit.crawlers.twitter.utils.QueryLoader;
 import twitter4j.RateLimitStatus;
 import twitter4j.Status;
 import twitter4j.Twitter;
@@ -32,6 +35,8 @@ import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
 import twitter4j.User;
 import twitter4j.conf.ConfigurationBuilder;
+
+import javax.xml.transform.Source;
 
 /**
  *
@@ -49,6 +54,8 @@ public abstract class AbstractTwitterRestConsumer {
     protected static final String TWITTER_API_CALL_USER_TIMELINE = "/statuses/user_timeline";
     protected static final String GEOCODING_API_CLIENT_NAME = "bdedevcrawl";
 
+    // keep the config around
+    protected final ITwitterConf config;
     // will extract URLs from the tweet, if any
 //    protected Extractor extractor;
     // twitter-text lib is a maven snapshot build at 16/05/14
@@ -81,6 +88,7 @@ public abstract class AbstractTwitterRestConsumer {
         TwitterFactory tf = new TwitterFactory(cb.build());
         // get active instance
         this.twitter = tf.getInstance();
+        this.config = config;
     }
 
     /**
@@ -109,6 +117,8 @@ public abstract class AbstractTwitterRestConsumer {
         TwitterFactory tf = new TwitterFactory(cb.build());
         // get active instance
         this.twitter = tf.getInstance();
+        this.config = config;
+
     }
 
     protected List<Status> processStatuses(List<Status> statuses, IRepository.CrawlEngine engine_type, long engine_id) {
@@ -157,6 +167,37 @@ public abstract class AbstractTwitterRestConsumer {
         return res;
     }
 
+    public Collection<SourceAccount> getAccounts(ITwitterConf conf)
+    {
+        Collection<SourceAccount> accounts=null;
+        String accountsSourceMode = conf.getAccountsSourceMode();
+        String accountsSource = conf.getAccountsSource();
+        if(accountsSourceMode.equals(IBaseConf.SourceMode.LOCAL.toString()))
+        {
+            // read from file
+            try {
+                accounts = QueryLoader.loadAccounts(accountsSource,"[*]{3}",false);
+            } catch (IOException e) {
+                e.printStackTrace();
+                return accounts;
+            }
+            LOGGER.info(String.format("Fetched %d accounts from the local file.", (accounts.size())));
+
+        }
+        else if(accountsSourceMode.equals(IBaseConf.SourceMode.REMOTE.toString()))
+        {
+            // get remotely
+            LOGGER.info(String.format("Fetched %d accounts from the remote source.", (accounts.size())));
+
+        }
+        else if(accountsSourceMode.equals(IBaseConf.SourceMode.REPOSITORY.toString()))
+        {
+            accounts = repository.getAccounts();
+            LOGGER.info(String.format("Fetched %d accounts from the repository.", (accounts.size())));
+
+        }
+        return accounts;
+    }
     /**
      * get the statistics of the crawler, for rate limit issues
      *
