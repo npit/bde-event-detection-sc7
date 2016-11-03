@@ -173,6 +173,8 @@ public abstract class AbstractTwitterRestConsumer {
         String accountsSourceMode = conf.getAccountsSourceMode();
         if (accountsSourceMode.isEmpty()) return null;
         String accountsSource = conf.getAccountsSource();
+        System.out.println(String.format("Got accounts source mode [%s]",accountsSourceMode));
+        System.out.println(String.format("Got accounts source  [%s]",accountsSource));
         if(accountsSourceMode.equals(IBaseConf.SourceMode.LOCAL.toString()))
         {
             // read from file

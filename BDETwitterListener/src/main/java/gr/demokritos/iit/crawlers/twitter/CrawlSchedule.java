@@ -169,10 +169,13 @@ public class CrawlSchedule {
     {
         Set<SearchQuery> queries = new HashSet<>();
         String querySourceMode  = conf.getQueriesSourceMode();
+        System.out.println(String.format("Read queries source mode:[%s]",querySourceMode));
         if(querySourceMode .equals(ITwitterConf.SourceMode.LOCAL.toString()))
         {
             // read queries from a file
             String queries_file = conf.getQueriesSource();
+            System.out.println(String.format("Read queries source :[%s]",queries_file));
+
             try {
                 queries = QueryLoader.LoadQueriesFromFile(queries_file, null, null);
             }
@@ -185,6 +188,9 @@ public class CrawlSchedule {
         {
             // get it from remote source
             String querySourceURL = conf.getQueriesSource();
+            System.out.println(String.format("Read queries source :[%s]",querySourceURL));
+
+
             System.err.println("Remote query fetching is TODO");
         }
         else
