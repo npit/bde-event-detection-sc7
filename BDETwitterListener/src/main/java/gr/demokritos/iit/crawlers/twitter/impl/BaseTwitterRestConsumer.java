@@ -56,6 +56,7 @@ public class BaseTwitterRestConsumer extends AbstractTwitterRestConsumer impleme
         long engine_id = repository.scheduleInitialized(CrawlEngine.MONITOR);
         // get accounts to monitor from the database
         Collection<SourceAccount> accounts = this.getAccounts(config);
+        if(accounts == null) throw new IllegalArgumentException();
         //Collection<SourceAccount> accounts = repository.getAccounts();
         LOGGER.info(String.format("Fetched %d accounts from the repository.", (accounts.size())));
 

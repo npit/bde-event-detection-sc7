@@ -124,8 +124,9 @@ public class TConfig extends BaseConfiguration implements ITwitterConf {
         {
             return value;
         }
-        System.out.println("Invalid accounts source mode: [" + value+ "], using default: " + "[" + defsrc + "]");
-        return defsrc;
+        else
+            System.out.println("Invalid accounts source mode: [" + value+ "]");
+        return "";
     }
     @Override
     public String getAccountsSource()

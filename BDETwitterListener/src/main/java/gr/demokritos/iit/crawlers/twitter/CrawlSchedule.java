@@ -65,7 +65,11 @@ public class CrawlSchedule {
 //        loadCmdParams(args);
         ITwitterConf configuration = new TConfig(configFile);
         String operationModeStr = configuration.getOperationMode();
-        if(operationModeStr.isEmpty()) operationModeStr = CrawlEngine.MONITOR.toString();
+        if(operationModeStr.isEmpty())
+        {
+            System.err.println("No operation mode specified, using default: " + operationModeStr);
+            operationModeStr = CrawlEngine.MONITOR.toString();
+        }
         CrawlEngine operation=null;
         try
         {

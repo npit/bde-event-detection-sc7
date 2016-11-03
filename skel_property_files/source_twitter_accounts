@@ -1,4 +1,10 @@
 # account_name|status
 Reuters***true
-CNN***false
-nytimes***false
+CNN***true
+nytimes***true
+Reuters|true
+BBCWorld|true
+EstrechoDigital|true
+leftgr|true
+NatGeo|true
+Paratiritirio_|true

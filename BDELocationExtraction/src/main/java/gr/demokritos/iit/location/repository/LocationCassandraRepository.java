@@ -122,6 +122,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
     @Override
     public void updateArticlesWithReferredPlaceMetadata(String permalink, Map<String, String> places_polygons) {
         System.out.println(String.format("\tupdating with places: %s", places_polygons.keySet().toString()));
+
         // load metadata
         Map<String, Object> article = loadArticle(permalink);
         long published = (long) article.get(Cassandra.RSS.TBL_ARTICLES.FLD_PUBLISHED.getColumnName());
