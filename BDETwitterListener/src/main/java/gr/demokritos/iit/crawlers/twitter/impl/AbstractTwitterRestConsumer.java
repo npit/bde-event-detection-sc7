@@ -171,6 +171,7 @@ public abstract class AbstractTwitterRestConsumer {
     {
         Collection<SourceAccount> accounts=null;
         String accountsSourceMode = conf.getAccountsSourceMode();
+        if (accountsSourceMode.isEmpty()) return null;
         String accountsSource = conf.getAccountsSource();
         if(accountsSourceMode.equals(IBaseConf.SourceMode.LOCAL.toString()))
         {
