@@ -141,7 +141,7 @@ public interface IRepository {
      */
     public enum CrawlEngine {
 
-        MONITOR("monitor"), SEARCH("search"), MONITOR_FOREVER("monitor_forever"), STREAM("stream");
+        MONITOR("monitor"), SEARCH("search"), MONITOR_FOREVER("monitor_forever"), STREAM("stream"), FETCH("fetch");
         private String type;
 
         private CrawlEngine(String type) {

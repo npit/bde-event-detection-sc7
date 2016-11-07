@@ -42,4 +42,6 @@ public interface ITwitterRestConsumer {
      * @param queries
      */
     public void search(Collection<SearchQuery> queries);
+
+    void fetch(Collection<Long> tweetID);
 }

@@ -32,7 +32,9 @@ import gr.demokritos.iit.crawlers.twitter.structures.SourceAccount;
 import gr.demokritos.iit.crawlers.twitter.utils.QueryLoader;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
@@ -90,8 +92,32 @@ public class CrawlSchedule {
                 getStream(configuration);
                 break;
         }
+        String additionalOperation = configuration.getAdditionalOperation();
+        if(additionalOperation.equals())
     }
 
+    // operation mode to fetch tweets from specified tweet IDs, rather than search
+    public static void fetch(ITwitterConf config)
+    {
+        List<Long> dummy = new ArrayList<>();
+        dummy.add(794198013677694976l);
+        dummy.add(794201840095084544l);
+        dummy.add(794196934831374336l);
+        CybozuLangDetect.setProfiles(config.getLangDetectionProfiles());
+        TwitterListenerFactory factory = new TwitterListenerFactory(config);
+        ITwitterRestConsumer crawler;
+        try {
+            // instantiate crawler
+            crawler = factory.getTwitterListener();
+            // start monitoring
+            crawler.fetch(dummy);
+        } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | PropertyVetoException ex) {
+            LOGGER.severe(ex.toString());
+        } finally {
+            factory.releaseResources();
+        }
+
+    }
     public static void monitor(ITwitterConf config) {
 
         // load properties

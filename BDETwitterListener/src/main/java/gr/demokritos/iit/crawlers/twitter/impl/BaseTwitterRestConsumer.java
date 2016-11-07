@@ -14,9 +14,7 @@
  */
 package gr.demokritos.iit.crawlers.twitter.impl;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import gr.demokritos.iit.crawlers.twitter.factory.conf.ITwitterConf;
 import gr.demokritos.iit.crawlers.twitter.factory.conf.TConfig;
@@ -27,8 +25,7 @@ import gr.demokritos.iit.crawlers.twitter.repository.IRepository;
 import gr.demokritos.iit.crawlers.twitter.repository.IRepository.CrawlEngine;
 import gr.demokritos.iit.crawlers.twitter.structures.SearchQuery;
 import gr.demokritos.iit.crawlers.twitter.structures.SourceAccount;
-import java.util.Calendar;
-import java.util.Map;
+
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import twitter4j.Query;
@@ -165,5 +162,30 @@ public class BaseTwitterRestConsumer extends AbstractTwitterRestConsumer impleme
         } finally {
             repository.scheduleFinalized(engine_id, CrawlEngine.SEARCH);
         }
+    }
+    @Override
+    public void fetch(Collection<Long> tweetIDs)
+    {
+        long engine_id = repository.scheduleInitialized(CrawlEngine.FETCH);
+        List<Status> statuses = new ArrayList<>();
+        try {
+            for (Long tweetID : tweetIDs) {
+
+                Status status = twitter.showStatus(tweetID);
+                if (status == null) { //
+                    // don't know if needed - T4J docs are very bad
+                } else {
+                    statuses.add(status);
+                }
+            }
+        }
+            catch (TwitterException e) {
+            System.err.print("Failed to fetch tweets: " + e.getMessage());
+            e.printStackTrace();
+
+        }
+        LOGGER.log(Level.INFO,"Done fetching tweets.");
+        List<Status> filtered = processStatuses(statuses, CrawlEngine.SEARCH, engine_id);
+
     }
 }
