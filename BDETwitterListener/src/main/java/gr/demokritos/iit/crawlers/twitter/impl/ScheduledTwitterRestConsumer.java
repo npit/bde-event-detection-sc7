@@ -82,6 +82,11 @@ public class ScheduledTwitterRestConsumer extends AbstractTwitterRestConsumer im
     public void search(Collection<SearchQuery> queries) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
+    @Override
+    public void fetch(Collection<Long> tweetID)
+    {
+
+    }
 
     @Override
     public void run() {

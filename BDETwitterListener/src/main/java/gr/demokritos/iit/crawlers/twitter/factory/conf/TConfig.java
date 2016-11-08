@@ -144,4 +144,8 @@ public class TConfig extends BaseConfiguration implements ITwitterConf {
         return properties.getProperty("operation_mode","");
     }
 
+    @Override
+    public String getFetchModeTwitterIDsFile() {
+        return properties.getProperty("twitter_ids_fetch_file","");
+    }
 }

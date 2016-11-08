@@ -81,6 +81,6 @@ public interface ITwitterConf extends IBaseConf {
     String getQueriesSourceMode();
     String getAccountsSourceMode();
     String getOperationMode();
-
+    String getFetchModeTwitterIDsFile();
 
 }
