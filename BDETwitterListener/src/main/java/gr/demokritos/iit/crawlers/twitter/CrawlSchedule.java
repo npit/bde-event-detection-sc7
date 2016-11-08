@@ -29,6 +29,7 @@ import gr.demokritos.iit.crawlers.twitter.repository.IRepository.CrawlEngine;
 import gr.demokritos.iit.crawlers.twitter.stream.IStreamConsumer;
 import gr.demokritos.iit.crawlers.twitter.structures.SearchQuery;
 import gr.demokritos.iit.crawlers.twitter.structures.SourceAccount;
+import gr.demokritos.iit.crawlers.twitter.utils.FileAccessor;
 import gr.demokritos.iit.crawlers.twitter.utils.QueryLoader;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -91,18 +92,36 @@ public class CrawlSchedule {
             case STREAM:
                 getStream(configuration);
                 break;
+            case FETCH:
+                fetch(configuration);
+                break;
         }
-        String additionalOperation = configuration.getAdditionalOperation();
-        if(additionalOperation.equals())
     }
 
     // operation mode to fetch tweets from specified tweet IDs, rather than search
     public static void fetch(ITwitterConf config)
     {
-        List<Long> dummy = new ArrayList<>();
-        dummy.add(794198013677694976l);
-        dummy.add(794201840095084544l);
-        dummy.add(794196934831374336l);
+        String idsFile = config.getFetchModeTwitterIDsFile();
+        if(idsFile.isEmpty())
+        {
+            System.out.println("Empty twitter IDs file");
+            return;
+        }
+
+        FileAccessor acc = new FileAccessor(idsFile);
+        if(!acc.lock())
+        {
+            System.err.println(String.format("Attempting to lock file [%s] failed."));
+            return ;
+        }
+        ArrayList<String> data  = acc.getData();
+        acc.unlock();
+        ArrayList<Long> twitterIDs = new ArrayList<>();
+        for(String datum : data)
+        {
+            twitterIDs.add(Long.parseLong(datum));
+        }
+
         CybozuLangDetect.setProfiles(config.getLangDetectionProfiles());
         TwitterListenerFactory factory = new TwitterListenerFactory(config);
         ITwitterRestConsumer crawler;
@@ -110,7 +129,7 @@ public class CrawlSchedule {
             // instantiate crawler
             crawler = factory.getTwitterListener();
             // start monitoring
-            crawler.fetch(dummy);
+            crawler.fetch(twitterIDs);
         } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | PropertyVetoException ex) {
             LOGGER.severe(ex.toString());
         } finally {

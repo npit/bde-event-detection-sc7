@@ -178,14 +178,20 @@ public class BaseTwitterRestConsumer extends AbstractTwitterRestConsumer impleme
                     statuses.add(status);
                 }
             }
+
+            List<Status> filtered = processStatuses(statuses, CrawlEngine.FETCH, engine_id);
+            LOGGER.info(String.format("Finished:  %d updates",  filtered.size()));
+
         }
-            catch (TwitterException e) {
+        catch (TwitterException e)
+        {
             System.err.print("Failed to fetch tweets: " + e.getMessage());
             e.printStackTrace();
-
+        }
+        finally {
+            repository.scheduleFinalized(engine_id, CrawlEngine.FETCH);
         }
         LOGGER.log(Level.INFO,"Done fetching tweets.");
-        List<Status> filtered = processStatuses(statuses, CrawlEngine.SEARCH, engine_id);
-
+        repository.scheduleFinalized(engine_id,CrawlEngine.FETCH);
     }
 }
