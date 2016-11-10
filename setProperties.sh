@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #base="$(pwd)/BDEEventDetection"
-editor="$EDITOR"
+#editor="$EDITOR"
+editor="nano"
 base="$(pwd)"
 P=""
 P+=" $base/BDECLustering/res/clustering.properties"
