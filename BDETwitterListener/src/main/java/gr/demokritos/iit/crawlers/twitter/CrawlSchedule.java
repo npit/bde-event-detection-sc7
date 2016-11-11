@@ -29,10 +29,13 @@ import gr.demokritos.iit.crawlers.twitter.repository.IRepository.CrawlEngine;
 import gr.demokritos.iit.crawlers.twitter.stream.IStreamConsumer;
 import gr.demokritos.iit.crawlers.twitter.structures.SearchQuery;
 import gr.demokritos.iit.crawlers.twitter.structures.SourceAccount;
+import gr.demokritos.iit.crawlers.twitter.utils.FileAccessor;
 import gr.demokritos.iit.crawlers.twitter.utils.QueryLoader;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
@@ -89,9 +92,63 @@ public class CrawlSchedule {
             case STREAM:
                 getStream(configuration);
                 break;
+            case FETCH:
+                fetch(configuration);
+                break;
         }
     }
 
+    // operation mode to fetch tweets from specified tweet IDs, rather than search
+    public static void fetch(ITwitterConf config)
+    {
+        // get tweet ids file
+        String idsFile = config.getFetchModeTwitterIDsFile();
+        if(idsFile.isEmpty())
+        {
+            System.out.println("Empty twitter IDs file");
+            return;
+        }
+        // read the file, locking it to avoid simultaneous write with the
+        // rest service
+        FileAccessor acc = new FileAccessor(idsFile);
+        if(!acc.lock())
+        {
+            System.err.println(String.format("Attempting to lock file [%s] failed."));
+            return ;
+        }
+        ArrayList<String> data  = null;
+        try {
+            data = acc.getData();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
+        // we empty the file, in a comsumer-producer fashion
+        acc.deleteContents();
+        acc.unlock();
+
+        ArrayList<Long> twitterIDs = new ArrayList<>();
+        for(String datum : data)
+        {
+            System.out.println("Specified twitter id to fetch: [" + datum + "]");
+            twitterIDs.add(Long.parseLong(datum));
+        }
+
+        CybozuLangDetect.setProfiles(config.getLangDetectionProfiles());
+        TwitterListenerFactory factory = new TwitterListenerFactory(config);
+        ITwitterRestConsumer crawler;
+        try {
+            // instantiate crawler
+            crawler = factory.getTwitterListener();
+            // start monitoring
+            crawler.fetch(twitterIDs);
+        } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | PropertyVetoException ex) {
+            LOGGER.severe(ex.toString());
+        } finally {
+            factory.releaseResources();
+        }
+
+    }
     public static void monitor(ITwitterConf config) {
 
         // load properties
@@ -169,10 +226,13 @@ public class CrawlSchedule {
     {
         Set<SearchQuery> queries = new HashSet<>();
         String querySourceMode  = conf.getQueriesSourceMode();
+        System.out.println(String.format("Read queries source mode:[%s]",querySourceMode));
         if(querySourceMode .equals(ITwitterConf.SourceMode.LOCAL.toString()))
         {
             // read queries from a file
             String queries_file = conf.getQueriesSource();
+            System.out.println(String.format("Read queries source :[%s]",queries_file));
+
             try {
                 queries = QueryLoader.LoadQueriesFromFile(queries_file, null, null);
             }
@@ -185,6 +245,9 @@ public class CrawlSchedule {
         {
             // get it from remote source
             String querySourceURL = conf.getQueriesSource();
+            System.out.println(String.format("Read queries source :[%s]",querySourceURL));
+
+
             System.err.println("Remote query fetching is TODO");
         }
         else
