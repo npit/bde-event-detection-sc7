@@ -101,6 +101,7 @@ public class CrawlSchedule {
     // operation mode to fetch tweets from specified tweet IDs, rather than search
     public static void fetch(ITwitterConf config)
     {
+
         // get tweet ids file
         String idsFile = config.getFetchModeTwitterIDsFile();
         if(idsFile.isEmpty())
@@ -108,14 +109,17 @@ public class CrawlSchedule {
             System.out.println("Empty twitter IDs file");
             return;
         }
+
         // read the file, locking it to avoid simultaneous write with the
         // rest service
+
         FileAccessor acc = new FileAccessor(idsFile);
         if(!acc.lock())
         {
             System.err.println(String.format("Attempting to lock file [%s] failed."));
             return ;
         }
+
         ArrayList<String> data  = null;
         try {
             data = acc.getData();
