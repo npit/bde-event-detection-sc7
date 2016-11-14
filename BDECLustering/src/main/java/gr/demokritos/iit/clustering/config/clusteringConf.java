@@ -86,36 +86,46 @@ public class clusteringConf extends BaseConfiguration implements IClusteringConf
 
     }
     @Override
-    public boolean getTriggerChangeDetection()
+    public boolean shouldTriggerChangeDetection()
     {
         String value = properties.getProperty("trigger_change_detection","");
-        if(!value.isEmpty())
-        {
-            if(value.equals("yes")) return true;
-        }
-        return false;
+        return isTrue(value);
     }
 
     @Override
     public int getChangeDetectionThreshold()
     {
-        int defaultThreshold = 15;
+        int defaultThreshold = 5;
         int retVal = defaultThreshold;
         String value = properties.getProperty("change_detection_threshold","");
 
-        if(!value.isEmpty())
+        try
         {
-            try
-            {
-                retVal = Integer.parseInt(value);
-            }
-            catch(NumberFormatException ex)
-            {
-                System.out.println("Invalid value for [change_detection_threshold property] : [" + value + "]" );
-                System.out.println("Using default value " + defaultThreshold);
-            }
+            retVal = Integer.parseInt(value);
         }
+        catch(NumberFormatException ex)
+        {
+            System.out.println("Invalid value for [change_detection_threshold property] : [" + value + "]" );
+            System.out.println("Using default value " + defaultThreshold);
+        }
+
         return retVal;
+    }
+
+    @Override
+    public String getChangeDetectionURL()
+    {
+        return properties.getProperty("change_detection_url","");
+    }
+
+    @Override
+    public String getChangeDetectionUsername() {
+        return properties.getProperty("change_detection_username","");
+    }
+
+    @Override
+    public String getChangeDetectionPassword() {
+        return properties.getProperty("change_detection_password","");
     }
 
 }

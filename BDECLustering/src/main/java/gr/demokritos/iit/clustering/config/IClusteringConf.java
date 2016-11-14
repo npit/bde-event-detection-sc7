@@ -14,6 +14,9 @@ public interface IClusteringConf extends IBaseConf {
     int getMaxNumberOfArticles();
     String getClusteringMode();
 
-    boolean getTriggerChangeDetection();
+    boolean shouldTriggerChangeDetection();
     int getChangeDetectionThreshold();
+    String getChangeDetectionURL();
+    String getChangeDetectionUsername();
+    String getChangeDetectionPassword();
 }

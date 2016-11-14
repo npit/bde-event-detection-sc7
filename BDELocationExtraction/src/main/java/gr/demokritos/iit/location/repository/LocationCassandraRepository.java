@@ -1215,74 +1215,10 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
                 System.out.println("Empty payload, won't send anything.");
                 return;
             }
-            //payload="{\"id\":\"1\",\"title\":\"test event\",\"eventDate\":\"2016-02-25T17:48:49+0000\",\"referenceDate\":\"2016-02-25T17:48:49+0000\",\n" +                    "\"areas\":[{\"name\":\"Athens\",\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[35.31,25.3],[35.31,19.25],[41.09,19.25],[41.09,25.3],[35.31,25.3]]]}}]}";
-            // send http request
-            // TODO: make new connection for each send or make connection out of loop?
-            // TODO: put target url in the properties file on the module this function will
-            // end up in
-            String URLstr = strabonURL;
-            URL url;
-            HttpURLConnection connection = null;
-            try
-            {
-                // open connection, set JSONic properties
-                url = new URL(URLstr);
-                connection = (HttpURLConnection)url.openConnection();
-                connection.setRequestMethod("POST");
-                connection.setRequestProperty("Content-Type","application/json");
-                connection.setRequestProperty("Accept","application/json");
-                connection.setRequestProperty("Content-Length",
-                        Integer.toString(payload.getBytes().length));
-                connection.setRequestProperty("Content-Language", "en-US");
+            System.out.println("Sending event  [" + id + "].");
 
-                connection.setUseCaches(false);
-                connection.setDoOutput(true);
-                System.out.println("Sending event  [" + id + "].");
-                //Send request
-                DataOutputStream wr = new DataOutputStream (
-                        connection.getOutputStream());
-                wr.writeBytes(payload);
-                wr.close();
-                //Get Response
-                InputStream is = connection.getInputStream();
-                BufferedReader rd = new BufferedReader(new InputStreamReader(is));
-                // parse to string
-                StringBuilder response = new StringBuilder(); // or StringBuffer if not Java 5+
-                String line;
-                while((line = rd.readLine()) != null) {
-                    response.append(line);
-                    response.append('\r');
-                }
-                String resp = response.toString();
-                rd.close();
-                // debugprint
-                System.out.println("server response:\n\t" + resp);
-
-                if (resp.equals("{\"code\":400,\"message\":\"exception\"}"))
-                {
-                    System.err.println("Server request failed.");
-                }
-            }
-            catch(MalformedURLException exc)
-            {
-                System.err.println("Malformed event processing URL:\n\t" + URLstr);
-                return;
-            }
-            catch(IOException exc)
-            {
-                System.err.println("IO error during event processing connection initialization:\n");
-                System.err.println(exc.getMessage());
-                System.err.println(exc.toString());
-                exc.printStackTrace();
-                return;
-            }
-            finally
-            {
-                if(connection != null)
-                    connection.disconnect();
-
-            }
-
+            String resp = gr.demokritos.iit.base.util.Utils.sendPOST(payload,strabonURL);
+            Utils.checkResponse(resp);
 
         }
 

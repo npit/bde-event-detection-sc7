@@ -14,6 +14,10 @@
  */
 package gr.demokritos.iit.base.util;
 
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -24,6 +28,88 @@ import java.util.*;
  */
 public class Utils {
 
+    public static boolean checkResponse(String resp)
+    {
+        if (resp.equals("{\"code\":400,\"message\":\"exception\"}") || resp.isEmpty())
+        {
+            System.err.println("Server request failed.");
+            return false;
+        }
+        return true;
+    }
+
+    public static String sendGET(String address) throws IOException {
+        StringBuilder result = new StringBuilder();
+        URL url = new URL(address);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+
+        BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        String line;
+        while ((line = rd.readLine()) != null) {
+            result.append(line);
+        }
+        rd.close();
+        if(conn!=null) conn.disconnect();
+        return result.toString();
+    }
+    public static String sendPOST(String payload, String address)
+    {
+        URL url;
+        HttpURLConnection connection = null;
+        String resp = "";
+        try
+        {
+            // open connection, set JSONic properties
+            url = new URL(address);
+            connection = (HttpURLConnection)url.openConnection();
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("Content-Type","application/json");
+            connection.setRequestProperty("Accept","application/json");
+            connection.setRequestProperty("Content-Length",
+                    Integer.toString(payload.getBytes().length));
+            connection.setRequestProperty("Content-Language", "en-US");
+
+            connection.setUseCaches(false);
+            connection.setDoOutput(true);
+
+            //Send request
+            DataOutputStream wr = new DataOutputStream (
+                    connection.getOutputStream());
+            wr.writeBytes(payload);
+            wr.close();
+            //Get Response
+            InputStream is = connection.getInputStream();
+            BufferedReader rd = new BufferedReader(new InputStreamReader(is));
+            // parse to string
+            StringBuilder response = new StringBuilder(); // or StringBuffer if not Java 5+
+            String line;
+            while((line = rd.readLine()) != null) {
+                response.append(line);
+                response.append('\r');
+            }
+            resp = response.toString();
+            rd.close();
+            System.out.println("server response:\n\t" + resp);
+        }
+        catch(MalformedURLException exc)
+        {
+            System.err.println("Malformed event processing URL:\n\t" + address);
+        }
+        catch(IOException exc)
+        {
+            System.err.println("IO error during event processing connection initialization:\n");
+            System.err.println(exc.getMessage());
+            System.err.println(exc.toString());
+            exc.printStackTrace();
+        }
+        finally
+        {
+            if(connection != null)
+                connection.disconnect();
+        }
+        return resp;
+    }
     private static Stack<Long> tictoc;
     public static void tic()
     {
