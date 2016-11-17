@@ -97,27 +97,28 @@ public class BDEEventDetectionSpark {
         JavaSparkContext sc = bdedet.getContext();
         // get the spark repository class
         CassandraSparkRepository repo = new CassandraSparkRepository(JavaSparkContext.toSparkContext(sc), conf);
-
-        // get a timestamp : TODO: FIXME
         long timestamp = repo.getLatestTimestamp("event_detection_log");
-        System.out.println("timestamp: " + new Date(timestamp).toString());
-        System.out.println("LOADING ARTICLES");
-        // load batch. The quadruple represents <entry_url, title, clean_text, timestamp>
-        // entry URL is supposed to be the unique identifier of an article
-        // (though for reuters many articles with same body
-        // are republished under different URLs)
+
 
 
         long startTotal = System.currentTimeMillis();
+        // Cluster with a predefined method
+        // -----------------------------------
+
         sparkClusteringWithPrecomputeGraphs(repo,timestamp,conf,sc);
         //sparkClusteringDefault(repo,timestamp,conf,sc);
+
+        // -----------------------------------
         long endTotal  = System.currentTimeMillis();
         System.out.println( "Total clustering time : " + Long.toString((endTotal - startTotal)/1000l) + "sec" );
 
         return;
 
     }
+    private static void sparkClustering_JohnApproach(CassandraSparkRepository repo, long timestamp, ISparkConf conf, JavaSparkContext sc)
+    {
 
+    }
     private static void sparkClusteringDefault(CassandraSparkRepository repo, long timestamp, ISparkConf conf, JavaSparkContext sc)
     {
         JavaRDD<Tuple4<String, String, String, Long>> articles = repo.loadArticlesPublishedLaterThan(timestamp);
