@@ -10,6 +10,7 @@ import java.util.Date;
 import java.util.Map;
 
 
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.util.GeometryTransformer;
 import org.json.simple.JSONArray;
 import org.json.simple.parser.JSONParser;
@@ -35,6 +36,7 @@ public class GeometryFormatTransformer {
 
 
 
+
     /**
      *
      * @param input a string with a WKT geometry, i.e.
@@ -51,7 +53,13 @@ public class GeometryFormatTransformer {
      *  them to strabon
 
      */
+    public static double calculateArea(String wktGeometry) throws ParseException {
 
+        WKTReader reader = new WKTReader();
+        Geometry geom = reader.read(wktGeometry);
+        return geom.getArea();
+
+    }
     public static String WKTtoGeoJSON(String input) throws ParseException, IOException {
 
 

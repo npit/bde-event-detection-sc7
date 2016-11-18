@@ -26,7 +26,15 @@ import java.util.Properties;
 public class BaseConfiguration implements IBaseConf {
 
     protected final Properties properties;
-
+    private static final String [] trueArray = {"yes","true"};
+    protected static boolean isTrue(String arg)
+    {
+        for(String elem : trueArray)
+        {
+            if (elem.equals(arg.toLowerCase())) return true;
+        }
+        return false;
+    }
     public BaseConfiguration(String configurationFileName) {
         File file = new File(configurationFileName);
         this.properties = new Properties();

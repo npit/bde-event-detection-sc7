@@ -14,15 +14,23 @@
  */
 package gr.demokritos.iit.clustering.exec;
 
+import com.vividsolutions.jts.io.ParseException;
 import gr.demokritos.iit.base.util.Utils;
+import gr.demokritos.iit.clustering.clustering.MCLClusterer;
+import gr.demokritos.iit.clustering.clustering.ParameterizedBaseArticleClusterer;
 import gr.demokritos.iit.clustering.config.*;
 import gr.demokritos.iit.clustering.factory.DemoClusteringFactory;
 import gr.demokritos.iit.clustering.model.BDEArticle;
+import gr.demokritos.iit.clustering.newsum.IClusterer;
 import gr.demokritos.iit.clustering.repository.DemoCassandraRepository;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.*;
 
-import org.apache.spark.SparkContext;
+import gr.demokritos.iit.location.util.GeometryFormatTransformer;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.scify.asset.server.model.datacollections.CleanResultCollection;
 import org.scify.asset.server.model.structures.social.TwitterResult;
@@ -34,6 +42,7 @@ import org.scify.asset.social.data.preprocessing.IStemmer;
 import org.scify.asset.social.data.preprocessing.TwitterStemmer;
 import org.scify.newsum.server.clustering.BaseArticleClusterer;
 import org.scify.newsum.server.clustering.IArticleClusterer;
+import org.scify.newsum.server.model.datacollections.Articles;
 import org.scify.newsum.server.model.structures.Article;
 import org.scify.newsum.server.model.structures.Sentence;
 import org.scify.newsum.server.model.structures.Summary;
@@ -105,8 +114,6 @@ public class BDEEventDetection {
 //        now.set(Calendar.MONTH, now.get(Calendar.MONTH) - 1);
         System.out.println("calendar retrieval setting: " + cal.getTime());
 
-
-        String clusteringMode = configuration.getClusteringMode();
         long tstamp = cal.getTimeInMillis();
         System.out.println("loading articles");
         long startTime = System.currentTimeMillis();
@@ -114,15 +121,52 @@ public class BDEEventDetection {
         long endTime = System.currentTimeMillis();
         System.out.println("Took " + Long.toString((endTime - startTime)/1000l) + " sec");
 
+        String clusteringMode = configuration.getClusteringMode();
+        Map<String,Topic> articlesPerCluster = null;
         // clusterer
-        IArticleClusterer cl = new BaseArticleClusterer(articles);
+        if(clusteringMode.equals("base"))
+        {
+            IArticleClusterer cl = new ParameterizedBaseArticleClusterer(articles, configuration.getCutOffThreshold());
+            cl.calculateClusters();
+            articlesPerCluster = cl.getArticlesPerCluster();
+        }
+        else if (clusteringMode.equals("mcl"))
+        {
+            Articles articles_collection = new Articles(articles);
+            IClusterer cl = new MCLClusterer(articles_collection, configuration.getCutOffThreshold());
+            cl.calculateClusters(articles_collection);
+            articlesPerCluster = cl.getArticlesPerCluster();
+        }
+        else
+        {
+            System.out.println("Undefined clustering mode : " + clusteringMode);
+            factory.releaseResources();
+            return;
+        }
+
         System.out.println("clustering articles...");
+
+        for(String key : articlesPerCluster.keySet())
+        {
+
+            System.out.println(key);
+            Topic t = articlesPerCluster.get(key);
+            for(Article art : t)
+            {
+                System.out.println("\t" + art.getTitle());
+            }
+        }
+        System.out.println("\n");
+
+        if(true)
+        {
+            factory.releaseResources();
+            return;
+        }
         startTime = System.currentTimeMillis();
-        cl.calculateClusters();
         endTime = System.currentTimeMillis();
         System.out.println("Took " + Long.toString((endTime - startTime)/1000l) + " sec");
 
-        Map<String,Topic> articlesPerCluster = cl.getArticlesPerCluster();
 
         // the below should be already populated after news crawls
         Map<String, Map<String, String>> place_mappings = getPlaceMappings(articles, articlesPerCluster);
@@ -181,20 +225,44 @@ public class BDEEventDetection {
             System.out.println("Sending events to Strabon is disabled.");
         }
 
-        if(configuration.getTriggerChangeDetection())
+        if(configuration.shouldTriggerChangeDetection())
         {
             System.out.println("Checking if change detection should be triggered for the newly generated events.");
             int threshold = configuration.getChangeDetectionThreshold();
-            for(int ev = 0; ev < storedEvents.size(); ++ ev)
-            {
-                // event container , to return event for change detection
-                // title, descr, date, tweets, sources, id, placemappings
-                ArrayList<Object> currEvent = storedEvents.get(ev);
-                if( ((Map<String,String>)currEvent.get(4)).size() > threshold)
-                {
-                    triggerChangeDetection(currEvent);
+            // get connection data
+            ArrayList<String> connData = new ArrayList<>();
+            connData.add(configuration.getChangeDetectionURL());
+            connData.add(configuration.getChangeDetectionUsername());
+            connData.add(configuration.getChangeDetectionPassword());
+
+                if(connData.contains("")) {
+                    System.err.println(String.format("Empty element #%d in change detection url & authentication data. Aborting.", connData.indexOf("")));
+                    System.err.println("You need to set the change detection url, username and password.");
                 }
-            }
+                else
+                {
+                    for(int ev = 0; ev < storedEvents.size(); ++ ev)
+                    {
+                        // event container , to return event for change detection
+                        // title, descr, date, tweets, sources, id, placemappings
+                        ArrayList<Object> currEvent = storedEvents.get(ev);
+                        String eventid = (String) currEvent.get(5);
+                        // skip the ones with no location data
+                        if( ((Map<String,String>)currEvent.get(6)).isEmpty())
+                        {
+                            System.out.println("Skipping event " + eventid + " due to no assigned geometries");
+                            continue;
+                        }
+                        int numArticlesOfEvent = ((Map<String,String>)currEvent.get(4)).size();
+                        if( numArticlesOfEvent >= threshold)
+                        {
+                            System.out.println(String.format(
+                                    "\tTriggering change detection for event %s which has %d/%d sources",
+                                    eventid, numArticlesOfEvent, threshold));
+                            triggerChangeDetection(connData,currEvent);
+                        }
+                    }
+                }
         }
         else
         {
@@ -214,8 +282,77 @@ public class BDEEventDetection {
 
     }
 
-    private static void triggerChangeDetection(ArrayList<Object> event)
+    private static void triggerChangeDetection(ArrayList<String> connData, ArrayList<Object> event)
     {
+        String url = connData.get(0);
+        String username = connData.get(1);
+        String password = connData.get(2);
+
+        // title, descr, date, tweets, sources, id, placemappings
+
+        // get the smallest place (area)
+        String eventid = ((String)event.get(5));
+        String eventDate = (String) event.get(2);
+        HashMap<String,String> places = (HashMap<String,String>)event.get(6);
+        double minArea = Double.MAX_VALUE;
+        int minIdx=0;
+        String minLoc="";
+        for (String location : places.keySet())
+        {
+            try {
+                double area = GeometryFormatTransformer.calculateArea(places.get(location));
+                if(area < minArea)
+                {
+                    minArea = area;
+                    minLoc = location;
+                }
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+
+        if(Double.isInfinite(minArea))
+        {
+            System.err.println("No geometries found for event " + eventid);
+            return;
+        }
+        String minGeom = places.get(minLoc);
+
+            /* example format
+    http://teleios4.di.uoa.gr:8080/changeDetection/changes/progress
+        ?extent=POLYGON((10.513916015625 43.97996933797573,16.007080078125 43.97996933797573,16.007080078125 40.182020964319086,10.513916015625 40.182020964319086,10.513916015625 43.97996933797573))
+        &reference_date=2016-03-10T10:57:53+0000
+        &event_date=2016-03-16T10:57:53+0000
+        &polarisations=[VH, VV]
+        &username=efaki&password=testapp
+     */
+
+//        System.err.println("HARDCODING mingeom");
+//        System.out.println("HARDCODED");
+//        minGeom="POLYGON ((13.1680793762208 42.6952133178712, 13.4106550216675 42.6952133178712, 13.4106550216675 42.5705032348633, 13.1680793762208 42.5705032348633, 13.1680793762208 42.6952133178712))";
+
+        String payload = null;
+        try {
+            payload = url + "?extent=" + java.net.URLEncoder.encode(minGeom,"UTF-8") +
+                    "&reference_date=" + java.net.URLEncoder.encode(eventDate,"UTF-8") +
+                    "&event_date=" + java.net.URLEncoder.encode(eventDate,"UTF-8") +
+                    "&polarisations=" + java.net.URLEncoder.encode("[VH, VV]","UTF-8") +
+                    "&username=" + username +
+                    "&password=" + password;
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("Sending to [" + payload + "]");
+        // send that min area
+        String resp = null;
+        try {
+            resp = Utils.sendGET(payload);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if(Utils.checkResponse(resp))
+            System.err.println("Change detection trigger for event " + eventid + " failed.");
         // event container , to return event for change detection
         // title, descr, date, tweets, sources, id, placemappings
 

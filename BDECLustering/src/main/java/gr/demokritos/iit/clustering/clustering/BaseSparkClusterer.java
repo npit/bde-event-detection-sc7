@@ -11,6 +11,7 @@ import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.graphx.Graph;
+import org.scify.newsum.server.model.datacollections.Articles;
 import org.scify.newsum.server.model.structures.Article;
 import org.scify.newsum.server.model.structures.Topic;
 import org.scify.newsum.server.model.structures.URLImage;
@@ -490,5 +491,10 @@ public class BaseSparkClusterer implements IClusterer {
                 return true;
             }
         }
+    }
+
+    @Override
+    public void calculateClusters(Articles articles) {
+
     }
 }
