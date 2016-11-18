@@ -40,6 +40,7 @@ import java.nio.charset.CodingErrorAction;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.concurrent.*;
+import javax.net.ssl.SSLSocketFactory;
 import javax.sql.DataSource;
 import org.apache.http.Consts;
 import org.apache.http.client.config.CookieSpecs;
@@ -49,6 +50,7 @@ import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
@@ -105,6 +107,7 @@ public class RSSCrawlFactory implements IRSSFactory {
     public HttpClient createHttpClient() {
         Registry<ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory>create()
                 .register("http", PlainConnectionSocketFactory.INSTANCE)
+                .register("https", SSLConnectionSocketFactory.getSocketFactory())
                 .build();
         PoolingHttpClientConnectionManager connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
 
@@ -115,6 +118,7 @@ public class RSSCrawlFactory implements IRSSFactory {
                 .build();
         // Configure the connection manager to use connection configuration 
         connManager.setDefaultConnectionConfig(connectionConfig);
+
 
         // Configure total max or per route limits for persistent connections
         // that can be kept in the pool or leased by the connection manager.
@@ -135,6 +139,7 @@ public class RSSCrawlFactory implements IRSSFactory {
                 .setDefaultRequestConfig(defaultRequestConfig)
                 .setUserAgent(Fetcher.USER_AGENT)
                 .build();
+
         return httpclient;
     }
 
