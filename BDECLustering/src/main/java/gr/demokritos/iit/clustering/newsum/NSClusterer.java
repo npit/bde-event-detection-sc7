@@ -7,6 +7,7 @@ import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.scify.newsum.server.clustering.BaseArticleClusterer;
+import org.scify.newsum.server.model.datacollections.Articles;
 import org.scify.newsum.server.model.structures.Topic;
 import scala.Tuple2;
 import scala.Tuple4;
@@ -105,6 +106,15 @@ public class NSClusterer implements IClusterer {
 
     }
 
+    @Override
+    public void calculateClusters(Articles articles) {
+
+    }
+
+    @Override
+    public Map<String, Topic> getArticlesPerCluster() {
+        return null;
+    }
 
 
 }

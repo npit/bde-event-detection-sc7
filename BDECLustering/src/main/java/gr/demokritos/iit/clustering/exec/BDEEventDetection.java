@@ -16,9 +16,12 @@ package gr.demokritos.iit.clustering.exec;
 
 import com.vividsolutions.jts.io.ParseException;
 import gr.demokritos.iit.base.util.Utils;
+import gr.demokritos.iit.clustering.clustering.MCLClusterer;
+import gr.demokritos.iit.clustering.clustering.ParameterizedBaseArticleClusterer;
 import gr.demokritos.iit.clustering.config.*;
 import gr.demokritos.iit.clustering.factory.DemoClusteringFactory;
 import gr.demokritos.iit.clustering.model.BDEArticle;
+import gr.demokritos.iit.clustering.newsum.IClusterer;
 import gr.demokritos.iit.clustering.repository.DemoCassandraRepository;
 
 import java.io.IOException;
@@ -39,6 +42,7 @@ import org.scify.asset.social.data.preprocessing.IStemmer;
 import org.scify.asset.social.data.preprocessing.TwitterStemmer;
 import org.scify.newsum.server.clustering.BaseArticleClusterer;
 import org.scify.newsum.server.clustering.IArticleClusterer;
+import org.scify.newsum.server.model.datacollections.Articles;
 import org.scify.newsum.server.model.structures.Article;
 import org.scify.newsum.server.model.structures.Sentence;
 import org.scify.newsum.server.model.structures.Summary;
@@ -110,8 +114,6 @@ public class BDEEventDetection {
 //        now.set(Calendar.MONTH, now.get(Calendar.MONTH) - 1);
         System.out.println("calendar retrieval setting: " + cal.getTime());
 
-
-        String clusteringMode = configuration.getClusteringMode();
         long tstamp = cal.getTimeInMillis();
         System.out.println("loading articles");
         long startTime = System.currentTimeMillis();
@@ -119,15 +121,52 @@ public class BDEEventDetection {
         long endTime = System.currentTimeMillis();
         System.out.println("Took " + Long.toString((endTime - startTime)/1000l) + " sec");
 
+        String clusteringMode = configuration.getClusteringMode();
+        Map<String,Topic> articlesPerCluster = null;
         // clusterer
-        IArticleClusterer cl = new BaseArticleClusterer(articles);
+        if(clusteringMode.equals("base"))
+        {
+            IArticleClusterer cl = new ParameterizedBaseArticleClusterer(articles, configuration.getCutOffThreshold());
+            cl.calculateClusters();
+            articlesPerCluster = cl.getArticlesPerCluster();
+        }
+        else if (clusteringMode.equals("mcl"))
+        {
+            Articles articles_collection = new Articles(articles);
+            IClusterer cl = new MCLClusterer(articles_collection, configuration.getCutOffThreshold());
+            cl.calculateClusters(articles_collection);
+            articlesPerCluster = cl.getArticlesPerCluster();
+        }
+        else
+        {
+            System.out.println("Undefined clustering mode : " + clusteringMode);
+            factory.releaseResources();
+            return;
+        }
+
         System.out.println("clustering articles...");
+
+        for(String key : articlesPerCluster.keySet())
+        {
+
+            System.out.println(key);
+            Topic t = articlesPerCluster.get(key);
+            for(Article art : t)
+            {
+                System.out.println("\t" + art.getTitle());
+            }
+        }
+        System.out.println("\n");
+
+        if(true)
+        {
+            factory.releaseResources();
+            return;
+        }
         startTime = System.currentTimeMillis();
-        cl.calculateClusters();
         endTime = System.currentTimeMillis();
         System.out.println("Took " + Long.toString((endTime - startTime)/1000l) + " sec");
 
-        Map<String,Topic> articlesPerCluster = cl.getArticlesPerCluster();
 
         // the below should be already populated after news crawls
         Map<String, Map<String, String>> place_mappings = getPlaceMappings(articles, articlesPerCluster);

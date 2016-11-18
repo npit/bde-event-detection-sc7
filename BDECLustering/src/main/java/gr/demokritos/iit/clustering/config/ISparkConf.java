@@ -21,8 +21,7 @@ public interface ISparkConf extends IClusteringConf {
     String SPARK_APP_NAME = "spark_app_name";
     String BATCH_NUM_OF_DAYS = "batch_days_limit";
     String NUM_PARTITIONS = "num_partitions";
-    String SIMILARITY_MODE_PARAM = "similarity_mode";
-    String CUTOFF_THRESHOLD_PARAM = "cutoff_threshold";
+
 
     String getMaster();
 

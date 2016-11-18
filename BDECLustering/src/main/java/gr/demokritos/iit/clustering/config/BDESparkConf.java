@@ -58,20 +58,5 @@ public class BDESparkConf extends clusteringConf implements ISparkConf {
         return Integer.valueOf(properties.getProperty(NUM_PARTITIONS, "4"));
     }
 
-    @Override
-    public SimilarityMode getSimilarityMode() {
-        try {
-            SimilarityMode mode = SimilarityMode.valueOf(properties.getProperty(SIMILARITY_MODE_PARAM, "nvs").toUpperCase());
-            return mode;
-        } catch (IllegalArgumentException ex) {
-            System.err.println(ex.getMessage());
-            System.err.println("fallback to default similarity mode: NVS");
-            return SimilarityMode.NVS;
-        }
-    }
 
-    @Override
-    public double getCutOffThreshold() {
-        return Double.valueOf(properties.getProperty(CUTOFF_THRESHOLD_PARAM, "0.24"));
-    }
 }

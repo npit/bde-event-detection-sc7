@@ -1,6 +1,7 @@
 package gr.demokritos.iit.clustering.config;
 
 import gr.demokritos.iit.base.conf.BaseConfiguration;
+import gr.demokritos.iit.clustering.structs.SimilarityMode;
 
 import java.util.Properties;
 
@@ -72,18 +73,7 @@ public class clusteringConf extends BaseConfiguration implements IClusteringConf
     @Override
     public String getClusteringMode()
     {
-        String value = properties.getProperty("mode",BOTH);
-        if(value.equals(BOTH));
-        else if (value.equals(ARTICLES));
-        else if(value.equals(BOTH));
-        else
-        {
-            System.err.println("Undefined supplied clustering mode: [" + value + "]");
-            System.err.println("Using default [both]");
-            return BOTH;
-        }
-        return value;
-
+        return  properties.getProperty("clustering_mode","base");
     }
     @Override
     public boolean shouldTriggerChangeDetection()
@@ -126,6 +116,23 @@ public class clusteringConf extends BaseConfiguration implements IClusteringConf
     @Override
     public String getChangeDetectionPassword() {
         return properties.getProperty("change_detection_password","");
+    }
+
+    @Override
+    public SimilarityMode getSimilarityMode() {
+        try {
+            SimilarityMode mode = SimilarityMode.valueOf(properties.getProperty(SIMILARITY_MODE_PARAM, "nvs").toUpperCase());
+            return mode;
+        } catch (IllegalArgumentException ex) {
+            System.err.println(ex.getMessage());
+            System.err.println("fallback to default similarity mode: NVS");
+            return SimilarityMode.NVS;
+        }
+    }
+
+    @Override
+    public double getCutOffThreshold() {
+        return Double.valueOf(properties.getProperty(CUTOFF_THRESHOLD_PARAM, "0.24"));
     }
 
 }
