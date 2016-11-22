@@ -39,5 +39,6 @@ public interface IClusteringConf extends IBaseConf {
 
     SimilarityMode getSimilarityMode();
 
+    int getEventSizeCutoffThreshold();
 
 }

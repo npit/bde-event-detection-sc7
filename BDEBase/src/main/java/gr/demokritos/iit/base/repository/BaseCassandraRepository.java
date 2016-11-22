@@ -91,7 +91,7 @@ public class BaseCassandraRepository implements IBaseRepository {
 
     @Override
     public Collection<Map<String, Object>> loadAllArticles(int atmost) {
-        System.out.println("loading articles...");
+        System.out.println("Loading articles idnependent of published date...");
         Statement select;
         ResultSet results;
         Collection<Map<String, Object>> out = new ArrayList();
@@ -192,13 +192,13 @@ public class BaseCassandraRepository implements IBaseRepository {
                 out.add(res);
             }
         }
-        System.out.println(String.format("loaded %d tweets", out.size()));
+        System.out.println(String.format("loaded %d tweets from the database", out.size()));
         return Collections.unmodifiableCollection(out);
     }
 
     @Override
     public Collection<Map<String, Object>> loadArticles(long from) {
-        System.out.println("loading articles...");
+        System.out.println("loading articles using unix timestamp [" + from + "] ...");
         List<String> ymdLitRange = Utils.extractYearMonthDayLiteralRangeFrom(from);
         Statement select;
         ResultSet results;
@@ -251,7 +251,7 @@ public class BaseCassandraRepository implements IBaseRepository {
             }
         }
         // debug
-        System.out.println(String.format("loaded %d articles", out.size()));
+        System.out.println(String.format("Loaded %d articles from the database.", out.size()));
         // debug
         return Collections.unmodifiableCollection(out);
     }

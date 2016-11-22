@@ -26,6 +26,12 @@ public class SourceAccount {
     public static final String SOURCE = "account_name";
     public static final String ACTIVE = "active";
 
+    public int getNumberOfPostsToFetch() {
+        return NumberOfPostsToFetch;
+    }
+    private static Boolean DefaultStatus = true;
+    private int NumberOfPostsToFetch;
+    private static int DefaultNumberOfPostsToFetch = 100;
     private String account;
     private Boolean active;
 
@@ -37,8 +43,18 @@ public class SourceAccount {
     public SourceAccount(String account, Boolean active) {
         this.account = account;
         this.active = active;
+        this.NumberOfPostsToFetch = DefaultNumberOfPostsToFetch;
     }
-
+    public SourceAccount(String account, Boolean active, int NumberOfPostsToFetch ) {
+        this.account = account;
+        this.active = active;
+        this.NumberOfPostsToFetch = NumberOfPostsToFetch;
+    }
+    public SourceAccount(String account) {
+        this.account = account;
+        this.active = DefaultStatus;
+        this.NumberOfPostsToFetch = DefaultNumberOfPostsToFetch;
+    }
     /**
      *
      * @return the account_name (screen_name)
@@ -57,7 +73,7 @@ public class SourceAccount {
 
     @Override
     public String toString() {
-        return "SourceAccount{" + "account=" + account + ", active=" + active + "}";
+        return "SourceAccount{" + "account=" + account + ", active=" + active + ", numposts=" + NumberOfPostsToFetch + "}";
     }
 
     @Override

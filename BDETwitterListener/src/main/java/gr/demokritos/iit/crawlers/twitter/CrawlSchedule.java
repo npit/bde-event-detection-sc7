@@ -82,6 +82,7 @@ public class CrawlSchedule {
         {
             System.err.println("Undefined crawl mode [" + operationModeStr + "]");
         }
+        System.out.println("Running the twitter crawler on " + operationModeStr + " mode.");
         switch (operation) {
             case MONITOR:
                 monitor(configuration);

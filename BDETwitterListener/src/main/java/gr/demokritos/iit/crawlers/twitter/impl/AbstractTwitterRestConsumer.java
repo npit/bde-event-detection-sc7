@@ -179,7 +179,7 @@ public abstract class AbstractTwitterRestConsumer {
         {
             // read from file
             try {
-                accounts = QueryLoader.loadAccounts(accountsSource,"[*]{3}",false);
+                accounts = QueryLoader.loadAccounts(accountsSource,"[*]{3}");
             } catch (IOException e) {
                 e.printStackTrace();
                 return accounts;

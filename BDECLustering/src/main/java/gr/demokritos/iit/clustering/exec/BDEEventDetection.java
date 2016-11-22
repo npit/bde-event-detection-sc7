@@ -115,8 +115,10 @@ public class BDEEventDetection {
         System.out.println("calendar retrieval setting: " + cal.getTime());
 
         long tstamp = cal.getTimeInMillis();
-        System.out.println("loading articles");
+        System.out.println("Loading articles to cluster.");
         long startTime = System.currentTimeMillis();
+        System.out.println(String.format("Loading articles using window :[%s] , max number of articles: [%d]",
+                configuration.getDocumentRetrievalTimeWindow(),configuration.getMaxNumberOfArticles()));
         List<BDEArticle> articles = repository.loadArticlesAsDemo_crawledInfo(tstamp, configuration.getMaxNumberOfArticles());
         long endTime = System.currentTimeMillis();
         System.out.println("Took " + Long.toString((endTime - startTime)/1000l) + " sec");
@@ -158,11 +160,7 @@ public class BDEEventDetection {
         }
         System.out.println("\n");
 
-        if(true)
-        {
-            factory.releaseResources();
-            return;
-        }
+
         startTime = System.currentTimeMillis();
         endTime = System.currentTimeMillis();
         System.out.println("Took " + Long.toString((endTime - startTime)/1000l) + " sec");
@@ -213,7 +211,7 @@ public class BDEEventDetection {
         Map<String, String> tweetURLtoUserMapping = getTweetClustersToUsersMappings(cleanTweets);
         System.out.println("saving events...");
 
-        ArrayList<ArrayList<Object>> storedEvents = repository.saveEvents(articlesPerCluster, summaries, related, place_mappings, tweetURLtoPostIDMapping, tweetURLtoUserMapping, 2);
+        ArrayList<ArrayList<Object>> storedEvents = repository.saveEvents(articlesPerCluster, summaries, related, place_mappings, tweetURLtoPostIDMapping, tweetURLtoUserMapping, configuration.getEventSizeCutoffThreshold());
 
         if (SendToStrabon) {
 	    String strabonURL=configuration.getStrabonURL();

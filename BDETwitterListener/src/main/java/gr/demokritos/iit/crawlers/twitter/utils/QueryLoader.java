@@ -104,7 +104,7 @@ public class QueryLoader {
         }
     }
 
-    public static Set<SourceAccount> loadAccounts(String sourceFile, String sDelimiterType, Boolean defaultAccountStatus)
+    public static Set<SourceAccount> loadAccounts(String sourceFile, String sDelimiterType)
             throws FileNotFoundException, IOException {
         if (sDelimiterType == null || sDelimiterType.trim().isEmpty()) {
             sDelimiterType = "***";
@@ -124,18 +124,22 @@ public class QueryLoader {
         String sLine;
         Set<SourceAccount> res = new HashSet();
         while ((sLine = br.readLine()) != null) {
-            // if a comment line
+            // if a comment line, skip
             if (sLine.startsWith("#")) continue;
 
             String[] params = sLine.split(sDelimiterType);
             SourceAccount sacc = null;
-            if (params.length == 2)
+            if (params.length == 3)
+            {
+                sacc = new SourceAccount(params[0],Boolean.parseBoolean(params[1]), Integer.parseInt(params[2]));
+            }
+            else if (params.length == 2)
             {
                 sacc = new SourceAccount(params[0],Boolean.parseBoolean(params[1]));
             }
             else if (params.length == 1)
             {
-                sacc = new SourceAccount(params[0],defaultAccountStatus);
+                sacc = new SourceAccount(params[0]);
             }
             else {
                 LOGGER.severe(String.format("'%s' is a malformed source account file line. Format expected is accName%saccStatus", sLine,sDelimiterType));

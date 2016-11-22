@@ -43,6 +43,7 @@ out/*
 */res/*.properties
 */res/*_urls*
 */res/*.queries
+*/res/*.accounts
 
 timingParallelSpark.txt
 sensitive/*

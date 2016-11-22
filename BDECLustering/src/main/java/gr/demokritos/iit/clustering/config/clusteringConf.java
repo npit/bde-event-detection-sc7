@@ -135,4 +135,9 @@ public class clusteringConf extends BaseConfiguration implements IClusteringConf
         return Double.valueOf(properties.getProperty(CUTOFF_THRESHOLD_PARAM, "0.24"));
     }
 
+    @Override
+    public int getEventSizeCutoffThreshold()
+    {
+        return Integer.parseInt(properties.getProperty("eventsize_cutoff_threshold","2"));
+    }
 }

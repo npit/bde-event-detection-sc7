@@ -28,10 +28,8 @@ import gr.demokritos.iit.crawlers.twitter.structures.SourceAccount;
 
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-import twitter4j.Query;
-import twitter4j.QueryResult;
-import twitter4j.Status;
-import twitter4j.TwitterException;
+
+import twitter4j.*;
 
 public class BaseTwitterRestConsumer extends AbstractTwitterRestConsumer implements ITwitterRestConsumer {
 
@@ -79,10 +77,11 @@ public class BaseTwitterRestConsumer extends AbstractTwitterRestConsumer impleme
                 LOGGER.severe(ex.getMessage());
             }
         }
-        LOGGER.info(String.format("Proceeding to monitor %d accounts .", (accounts.size())));
+        LOGGER.info(String.format("Proceeding to monitor %d accounts.", (accounts.size())));
         // for each account
         for (SourceAccount sourceAccount : accounts) {
             try {
+                System.out.println(sourceAccount.toString());
                 // check rate limit status
                 boolean reset = checkAPICallStatus(iResetCount++, remaining_calls_before_limit, time_started, seconds_until_reset);
                 if (reset) {
@@ -96,7 +95,10 @@ public class BaseTwitterRestConsumer extends AbstractTwitterRestConsumer impleme
                 String sourceName = sourceAccount.getAccount();
                 LOGGER.info(String.format("Parsing '%s': %d/%d accounts", sourceName, iCount++, iTotal));
                 // get posts from selected account
-                List<Status> statuses = twitter.getUserTimeline(sourceName);
+                // specify number of posts
+                Paging paging = new Paging();
+                paging.setCount(sourceAccount.getNumberOfPostsToFetch());
+                List<Status> statuses = twitter.getUserTimeline(sourceName, paging);
                 // process statuses
                 List<Status> res = processStatuses(statuses, CrawlEngine.MONITOR, engine_id);
                 // log done
