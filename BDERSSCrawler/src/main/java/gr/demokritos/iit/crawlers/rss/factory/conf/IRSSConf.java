@@ -22,23 +22,47 @@ import gr.demokritos.iit.base.conf.IBaseConf;
  */
 public interface IRSSConf extends IBaseConf {
 
-    public int getMaxHttpConnections();
+    int getMaxHttpConnections();
 
-    public int getMaxQueueSize();
+    int getMaxQueueSize();
 
-    public int getMaxNumberOfCrawlingThreads();
+    int getMaxNumberOfCrawlingThreads();
 
-    public String getUrlsFileName();
+    String getUrlsFileName();
 
-    public int getDatabaseConnectionPoolSize();
+    int getDatabaseConnectionPoolSize();
 
-    public long getDelayBetweenCrawls();
+    long getDelayBetweenCrawls();
 
-    public int getHttpTimeoutInSeconds();
+    int getHttpTimeoutInSeconds();
 
-    public boolean runForever();
+    boolean runForever();
 
     boolean getRespectRobots();
     boolean applyHTTPFetchRestrictions();
+
+    enum OperationMode {
+
+        CRAWL("crawl"), FETCH("fetch");
+        private String type;
+
+        private OperationMode(String type) {
+            this.type = type;
+        }
+        public static boolean supports(String candidate)
+        {
+            for(OperationMode elem : OperationMode.values())
+            {
+                if(elem.toString().equals(candidate)) return true;
+//                System.out.println("["+elem.name() + "] =/= [" + candidate+"]");
+            }
+            return false;
+        }
+        @Override
+        public String toString() {
+            return type;
+        }
+    }
+    OperationMode getOperationMode();
 
 }

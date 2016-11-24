@@ -14,6 +14,12 @@
  */
 package gr.demokritos.iit.crawlers.rss;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
+import de.l3s.boilerpipe.BoilerpipeProcessingException;
+import gr.demokritos.iit.crawlers.rss.model.Content;
+import gr.demokritos.iit.crawlers.rss.model.CrawlId;
+import gr.demokritos.iit.crawlers.rss.runnable.FeedFetchTask;
 import gr.demokritos.iit.crawlers.rss.runnable.LoggingRunnableDecorator;
 import gr.demokritos.iit.crawlers.rss.runnable.Consumer;
 import gr.demokritos.iit.crawlers.rss.event.EventSink;
@@ -32,8 +38,20 @@ import gr.demokritos.iit.crawlers.rss.schedule.DefaultCrawlSchedule;
 import gr.demokritos.iit.crawlers.rss.schedule.CrawlSchedule;
 import gr.demokritos.iit.crawlers.rss.factory.conf.IRSSConf;
 import gr.demokritos.iit.crawlers.rss.repository.IRepository;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.HttpClient;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.concurrent.*;
 
 /**
@@ -53,15 +71,17 @@ public abstract class AbstractCrawler {
     private long delayBetweenCrawls;
     // run forever or for a single time 
     protected boolean bRunForever;
+    HttpClient httpClient;
+    IRepository repository;
 
     public AbstractCrawler(RSSCrawlFactory factory, IRSSConf configuration) throws Exception {
 
         eventSink = factory.createEventSink();
         queue = factory.createBlockingQueue();
-        IRepository repository = createRepository(factory);
+        repository = createRepository(factory);
 
         // Set up the consumer and the crawl executor
-        HttpClient httpClient = factory.createHttpClient();
+        httpClient = factory.createHttpClient();
         consumerExecutorService = factory.createConsumerExecutorService();
         LoadRegistry loadRegistry = new DomainLoadRegistry(new DomainExtractor());
         CrawlExecutor crawlExecutor = new DefaultCrawlExecutor(consumerExecutorService, repository, httpClient,
@@ -93,6 +113,61 @@ public abstract class AbstractCrawler {
 
     protected abstract IRepository createRepository(RSSCrawlFactory factory);
 
+    public void fetch(IRSSConf configuration)
+    {
+        Fetcher fetcher = new HttpFetcher(httpClient, repository, configuration.getRespectRobots(),
+                configuration.applyHTTPFetchRestrictions());
+        String filename = configuration.getUrlsFileName();
+        File urlsFile = new File(filename);
+        DefaultCrawlIdGenerator idgen = new DefaultCrawlIdGenerator(repository);
+        CrawlId CrawlID =  idgen.createNewCrawlId();
+
+        ArrayList<String> urls = new ArrayList<>();
+        try {
+            for(String line : Files.readLines(urlsFile, Charsets.UTF_8))
+            {
+                line = line.trim();
+                if(line.isEmpty()) continue;
+                if(line.startsWith("#")) continue;
+                urls.add(line);
+            }
+
+
+            for(String url : urls) {
+                System.out.printf("Fetching url [%s]\n", url);
+
+
+                Document doc = Jsoup.connect(url).get();
+                String title = doc.title();
+
+                // attempts to get publish date failed. manual parsing required
+
+                // dummy date (now)
+                Date now = new Date(System.currentTimeMillis());
+
+
+                Item item = new Item("no-feed", CrawlID);
+                Content htmlContent = fetcher.fetchUrl(url);
+                if (title == null) {
+                    title = "";
+                } else {
+                    title = StringUtils.normalizeSpace(title.replaceAll("\\x7f", " "));
+                }
+
+                repository.savePage(item, title, htmlContent, now );
+            }
+
+
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (BoilerpipeProcessingException e) {
+            e.printStackTrace();
+        }
+        CrawlID.finishedCrawling();
+        repository.saveCrawlId(CrawlID);
+    }
     public void startCrawling() throws ExecutionException, InterruptedException {
         // Start the consumer in a different thread. That thread will block until there are items on the queue
         // The consumer gets started and it just runs on its own

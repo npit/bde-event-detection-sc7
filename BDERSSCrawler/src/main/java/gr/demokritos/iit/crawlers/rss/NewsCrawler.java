@@ -56,7 +56,22 @@ public class NewsCrawler extends AbstractCrawler {
         try {
             factory = new RSSCrawlFactory(configuration);
             NewsCrawler crawler = new NewsCrawler(factory, configuration);
-            crawler.startCrawling();
+            IRSSConf.OperationMode opmode = configuration.getOperationMode();
+            System.err.println("Running newscrawler in mode [" + opmode + "]");
+
+            switch (opmode)
+            {
+                case CRAWL:
+                    crawler.startCrawling();
+                    break;
+                case FETCH:
+                    crawler.fetch(configuration);
+                    break;
+                default:
+                    System.err.println("Undefined mode [" + opmode + "]");
+                    break;
+            }
+
         } catch (Exception e) {
             log.severe(e.getMessage());
             System.exit(1);

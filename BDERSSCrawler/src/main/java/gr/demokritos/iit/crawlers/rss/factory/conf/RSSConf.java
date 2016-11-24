@@ -95,4 +95,16 @@ public class RSSConf extends BaseConfiguration implements IRSSConf {
         }
         return true;
     }
+    @Override
+    public OperationMode getOperationMode()
+    {
+        OperationMode def = OperationMode.CRAWL;
+        String val = properties.getProperty("operation_mode","");
+        if(!val.isEmpty())
+        {
+            if(OperationMode.supports(val))
+                def = OperationMode.valueOf(val.toUpperCase());
+        }
+        return def;
+    }
 }
