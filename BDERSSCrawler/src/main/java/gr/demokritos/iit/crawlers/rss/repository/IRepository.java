@@ -16,6 +16,7 @@ package gr.demokritos.iit.crawlers.rss.repository;
 
 import com.sun.syndication.feed.synd.SyndEntry;
 import de.l3s.boilerpipe.BoilerpipeProcessingException;
+import gr.demokritos.iit.crawlers.rss.factory.conf.IRSSConf;
 import gr.demokritos.iit.crawlers.rss.model.Content;
 import gr.demokritos.iit.crawlers.rss.model.CrawlId;
 import gr.demokritos.iit.crawlers.rss.model.Item;
@@ -48,4 +49,5 @@ public interface IRepository {
     void updateFeedMetaData(Content content);
 
     List<String> find(String url);
+    void setCrawlMode(IRSSConf.OperationMode mode);
 }

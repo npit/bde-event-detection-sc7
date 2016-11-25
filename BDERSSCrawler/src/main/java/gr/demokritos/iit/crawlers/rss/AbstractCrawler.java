@@ -80,7 +80,7 @@ public abstract class AbstractCrawler {
         eventSink = factory.createEventSink();
         queue = factory.createBlockingQueue();
         repository = createRepository(factory);
-
+        repository.setCrawlMode(configuration.getOperationMode());
         // Set up the consumer and the crawl executor
         httpClient = factory.createHttpClient();
         consumerExecutorService = factory.createConsumerExecutorService();
@@ -114,60 +114,78 @@ public abstract class AbstractCrawler {
 
     protected abstract IRepository createRepository(RSSCrawlFactory factory);
 
-    public void fetch(IRSSConf configuration)
-    {
+    public void fetch(IRSSConf configuration) {
         Fetcher fetcher = new HttpFetcher(httpClient, repository, configuration.getRespectRobots(),
                 configuration.applyHTTPFetchRestrictions());
 
         String filename = configuration.getUrlsFileName();
         File urlsFile = new File(filename);
         DefaultCrawlIdGenerator idgen = new DefaultCrawlIdGenerator(repository);
-        CrawlId CrawlID =  idgen.createNewCrawlId();
+        CrawlId CrawlID = idgen.createNewCrawlId();
 
         ArrayList<String> urls = new ArrayList<>();
         try {
-            for(String line : Files.readLines(urlsFile, Charsets.UTF_8))
-            {
+            for (String line : Files.readLines(urlsFile, Charsets.UTF_8)) {
                 line = line.trim();
-                if(line.isEmpty()) continue;
-                if(line.startsWith("#")) continue; // comments
+                if (line.isEmpty()) continue;
+                if (line.startsWith("#")) continue; // comments
                 urls.add(line);
             }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
+        boolean retry = false;
+        for (int s =0; s< urls.size(); s++) {
+            String url =  urls.get(s);
+            try {
+                Document doc = null;
+                System.out.printf("Fetching url %d/%d : [%s]\n", 1+s,urls.size(),url);
+                try {
+                    doc = Jsoup.connect(url).get();
+                }
+                catch (org.jsoup.HttpStatusException e) {
+                    //e.printStackTrace();
+                    System.err.println("\tJsoup http status error. Continuing...");
+                    continue;
+                }
 
-
-            for(String url : urls) {
-                System.out.printf("Fetching url [%s]\n", url);
-
-                Content htmlContent2 = fetcher.fetchUrl(url);
-
-
-                Document doc = Jsoup.connect(url).get();
+                if (doc == null) continue;
                 String title = doc.title();
 
-                Date articleDate = DateExtractor.getDate(doc,url);
-
-
+                Date articleDate = DateExtractor.getDate(doc, url);
 
                 Item item = new Item("no-feed", CrawlID);
+
                 Content htmlContent = fetcher.fetchUrl(url);
+                if(htmlContent == null)
+                {
+                    if(retry == false) {
+                        System.out.println("\tNull html content, retrying");
+                        --s;
+                        retry = true;
+                    }
+                    continue;
+                }
+                else
+                    retry = false;
+
                 if (title == null) {
                     title = "";
                 } else {
                     title = StringUtils.normalizeSpace(title.replaceAll("\\x7f", " "));
                 }
 
-                repository.savePage(item, title, htmlContent, articleDate );
+                repository.savePage(item, title, htmlContent, articleDate);
+
             }
 
-
-
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (BoilerpipeProcessingException e) {
-            e.printStackTrace();
-        }
+             catch(IOException e){
+                e.printStackTrace();
+            } catch(BoilerpipeProcessingException e){
+                e.printStackTrace();
+            }
+    }
         CrawlID.finishedCrawling();
         repository.saveCrawlId(CrawlID);
     }

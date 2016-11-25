@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #base="$(pwd)/BDEEventDetection"
-editor="$EDITOR"
-#editor="nano"
+#editor="$EDITOR"
+editor="nano"
 
 if [ "$#" -gt 0 ]; then
 	editor="$1"

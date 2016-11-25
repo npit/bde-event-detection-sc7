@@ -53,6 +53,7 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
 
     private HashMap<String,String> extraNames;
     private HashMap<String,ArrayList<String>> extraNamesAssociation;
+    private HashMap<String,String> extraNamesOverride;
     private Set<String> associationCache;
     /**
      *
@@ -92,6 +93,7 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
         // we know that a geometry is availabe
 
         String delimiter = "[*]{3}";
+        String overrideDelimiter = "[/]{3}";
 
         try (BufferedReader br = new BufferedReader(new FileReader(extrapath))) {
             // read newline delimited source names file
@@ -100,19 +102,34 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
                 line = line.trim();
                 if(line.startsWith("#")) continue; // skip comments
                 String[] parts = line.split(delimiter);
-
-                if(!extraNames.keySet().contains(parts[0]))
+                String[] overrParts = parts[0].split(overrideDelimiter);
+                String locationBaseName="", locationOverrideName;
+                if(overrParts.length > 1)
                 {
-                    extraNames.put(parts[0],parts[0].toLowerCase());
+                    if(overrParts.length > 2)
+                    {
+                        System.err.printf("Location name override should be like name1%sname2",overrideDelimiter);
+                        continue;
+                    }
+                    locationBaseName = overrParts[0];
+                    locationOverrideName = overrParts[1];
+                    extraNamesOverride.put(locationBaseName,locationOverrideName);
+                }
+                else
+                    locationBaseName = parts[0];
+
+                if(!extraNames.keySet().contains(locationBaseName))
+                {
+                    extraNames.put(locationBaseName,locationBaseName.toLowerCase());
                 }
                 if(parts.length > 1)
                 {
-                    extraNamesAssociation.put(parts[0], new ArrayList());
+                    extraNamesAssociation.put(locationBaseName, new ArrayList());
 
                     // add the associated places
                     for (int i = 1; i < parts.length; ++i) {
-                        if (!extraNamesAssociation.get(parts[0]).contains(parts[i]))
-                            extraNamesAssociation.get(parts[0]).add(parts[i]);
+                        if (!extraNamesAssociation.get(locationBaseName).contains(parts[i]))
+                            extraNamesAssociation.get(locationBaseName).add(parts[i]);
                     }
                 }
             }
@@ -132,11 +149,14 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
         extraNames = new HashMap<>();
         extraNamesAssociation = new HashMap<>();
         associationCache = new HashSet<>();
+        extraNamesOverride = new HashMap<>();
         String extrapath=conf.getLocationExtractionSourceFile();
         readLocationsFile(extrapath);
         System.out.print("Reading extra names file [" + extrapath + "].");
 
         System.out.println("done.\n\t Read " + extraNames.size() + " additional location names.");
+        System.out.println("\tRead " + extraNamesAssociation.size() + " location associations.");
+        System.out.println("\tRead " + extraNamesOverride.size() + " location overrides.");
 
         useAdditionalSources = true;
         if(conf.onlyUseAdditionalExternalNames())
@@ -196,6 +216,8 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
 
     @Override
     public Set<String> getLocationTokens(String text) {
+        associationCache.clear();
+
         if (text == null || text.trim().isEmpty()) {
             return Collections.EMPTY_SET;
         }
@@ -251,6 +273,7 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
             }
 
             // check for existence of manually supplied location names
+            //System.out.println("Checkign text "  + text_lowercase);
             if( useAdditionalSources )
             {
                 // just check the text
@@ -260,7 +283,8 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
                     {
                         if (text_lowercase.contains(extraNames.get(extraName)))
                         {
-                            additional_res.put(extraName, TYPE_LOCATION);
+                            //System.out.println("***FOUND " + extraNames.get(extraName));
+                            addToAdditionalResult(extraName,additional_res);
                             applyLocationAssociations(extraName,additional_res);
 
 
@@ -301,12 +325,18 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
             if (!additionalRes.containsKey(loc))
             {
                 // add it if not already there
-                additionalRes.put(location, TYPE_LOCATION);
+                addToAdditionalResult(loc,additionalRes);
                 System.out.printf("\tAdded location association %s -> %s\n",location,loc);
             }
             // continue traversing the association chain
             applyLocationAssociations(loc,additionalRes);
         }
 
+    }
+
+    void addToAdditionalResult(String basename, Map<String,String> additionalRes)
+    {
+        if(extraNamesOverride.containsKey(basename))additionalRes.put(extraNamesOverride.get(basename), TYPE_LOCATION);
+        else additionalRes.put(basename, TYPE_LOCATION);
     }
 }

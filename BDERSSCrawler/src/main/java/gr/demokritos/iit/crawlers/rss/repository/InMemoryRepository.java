@@ -19,6 +19,7 @@ import com.sun.syndication.feed.synd.SyndEntry;
 import de.l3s.boilerpipe.BoilerpipeExtractor;
 import de.l3s.boilerpipe.BoilerpipeProcessingException;
 import gr.demokritos.iit.crawlers.rss.extractors.SimpleExtractor;
+import gr.demokritos.iit.crawlers.rss.factory.conf.IRSSConf;
 import gr.demokritos.iit.crawlers.rss.model.Content;
 import gr.demokritos.iit.crawlers.rss.model.CrawlId;
 import gr.demokritos.iit.crawlers.rss.model.Item;
@@ -43,6 +44,12 @@ public class InMemoryRepository implements IRepository {
         this.feedUrlToMetaData = new HashMap();
         this.entryUrlToData = new HashMap();
         this.extractor = new SimpleExtractor();
+    }
+
+    private IRSSConf.OperationMode crawlMode;
+    @Override
+    public void setCrawlMode(IRSSConf.OperationMode mode) {
+        this.crawlMode = mode;
     }
 
     @Override

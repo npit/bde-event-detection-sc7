@@ -7,6 +7,7 @@ package gr.demokritos.iit.crawlers.rss.repository;
 
 import com.sun.syndication.feed.synd.SyndEntry;
 import de.l3s.boilerpipe.BoilerpipeExtractor;
+import gr.demokritos.iit.crawlers.rss.factory.conf.IRSSConf;
 import gr.demokritos.iit.crawlers.rss.schedule.CrawlStrategy;
 import gr.demokritos.iit.crawlers.rss.model.Item;
 import java.util.ArrayList;
@@ -21,6 +22,9 @@ public abstract class AbstractRepository {
 
     public static final int MISSING_PUBLISHED_DATE = -1;
 
+
+
+    protected IRSSConf.OperationMode crawlMode;
     protected final CrawlStrategy crawlerStrategy;
     protected final BoilerpipeExtractor extractor;
 

@@ -128,6 +128,7 @@ public class BDEEventDetection {
         // clusterer
         if(clusteringMode.equals("base"))
         {
+            System.out.println("Using base clusterer with cutoff threshold at [" + configuration.getCutOffThreshold() + "]");
             IArticleClusterer cl = new ParameterizedBaseArticleClusterer(articles, configuration.getCutOffThreshold());
             cl.calculateClusters();
             articlesPerCluster = cl.getArticlesPerCluster();
@@ -168,8 +169,6 @@ public class BDEEventDetection {
 
         // the below should be already populated after news crawls
         Map<String, Map<String, String>> place_mappings = getPlaceMappings(articles, articlesPerCluster);
-
-
 
         ISentenceSplitter splitter = new DefaultSentenceSplitter(configuration.getSentenceSplitterModelPath());
         System.out.println("getting summaries");

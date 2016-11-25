@@ -28,6 +28,7 @@ import com.sun.syndication.feed.synd.SyndEntry;
 import de.l3s.boilerpipe.BoilerpipeExtractor;
 import de.l3s.boilerpipe.BoilerpipeProcessingException;
 import gr.demokritos.iit.base.repository.views.Cassandra;
+import gr.demokritos.iit.crawlers.rss.factory.conf.IRSSConf;
 import gr.demokritos.iit.crawlers.rss.schedule.CrawlStrategy;
 import gr.demokritos.iit.base.util.TableUtil;
 import gr.demokritos.iit.base.util.Utils;
@@ -51,6 +52,11 @@ public class CassandraRepository extends AbstractRepository implements IReposito
 
     private static final long NOT_EXISTING_ARTICLE = -2l; // set it lower than MISSING_PUB_DATE
     private final Session session;
+
+    @Override
+    public void setCrawlMode(IRSSConf.OperationMode crawlMode) {
+        this.crawlMode = crawlMode;
+    }
 
     public static IRepository createBlogRepository(Session session) {
         return new CassandraRepository(session, CrawlStrategy.BLOG, CrawlStrategy.BLOG.extractor());
@@ -76,10 +82,15 @@ public class CassandraRepository extends AbstractRepository implements IReposito
         long existing_pub_date = getPublishedDateIfExisting(content.getUrl());
         String year_month_day = Utils.extractYearMonthDayLiteral(publishedDate);
         // if article exists and is updated
-        if ((NOT_EXISTING_ARTICLE != existing_pub_date) && (MISSING_PUBLISHED_DATE != pub_date) && (pub_date > existing_pub_date)) {
-            // we need to specifically delete before inserting/updating cause pub_date is a clustering column
-            deletePage(content.getUrl(), year_month_day);
-        }
+
+            if ((NOT_EXISTING_ARTICLE != existing_pub_date) && (MISSING_PUBLISHED_DATE != pub_date) && (pub_date > existing_pub_date)) {
+                // we need to specifically delete before inserting/updating cause pub_date is a clustering column
+
+                    System.out.println("\t\tArticle " + content.getUrl() + " exists and will be replaced.");
+                    deletePage(content.getUrl(), existing_pub_date, year_month_day);
+
+            }
+
         insertPage(item, title, content, pub_date, year_month_day);
     }
 
@@ -327,24 +338,43 @@ public class CassandraRepository extends AbstractRepository implements IReposito
         return true;
     }
 
-    private void deletePage(String url, String year_month_day) {
+    private void deletePage(String url,  long pubdate, String year_month_day) {
 //        System.out.println("delete content: " + url); //debug
         Statement delete;
+        String revhost = TableUtil.getReversedHost(url);
         // delete from base table.
         delete = QueryBuilder
                 .delete().all().from(session.getLoggedKeyspace(), crawlerStrategy.TableArticles())
-                .where(eq(Cassandra.RSS.TBL_ARTICLES.FLD_ENTRY_URL.getColumnName(), url));
+                .where(eq(Cassandra.RSS.TBL_ARTICLES.FLD_ENTRY_URL.getColumnName(), url))
+                .and(eq(Cassandra.RSS.TBL_ARTICLES.FLD_REVERSED_HOST.getColumnName(), revhost));
         session.execute(delete);
         // delete from articles per published date table
         delete = QueryBuilder
                 .delete().all().from(session.getLoggedKeyspace(), crawlerStrategy.TableArticlesPerPublishedDate())
                 .where(eq(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.getColumnName(), year_month_day))
+                .and(eq(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PUBLISHED.getColumnName(), pubdate))
                 .and(eq(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName(), url));
         session.execute(delete);
         // delete from articles per crawled date table
+
+        // get existing date
+        Statement select = QueryBuilder
+                .select(Cassandra.RSS.TBL_ARTICLES.FLD_CRAWLED.getColumnName())
+                .from(session.getLoggedKeyspace(), crawlerStrategy.TableArticles())
+                .where(eq(Cassandra.RSS.TBL_ARTICLES.FLD_REVERSED_HOST.getColumnName(), revhost))
+                .and(eq(Cassandra.RSS.TBL_ARTICLES.FLD_ENTRY_URL.getColumnName(), url));
+        ResultSet results = session.execute(select);
+        Row one = results.one();
+        long crawlDate = -1L;
+        if (one != null) {
+            crawlDate = one.getLong(Cassandra.RSS.TBL_ARTICLES.FLD_CRAWLED.getColumnName());
+        }
+        else return;
+
         delete = QueryBuilder
                 .delete().all().from(session.getLoggedKeyspace(), crawlerStrategy.TableArticlesPerCrawledDate())
                 .where(eq(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.getColumnName(), year_month_day))
+                .and(eq(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CRAWLED.getColumnName(), crawlDate))
                 .and(eq(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName(), url));
         session.execute(delete);
     }
