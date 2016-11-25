@@ -17,6 +17,7 @@ package gr.demokritos.iit.location.mapping;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  *
@@ -42,4 +43,6 @@ public interface IPolygonExtraction {
 
     Map<String,String> postProcessGeometries(Map<String,String> places_polygons);
 
+    Set<String> getFailedExtractionNames();
+    void init();
 }

@@ -2,6 +2,11 @@
 #base="$(pwd)/BDEEventDetection"
 editor="$EDITOR"
 #editor="nano"
+
+if [ "$#" -gt 0 ]; then
+	editor="$1"
+fi
+
 base="$(pwd)"
 P=""
 P+=" $base/BDECLustering/res/clustering.properties"

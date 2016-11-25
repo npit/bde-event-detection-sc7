@@ -17,6 +17,7 @@ package gr.demokritos.iit.crawlers.rss;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import de.l3s.boilerpipe.BoilerpipeProcessingException;
+import gr.demokritos.iit.crawlers.rss.extractors.DateExtractor;
 import gr.demokritos.iit.crawlers.rss.model.Content;
 import gr.demokritos.iit.crawlers.rss.model.CrawlId;
 import gr.demokritos.iit.crawlers.rss.runnable.FeedFetchTask;
@@ -39,7 +40,9 @@ import gr.demokritos.iit.crawlers.rss.schedule.CrawlSchedule;
 import gr.demokritos.iit.crawlers.rss.factory.conf.IRSSConf;
 import gr.demokritos.iit.crawlers.rss.repository.IRepository;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -47,9 +50,7 @@ import org.jsoup.select.Elements;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLConnection;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.concurrent.*;
@@ -117,6 +118,7 @@ public abstract class AbstractCrawler {
     {
         Fetcher fetcher = new HttpFetcher(httpClient, repository, configuration.getRespectRobots(),
                 configuration.applyHTTPFetchRestrictions());
+
         String filename = configuration.getUrlsFileName();
         File urlsFile = new File(filename);
         DefaultCrawlIdGenerator idgen = new DefaultCrawlIdGenerator(repository);
@@ -128,22 +130,23 @@ public abstract class AbstractCrawler {
             {
                 line = line.trim();
                 if(line.isEmpty()) continue;
-                if(line.startsWith("#")) continue;
+                if(line.startsWith("#")) continue; // comments
                 urls.add(line);
             }
+
 
 
             for(String url : urls) {
                 System.out.printf("Fetching url [%s]\n", url);
 
+                Content htmlContent2 = fetcher.fetchUrl(url);
+
 
                 Document doc = Jsoup.connect(url).get();
                 String title = doc.title();
 
-                // attempts to get publish date failed. manual parsing required
+                Date articleDate = DateExtractor.getDate(doc,url);
 
-                // dummy date (now)
-                Date now = new Date(System.currentTimeMillis());
 
 
                 Item item = new Item("no-feed", CrawlID);
@@ -154,7 +157,7 @@ public abstract class AbstractCrawler {
                     title = StringUtils.normalizeSpace(title.replaceAll("\\x7f", " "));
                 }
 
-                repository.savePage(item, title, htmlContent, now );
+                repository.savePage(item, title, htmlContent, articleDate );
             }
 
 

@@ -1,10 +1,7 @@
 package gr.demokritos.iit.location.mapping;
 
 import java.awt.geom.Point2D;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -21,6 +18,13 @@ import com.vividsolutions.jts.io.WKTWriter;
 public class LocalPolygonExtraction implements IPolygonExtraction {
 
     FuzzySearch fs;
+     Set<String> polyWarnCache;
+
+    @Override
+    public void init() {
+        polyWarnCache = new HashSet<>();
+
+    }
     public LocalPolygonExtraction(String sourceFilePath)
     {
 	System.out.println("Initializing local polygon extractor from dataset : " + sourceFilePath + ".");
@@ -88,8 +92,12 @@ public class LocalPolygonExtraction implements IPolygonExtraction {
             if (poly != null && !poly.isEmpty()) {
                 res.put(loc, poly);
             }
-            else
-                Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "Polygon extraction failed for ["+loc+"]");
+            else {
+                if( ! polyWarnCache.contains(loc)) {
+                    polyWarnCache.add(loc);
+                    Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "Polygon extraction failed for [" + loc + "]");
+                }
+            }
 
         }
         return res;
@@ -99,6 +107,11 @@ public class LocalPolygonExtraction implements IPolygonExtraction {
     public Map<String,String> postProcessGeometries(Map<String,String> places_polygons)
     {
         return places_polygons;
+    }
+
+    @Override
+    public Set<String> getFailedExtractionNames() {
+        return null;
     }
 
 }

@@ -111,6 +111,7 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
         int noLocationCount = 0;
         switch (mode) {
             case ARTICLES:
+                poly.init();
                 ArrayList<String> permalinks = new ArrayList<>();
                 ArrayList<Map<String,String>> article_geometries = new ArrayList<>();
                 // for each article
@@ -150,10 +151,12 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
 
                 }
                 System.out.println("\tLocation literal found for " + (items.size() - noLocationCount) + " / " + items.size() + " articles.");
+                System.out.println("\t\tPolygon fetch failed for locations: " + poly.getFailedExtractionNames());
                 //repos.updateEventsWithAllLocationPolygonPairs(mode, null, null,article_geometries,permalinks);
 
                 break;
             case TWEETS:
+                poly.init();
                 ArrayList<Long> post_ids = new ArrayList<>();
                 ArrayList<Map<String,String>> tweet_geometries = new ArrayList<>();
                 // for each tweet
@@ -189,6 +192,7 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                     post_ids.add(post_id);
                 }
                 System.out.println("\tLocation literal found for " + (items.size() - noLocationCount)  + " / " + items.size() + " tweets ");
+                System.out.println("\t\tPolygon fetch failed for locations: " + poly.getFailedExtractionNames());
                 //repos.updateEventsWithAllLocationPolygonPairs(mode, tweet_geometries, post_ids,null, null);
 
                 break;

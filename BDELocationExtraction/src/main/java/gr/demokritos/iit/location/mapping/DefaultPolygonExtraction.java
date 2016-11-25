@@ -43,6 +43,17 @@ public class DefaultPolygonExtraction implements IPolygonExtraction {
 
     private final Gson gs = new Gson();
 
+    private Set<String> polyWarnCache;
+    public Set<String> getFailedExtractionNames() {
+        return polyWarnCache;
+    }
+
+    @Override
+    public void init() {
+        polyWarnCache = new HashSet<>();
+
+    }
+
     /**
      * cache location items for an hour
      */
@@ -106,6 +117,7 @@ public class DefaultPolygonExtraction implements IPolygonExtraction {
             }
         } catch (Exception ex) {
             Logger.getLogger(DefaultPolygonExtraction.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
         }
 
         return res;
@@ -121,7 +133,12 @@ public class DefaultPolygonExtraction implements IPolygonExtraction {
                 res.put(loc, poly);
             }
             else
-                Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "Polygon extraction failed for ["+loc+"]");
+            {
+                if( ! polyWarnCache.contains(loc)) {
+                    polyWarnCache.add(loc);
+                    Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "Polygon extraction failed for [" + loc + "]");
+                }
+            }
         }
         return res;
     }

@@ -50,7 +50,10 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
         DEFAULT_SENT_SPLIT_MODEL_PATH = splitterPath;
     }
 
-    private Set<String> extraNames;
+
+    private HashMap<String,String> extraNames;
+    private HashMap<String,ArrayList<String>> extraNamesAssociation;
+    private Set<String> associationCache;
     /**
      *
      * @param basePath the path where the models are located
@@ -80,51 +83,60 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
 
     }
 
+    private void readLocationsFile(String extrapath)
+    {
+        // special optional format:
+        // name1***name2***name3 ...
+        // In that scenario, if name1 exists in the text, then name2,name3 ...  will (also) be added as a location name.
+        // this is helpful if name1 is too specific for a geometry to exist, so we manually add superegions for which
+        // we know that a geometry is availabe
+
+        String delimiter = "[*]{3}";
+
+        try (BufferedReader br = new BufferedReader(new FileReader(extrapath))) {
+            // read newline delimited source names file
+            String line;
+            while ((line = br.readLine()) != null) {
+                line = line.trim();
+                if(line.startsWith("#")) continue; // skip comments
+                String[] parts = line.split(delimiter);
+
+                if(!extraNames.keySet().contains(parts[0]))
+                {
+                    extraNames.put(parts[0],parts[0].toLowerCase());
+                }
+                if(parts.length > 1)
+                {
+                    extraNamesAssociation.put(parts[0], new ArrayList());
+
+                    // add the associated places
+                    for (int i = 1; i < parts.length; ++i) {
+                        if (!extraNamesAssociation.get(parts[0]).contains(parts[i]))
+                            extraNamesAssociation.get(parts[0]).add(parts[i]);
+                    }
+                }
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
     public void configure(ILocConf conf)
     {
         if(! conf.useAdditionalExternalNames()) return;
 
         // naive additions from GPapadakis' dataset
         // get extra names
-        extraNames = new HashSet<String>();
 
+        extraNames = new HashMap<>();
+        extraNamesAssociation = new HashMap<>();
+        associationCache = new HashSet<>();
         String extrapath=conf.getLocationExtractionSourceFile();
-        //read file into stream, try-with-resources
+        readLocationsFile(extrapath);
         System.out.print("Reading extra names file [" + extrapath + "].");
-        try (BufferedReader br = new BufferedReader(new FileReader(extrapath))) {
-            // read newline delimited source names file
-            String line;
-            while ((line = br.readLine()) != null) {
-                line = line.trim();
-                if(!extraNames.contains(line))
-                    {
-                        extraNames.add(line);
-                    }
 
-                //System.out.println("line : [" + line + "]");
-                //String [] tokens = line.split("\\n");
-
-                // keep all non-empties, but the last 2,
-                // the last is the polygon
-                // the second to last, is often corrupted
-                // above fails. keep first 2/3?
-//                for(int i=0;i<2; ++ i)
-//                {
-//                    if(tokens[i].isEmpty()) break; // no more data in row
-//                    String lname = tokens[i].trim();
-//                    if(!extraNames.contains(lname))
-//                    {
-//                       // System.out.println("\t" + count++ + " [" + lname+"]");
-//                        extraNames.add(lname);
-//                    }
-//                }
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        System.out.println("done, read " + extraNames.size() + " additional location names.");
-        //Collections.sort(extraNames);
+        System.out.println("done.\n\t Read " + extraNames.size() + " additional location names.");
 
         useAdditionalSources = true;
         if(conf.onlyUseAdditionalExternalNames())
@@ -238,57 +250,63 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
                 }
             }
 
-
-            if( useAdditionalSources ) {
-                // additions from GPapadakis' dataset
-                // iterate through each token
-//                Set<String> added = new HashSet<>();
-//                for(int idx=0;idx <ss.length; ++idx)
-//                {
-//                    String token = ss[idx];//.toLowerCase();
-//                    if (token.isEmpty()) continue;
-//                    if(extraNames.contains(token))
-//                    {
-//                        if (res.keySet().contains(token)) continue;
-//                        res.put(token, TYPE_LOCATION);
-//                        added.add(token);
-//                    }
-//                    if(added.size() > 0 ) {
-//                        System.out.print("Added from extra  : {");
-//                        for (String k : added) { System.out.println(k + " , "); }
-//                        System.out.println("}");
-//                    }
-//                }
+            // check for existence of manually supplied location names
+            if( useAdditionalSources )
+            {
                 // just check the text
-                for(String extraname : extraNames) {
-                    //if (text.contains(extraname) || text_lowercase.contains(extraname.toLowerCase()) || text.contains(extraname.toUpperCase())) {
-                    String extranameTrimmed=extraname.trim();
-                    if(!additional_res.containsKey(extranameTrimmed))
+                for(String extraName : extraNames.keySet())
+                {
+                    if(!additional_res.containsKey(extraName))
                     {
-                        if (text_lowercase.contains(extraname.toLowerCase()))
+                        if (text_lowercase.contains(extraNames.get(extraName)))
                         {
-                            additional_res.put(extraname.trim(), TYPE_LOCATION);
-                        }
+                            additional_res.put(extraName, TYPE_LOCATION);
+                            applyLocationAssociations(extraName,additional_res);
 
+
+                        }
+                        //else System.out.println("Does not contain " + extraNames.get(extraName));
 
                     }
-
                 }
-
             }
-
         }
         if( useAdditionalSources )
         {
             if(onlyUseAdditionalSources)
-            {
                 res.clear();
-            }
-
             res.putAll(additional_res);
-
         }
 
         return res;
+    }
+
+
+    private void applyLocationAssociations(String location, Map<String,String> additionalRes)
+    {
+        // the location argument was just added to the additional results set.
+
+        // if there's no association for the location, done
+        if( ! extraNamesAssociation.keySet().contains(location)) return;
+
+        // if we've already processed this location, done
+        // this is done to avoid cycles, if the user was dum - not careful enough to declare such
+        if(associationCache.contains(location)) return;
+        associationCache.add(location);
+        // get associated locations
+        ArrayList<String> assoc_locations = extraNamesAssociation.get(location);
+        for(String loc : assoc_locations)
+        {
+
+            if (!additionalRes.containsKey(loc))
+            {
+                // add it if not already there
+                additionalRes.put(location, TYPE_LOCATION);
+                System.out.printf("\tAdded location association %s -> %s\n",location,loc);
+            }
+            // continue traversing the association chain
+            applyLocationAssociations(loc,additionalRes);
+        }
+
     }
 }
