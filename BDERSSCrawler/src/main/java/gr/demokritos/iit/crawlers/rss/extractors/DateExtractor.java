@@ -30,8 +30,8 @@ public class DateExtractor {
 
     private static Date error()
     {
-        System.err.print("Could not resolve article date: ");
-        System.err.println("Using <now> as a fallback.");
+        System.err.print("\tCould not resolve article date: ");
+        System.err.println("\tUsing <now> as a fallback.");
 
         return new Date(System.currentTimeMillis());
     }
@@ -40,7 +40,7 @@ public class DateExtractor {
         String datestr = DateExtractor.getDateString(doc, url);
         if(datestr == null || datestr.isEmpty())
         {
-            System.err.println("No date string found in article source.");
+            System.err.println("\tNo date string found in article source.");
             return error();
         }
         articleDate = DateExtractor.parseDateFromString(datestr);

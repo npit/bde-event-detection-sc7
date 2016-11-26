@@ -126,9 +126,9 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                     String clean_text = (String) article.get(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CLEAN_TEXT.getColumnName());
                     // extract location entities
                     //System.out.println("Extracting location for article " + permalink);
+                    System.out.print("\tArticle " + count +  "/" +  items.size() + " : "  + permalink); //debugprint
 
                     Set<String> locationsFound = locExtractor.extractLocation(clean_text);
-                    System.out.print("\tArticle " + count +  "/" +  items.size() + " : "  + permalink); //debugprint
 
                     if (!locationsFound.isEmpty()) {
                         Map<String, String> places_polygons = poly.extractPolygon(locationsFound);

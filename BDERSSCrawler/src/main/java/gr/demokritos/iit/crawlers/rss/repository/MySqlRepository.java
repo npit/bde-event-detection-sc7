@@ -18,6 +18,7 @@ import com.google.common.collect.Lists;
 import com.sun.syndication.feed.synd.SyndEntry;
 import de.l3s.boilerpipe.BoilerpipeExtractor;
 import de.l3s.boilerpipe.BoilerpipeProcessingException;
+import gr.demokritos.iit.crawlers.rss.factory.conf.IRSSConf;
 import gr.demokritos.iit.crawlers.rss.model.Content;
 import gr.demokritos.iit.crawlers.rss.model.CrawlId;
 import gr.demokritos.iit.crawlers.rss.schedule.CrawlStrategy;
@@ -53,6 +54,7 @@ public class MySqlRepository extends AbstractRepository implements IRepository {
         this.connectionPool = connectionPool;
         this.databaseName = databaseName;
     }
+
 
     @Override
     public List<SyndEntry> identifyNewEntries(Item item, List<SyndEntry> candidateEntries) {
@@ -266,7 +268,12 @@ public class MySqlRepository extends AbstractRepository implements IRepository {
         return results;
     }
 
-//    public void deleteAllTestData() {
+    @Override
+    public void setCrawlMode(IRSSConf.OperationMode mode) {
+        this.crawlMode = mode;
+    }
+
+    //    public void deleteAllTestData() {
 //        deleteTablesFromTestDatabase(crawlerStrategy.crawlerType() + "_crawls");
 //        deleteTablesFromTestDatabase(crawlerStrategy.crawlerType() + "_feeds");
 //        deleteTablesFromTestDatabase(crawlerStrategy.crawlerType() + "_articles");
