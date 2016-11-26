@@ -55,6 +55,7 @@ public class DefaultLocationExtractor implements ILocationExtractor {
         while (iter.hasNext()) {
             String token = iter.next().trim();
             String cleaned = token.replaceAll("[^Α-Ωα-ωa-zA-Z0-9άέίόώήύΐΪΊΆΈΏΌΉΎ. ]", "");
+		if(cleaned.isEmpty()){ ret.add(""); continue; }
             if (cleaned.charAt(0) == '.') {
                 cleaned = cleaned.substring(1);
             }

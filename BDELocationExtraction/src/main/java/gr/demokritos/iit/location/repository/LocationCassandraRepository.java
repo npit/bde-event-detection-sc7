@@ -1170,8 +1170,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
                         Cassandra.Event.TBL_EVENTS.FLD_TITLE.getColumnName(),
                         Cassandra.Event.TBL_EVENTS.FLD_DATE_LITERAL.getColumnName(),
                         Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName())
-                .from(session.getLoggedKeyspace(),Cassandra.Event.Tables.EVENTS.getTableName())
-        .where(eq(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName(),"bde0026c-f2c8-445b-acd0-e8f65378340d"));
+                .from(session.getLoggedKeyspace(),Cassandra.Event.Tables.EVENTS.getTableName());
         ResultSet results = session.execute(query);
         int count = 1;
         // for each event
