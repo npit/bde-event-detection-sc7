@@ -127,6 +127,11 @@ public class Utils {
 
         return Long.toString((timenow-timethen)/1000l) + " sec ";
     }
+    public static void tocTell()
+    {
+        System.out.println("Operation duration : " + toc());
+
+    }
     /**
      * return a 'yyyy-MM-dd' represantation of the date passed. For usage in
      * cassandra key buckets

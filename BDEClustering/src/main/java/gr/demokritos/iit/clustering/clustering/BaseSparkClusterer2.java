@@ -2,8 +2,7 @@ package gr.demokritos.iit.clustering.clustering;
 
 import gr.demokritos.iit.clustering.model.BDEArticle;
 import gr.demokritos.iit.clustering.newsum.ExtractMatchingGraphPairsFunc;
-import gr.demokritos.iit.clustering.newsum.ExtractMatchingPairsFunc;
-import gr.demokritos.iit.clustering.newsum.ExtractMatchingPairsFunc2;
+import gr.demokritos.iit.clustering.newsum.ExtractMatchingPairsFuncSerialGraphs;
 import gr.demokritos.iit.clustering.newsum.IClusterer;
 import gr.demokritos.iit.clustering.structs.SimilarityMode;
 import gr.demokritos.iit.clustering.util.DocumentPairGenerationFilterFunction;
@@ -72,7 +71,7 @@ public class BaseSparkClusterer2 implements IClusterer {
         long startTime = System.currentTimeMillis();
 
         // TODO: use flatMap?? we want for the full pairs rdd, each item mapped to a boolean value.
-        JavaRDD<Boolean> matchesrdd = RDDPairs.map(new ExtractMatchingPairsFunc2( mode, simCutOff, numPartitions));
+        JavaRDD<Boolean> matchesrdd = RDDPairs.map(new ExtractMatchingPairsFuncSerialGraphs( mode, simCutOff));
 
         // spark parallelization ends here.
         // collect matches values

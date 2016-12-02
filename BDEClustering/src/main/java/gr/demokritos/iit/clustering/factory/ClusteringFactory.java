@@ -4,9 +4,11 @@ import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.policies.DefaultRetryPolicy;
 import com.datastax.driver.core.policies.Policies;
-import gr.demokritos.iit.base.conf.IBaseConf;
+import com.sun.corba.se.spi.orb.Operation;
 import gr.demokritos.iit.clustering.config.IClusteringConf;
+import gr.demokritos.iit.clustering.repository.ClusteringCassandraSparkRepository;
 import gr.demokritos.iit.clustering.repository.ClusteringCassandraRepository;
+import gr.demokritos.iit.clustering.repository.IClusteringRepository;
 import org.scify.asset.server.model.datacollections.CleanResultCollection;
 import org.scify.asset.server.model.structures.social.TwitterResult;
 import org.scify.asset.social.classification.IClassifier;
@@ -20,21 +22,47 @@ import java.util.Collection;
 import java.util.Map;
 
 /**
- * @author George K.<gkiom@iit.demokritos.gr>
- * @date 4/13/16
+ * Created by npittaras on 2/12/2016.
  */
-public class DemoClusteringFactory {
-
-    private final IClusteringConf conf;
+public class ClusteringFactory {
+    IClusteringConf conf;
     private Cluster cluster;
 
-    public DemoClusteringFactory(IClusteringConf conf) {
+    private IClusteringConf.OperationMode overridingOperationMode;
+    private boolean OverrideOperationMode;
+    public void setOverrideOperationMode(IClusteringConf.OperationMode  mode)
+    {
+        overridingOperationMode = mode;
+        OverrideOperationMode = true;
+    }
+    public ClusteringFactory(IClusteringConf conf)
+    {
         this.conf = conf;
+        OverrideOperationMode = false;
+    }
+    public IClusteringRepository getRepository()
+    {
+        IClusteringConf.OperationMode opmode = (OverrideOperationMode) ? overridingOperationMode : conf.getOperationMode();
+        if( opmode == IClusteringConf.OperationMode.PARALLEL)
+            return getParallelRepository();
+        else if(opmode == IClusteringConf.OperationMode.DISTRIBUTED)
+            return getDistributedRepository();
+        else
+        {
+            System.err.println("ClusteringFactory: Undefined repository mode :" + conf.getOperationMode().toString());
+        }
+        return null;
+    }
+    IClusteringRepository getParallelRepository()
+    {
+        ClusteringCassandraRepository repository = null;
+        Session session = initCassandraSession();
+        repository = new ClusteringCassandraRepository(session,conf);
+        return repository;
     }
 
-
-    public ClusteringCassandraRepository createDemoCassandraRepository() {
-        ClusteringCassandraRepository repository = null;
+    private Session initCassandraSession()
+    {
         String[] hosts = conf.getCassandraHosts();
         if (hosts.length == 1) {
             this.cluster = Cluster
@@ -56,46 +84,27 @@ public class DemoClusteringFactory {
         }
         Session session = cluster.connect(conf.getCassandraKeyspace());
         System.out.println("connected to: " + session.getState().getConnectedHosts().toString());
-        repository = new ClusteringCassandraRepository(session,conf);
-        return repository;
+        return session;
     }
-
-    public IArticleClusterer getSocialMediaClustererForTwitter(SocialMediaClusterer.Mode metrics_mode, CleanResultCollection<TwitterResult> tweets) {
-        if (tweets == null) {
-            return null;
-        }
-        SocialMediaClusterer.SocialMediaClustererBuilder builder
-                = new SocialMediaClusterer.SocialMediaClustererBuilder()
-                // set mode for clusterer
-                .withMode(metrics_mode)
-                .withDefaultSimilarityThreshold()
-                .withDefaultSizeThreshold()
-                .withTweets(tweets);
-        // create clusterer
-        return builder.build();
+    IClusteringRepository getDistributedRepository()
+    {
+        Session session = initCassandraSession();
+        return new ClusteringCassandraSparkRepository(session,conf);
     }
-
-    public IClassifier getSocialMediaClassifierForTwitter(
-            Map<String, String> plainSummaries,
-            Collection<Topic> clusters,
-            IStemmer stemmer
-    ) {
-        // use Default Thresholds
-        return new SocialMediaClassifier(plainSummaries, clusters, stemmer);
-    }
-
-    public IClassifier getSocialMediaClassifierForTwitter(
-            double min_assign_sim_threshold,
-            double min_assign_title_sim_threshold,
-            Map<String, String> plainSummaries,
-            Collection<Topic> clusters,
-            IStemmer stemmer
-    ){
-        // use Default Thresholds
-        return new SocialMediaClassifier(min_assign_sim_threshold, min_assign_title_sim_threshold, plainSummaries, clusters, stemmer);
-    }
-
     public void releaseResources() {
-        if (cluster !=null) { cluster.close(); }
+        if(conf.getOperationMode() == IClusteringConf.OperationMode.PARALLEL) {
+            if (cluster != null) {
+                cluster.close();
+            }
+        }
+        else if(conf.getOperationMode() == IClusteringConf.OperationMode.DISTRIBUTED)
+        {
+            ;
+        }
+
+
     }
+
+
+
 }

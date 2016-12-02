@@ -21,6 +21,25 @@ public class clusteringConf extends BaseConfiguration implements IClusteringConf
     {
         super();
     }
+
+
+    @Override
+    public OperationMode getOperationMode() {
+
+        OperationMode def = IClusteringConf.OperationMode.PARALLEL;
+        String value = properties.getProperty("operation_mode","");
+        if(!value.isEmpty())
+        {
+            if(IClusteringConf.OperationMode.supports(value))
+                def = OperationMode.valueOf(value.toUpperCase());
+            else
+                System.err.println(String.format("Operation mode [%s] unsupported. Using default: [%s]",value,def.toString()));
+
+        }
+        return def;
+
+    }
+
     @Override
     public boolean sendToStrabon()
     {
@@ -140,4 +159,36 @@ public class clusteringConf extends BaseConfiguration implements IClusteringConf
     {
         return Integer.parseInt(properties.getProperty("eventsize_cutoff_threshold","2"));
     }
+
+
+    // Apache Spark
+
+
+    @Override
+    public String getMaster() {
+        return properties.getProperty(SPARK_MASTER, "local[4]");
+    }
+
+    @Override
+    public String getAppName() {
+        return properties.getProperty(SPARK_APP_NAME, "EventDetection");
+    }
+
+    @Override
+    public String getClusterExecutorMemory() {
+        return properties.getProperty(SPARK_EXECUTOR_MEMORY, "1g");
+    }
+
+    @Override
+    public int getNumDaysBatch() {
+        return Integer.valueOf(properties.getProperty(BATCH_NUM_OF_DAYS, "2"));
+    }
+
+    @Override
+    public int getNumPartitions() {
+        return Integer.valueOf(properties.getProperty(NUM_PARTITIONS, "4"));
+    }
+
+
+
 }

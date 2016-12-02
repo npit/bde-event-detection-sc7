@@ -15,17 +15,15 @@ import scala.Tuple4;
 /**
  * @author George K.<gkiom@iit.demokritos.gr>
  */
-public class ExtractMatchingPairsFunc2 implements Function<Tuple2<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>>, Boolean> {
+public class ExtractMatchingPairsFuncSerialGraphs implements Function<Tuple2<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>>, Boolean> {
 
 
     private final SimilarityMode mode;
     private final double simCutOff;
-    private final int numPartitions;
 
-    public ExtractMatchingPairsFunc2(SimilarityMode modeArg, double simCutOffArg, int numPart) {
+    public ExtractMatchingPairsFuncSerialGraphs(SimilarityMode modeArg, double simCutOffArg) {
         this.mode = modeArg;
         this.simCutOff = simCutOffArg;
-        this.numPartitions = numPart;
     }
 
     // <entry_url, title, clean_text, timestamp>, <entry_url, title, clean_text, timestamp>

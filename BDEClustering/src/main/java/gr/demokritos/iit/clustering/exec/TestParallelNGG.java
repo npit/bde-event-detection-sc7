@@ -13,70 +13,70 @@
  *  limitations under the License.
  */
 package gr.demokritos.iit.clustering.exec;
-
-import gr.demokritos.iit.clustering.config.BDESparkContextContainer;
-import gr.demokritos.iit.clustering.config.BDESparkConf;
-import gr.demokritos.iit.clustering.config.ISparkConf;
-import gr.demokritos.iit.clustering.parallelngg.graph.GraphSimilarityCalculator;
-import gr.demokritos.iit.clustering.parallelngg.graph.NGramGraphCreator;
-import gr.demokritos.iit.clustering.parallelngg.structs.StringEntity;
-import gr.demokritos.iit.clustering.parallelngg.traits.Similarity;
-import org.apache.spark.SparkContext;
-import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.graphx.Graph;
-
-/**
- * test scala integration
- * @author George K. <gkiom@iit.demokritos.gr>
- */
-public class TestParallelNGG {
-
-    public static void main(String[] args) {
-        //        ISparkConf conf = new BDESparkConf("spark.properties");
-        ISparkConf conf = new BDESparkConf();
-        BDESparkContextContainer bdes = new BDESparkContextContainer(conf);
-
-        BDEEventDetection bdedet = new BDEEventDetection(bdes);
-
-        SparkContext sc = JavaSparkContext.toSparkContext(bdedet.getContext());
-
-        long start = System.currentTimeMillis();
-
-        StringEntity en1 = new StringEntity();
-        en1.setString(sc, "This is an extremely short test...");
-
-        StringEntity en2 = new StringEntity();
-        en2.setString(sc, "This is another, not extremely short, test... Or should I say something else?");
-
-        NGramGraphCreator ngc1 = new NGramGraphCreator(sc, 4, 3, 3);
-        Graph<String, Object> ngg1 = ngc1.getGraph(en1);
-        NGramGraphCreator ngc2 = new NGramGraphCreator(sc, 4, 3, 3);
-        Graph<String, Object> ngg2 = ngc2.getGraph(en2);
-
-
-        GraphSimilarityCalculator gsc = new GraphSimilarityCalculator();
-
-        Similarity gs = gsc.getSimilarity(ngg1, ngg2);
-
-
-        System.out.println("***\noverall similarity: " + gs.getOverallSimilarity());
-        System.out.println("size similarity: " + gs.getSimilarityComponents().get("size"));
-        System.out.println("value similarity: " + gs.getSimilarityComponents().get("value"));
-        System.out.println("containment similarity: " + gs.getSimilarityComponents().get("containment"));
-        System.out.println("normalized similarity: " + gs.getSimilarityComponents().get("normalized"));
-
-        // Try self-similarity
-        gs = gsc.getSimilarity(ngg1, ngg1);
-
-
-        System.out.println("***\noverall similarity: " + gs.getOverallSimilarity());
-        System.out.println("size similarity: " + gs.getSimilarityComponents().get("size"));
-        System.out.println("value similarity: " + gs.getSimilarityComponents().get("value"));
-        System.out.println("containment similarity: " + gs.getSimilarityComponents().get("containment"));
-        System.out.println("normalized similarity: " + gs.getSimilarityComponents().get("normalized"));
-
-        long end = System.currentTimeMillis();
-
-        System.out.println("\nDuration: " + (double) (end-start)/1000 + " seconds");
-    }
-}
+//
+//import gr.demokritos.iit.clustering.config.BDESparkContextContainer;
+//import gr.demokritos.iit.clustering.config.BDESparkConf;
+//import gr.demokritos.iit.clustering.config.ISparkConf;
+//import gr.demokritos.iit.clustering.parallelngg.graph.GraphSimilarityCalculator;
+//import gr.demokritos.iit.clustering.parallelngg.graph.NGramGraphCreator;
+//import gr.demokritos.iit.clustering.parallelngg.structs.StringEntity;
+//import gr.demokritos.iit.clustering.parallelngg.traits.Similarity;
+//import org.apache.spark.SparkContext;
+//import org.apache.spark.api.java.JavaSparkContext;
+//import org.apache.spark.graphx.Graph;
+//
+///**
+// * test scala integration
+// * @author George K. <gkiom@iit.demokritos.gr>
+// */
+//public class TestParallelNGG {
+//
+//    public static void main(String[] args) {
+//        //        ISparkConf conf = new BDESparkConf("spark.properties");
+//        ISparkConf conf = new BDESparkConf();
+//        BDESparkContextContainer bdes = new BDESparkContextContainer(conf);
+//
+//        BDEEventDetection bdedet = new BDEEventDetection(bdes);
+//
+//        SparkContext sc = JavaSparkContext.toSparkContext(bdedet.getContext());
+//
+//        long start = System.currentTimeMillis();
+//
+//        StringEntity en1 = new StringEntity();
+//        en1.setString(sc, "This is an extremely short test...");
+//
+//        StringEntity en2 = new StringEntity();
+//        en2.setString(sc, "This is another, not extremely short, test... Or should I say something else?");
+//
+//        NGramGraphCreator ngc1 = new NGramGraphCreator(sc, 4, 3, 3);
+//        Graph<String, Object> ngg1 = ngc1.getGraph(en1);
+//        NGramGraphCreator ngc2 = new NGramGraphCreator(sc, 4, 3, 3);
+//        Graph<String, Object> ngg2 = ngc2.getGraph(en2);
+//
+//
+//        GraphSimilarityCalculator gsc = new GraphSimilarityCalculator();
+//
+//        Similarity gs = gsc.getSimilarity(ngg1, ngg2);
+//
+//
+//        System.out.println("***\noverall similarity: " + gs.getOverallSimilarity());
+//        System.out.println("size similarity: " + gs.getSimilarityComponents().get("size"));
+//        System.out.println("value similarity: " + gs.getSimilarityComponents().get("value"));
+//        System.out.println("containment similarity: " + gs.getSimilarityComponents().get("containment"));
+//        System.out.println("normalized similarity: " + gs.getSimilarityComponents().get("normalized"));
+//
+//        // Try self-similarity
+//        gs = gsc.getSimilarity(ngg1, ngg1);
+//
+//
+//        System.out.println("***\noverall similarity: " + gs.getOverallSimilarity());
+//        System.out.println("size similarity: " + gs.getSimilarityComponents().get("size"));
+//        System.out.println("value similarity: " + gs.getSimilarityComponents().get("value"));
+//        System.out.println("containment similarity: " + gs.getSimilarityComponents().get("containment"));
+//        System.out.println("normalized similarity: " + gs.getSimilarityComponents().get("normalized"));
+//
+//        long end = System.currentTimeMillis();
+//
+//        System.out.println("\nDuration: " + (double) (end-start)/1000 + " seconds");
+//    }
+//}

@@ -1154,74 +1154,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
 
 
 
-    /**
-     * Function to send events to strabon for storage and/or change detection
-     */
-    @Override
-    public void storeAndChangeDetectionEvents(String strabonURL)
-    {
-        System.out.println("Sending events to Strabon. url:[" + strabonURL + "]");
-        // get all events, fields: id, title, date, placemappings
-        // store each field of interest in an arraylist
 
-        // perform the query
-        Statement query = QueryBuilder
-                .select(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName(),
-                        Cassandra.Event.TBL_EVENTS.FLD_TITLE.getColumnName(),
-                        Cassandra.Event.TBL_EVENTS.FLD_DATE_LITERAL.getColumnName(),
-                        Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName())
-                .from(session.getLoggedKeyspace(),Cassandra.Event.Tables.EVENTS.getTableName());
-        ResultSet results = session.execute(query);
-        int count = 1;
-        // for each event
-        for(Row row : results)
-        {
-            // get the id
-            String id = (row.getString(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName()));
-
-            // place-mappings: If null, skip the processing
-            Map<String,String> locpoly = row.getMap(Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName(),String.class,String.class);
-            if (locpoly.isEmpty())
-            {
-                System.out.println("Skipping processing event " + count++ + ":" + id + " due to no assigned geometries." );
-                continue;
-            }
-
-            // get the title
-            String title = (row.getString(Cassandra.Event.TBL_EVENTS.FLD_TITLE.getColumnName()));
-            // get date
-            String date = (row.getString(Cassandra.Event.TBL_EVENTS.FLD_DATE_LITERAL.getColumnName()));
-
-            // reconstruct the entries in the format expected by strabon
-            String payload="";
-            try
-            {
-                payload = GeometryFormatTransformer.EventRowToStrabonJSON(id,title,date,locpoly);
-
-            }
-            catch (ParseException e)
-            {
-                e.printStackTrace();
-            }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-            }
-
-            //System.out.println("payload is:<" + payload + ">"); // debugprint
-            if(payload.isEmpty())
-            {
-                System.out.println("Empty payload, won't send anything.");
-                return;
-            }
-            System.out.println("Sending event  [" + id + "].");
-
-            String resp = gr.demokritos.iit.base.util.Utils.sendPOST(payload,strabonURL);
-            Utils.checkResponse(resp);
-
-        }
-
-    }
     @Override
     public void createPerPublishedDateTables()
     {
