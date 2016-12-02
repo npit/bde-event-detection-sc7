@@ -6,7 +6,7 @@
         <artifactId>BDEEventDetection</artifactId>
         <version>0.1</version>
     </parent>
-    <artifactId>BDECLustering</artifactId>
+    <artifactId>BDEClustering</artifactId>
     <version>0.1</version>
     <packaging>jar</packaging>
     <properties>

@@ -56,7 +56,7 @@ public class DemoUtils {
 
             Collection<Map<String, Object>> events = repository.loadEvents(1000);
 
-            exportToCSV(events, "//home/npittaras/Documents/project/BDE/BDEproject/bde-event-detection-sc7/BDECLustering/sample_events.csv");
+            exportToCSV(events, "//home/npittaras/Documents/project/BDE/BDEproject/bde-event-detection-sc7/BDEClustering/sample_events.csv");
 
             LOGGER.info("Done");
         } catch (IOException e) {

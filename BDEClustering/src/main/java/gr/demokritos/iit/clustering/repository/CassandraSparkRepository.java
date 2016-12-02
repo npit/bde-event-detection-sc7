@@ -72,7 +72,7 @@ public class CassandraSparkRepository {
                 Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CLEAN_TEXT.getColumnName(),
                 Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PUBLISHED.getColumnName())
                 // DEBUG // TODO: COMMENT OUT! - gets the first K
-                                .limit(10l);
+                                .limit(1000L);
                 // DEBUG // TODO: UNCOMMENT!
                 //.filter(new FilterByAfterTimeStamp(timestamp));
         JavaRDD<Tuple4<String, String, String, Long>> extracted = filter.map(new CassandraArticleRowToTuple4RDD(

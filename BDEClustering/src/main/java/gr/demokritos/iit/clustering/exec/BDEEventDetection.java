@@ -52,6 +52,9 @@ import org.scify.newsum.server.nlp.sentsplit.ISentenceSplitter;
 import org.scify.newsum.server.summarization.ISummarizer;
 import org.scify.newsum.server.summarization.Summarizer;
 
+import static gr.demokritos.iit.base.util.Utils.tic;
+import static gr.demokritos.iit.base.util.Utils.toc;
+
 /**
  * @author George K. <gkiom@iit.demokritos.gr>
  */
@@ -108,12 +111,14 @@ public class BDEEventDetection {
             }
             return;
         }
+
+
+        tic();
         // specify the range of news articles to extract from, for clustering
         Calendar cal = Utils.getCalendarFromStringTimeWindow(configuration.getDocumentRetrievalTimeWindow());
 //        Calendar now = Calendar.getInstance();
 //        now.set(Calendar.MONTH, now.get(Calendar.MONTH) - 1);
         System.out.println("calendar retrieval setting: " + cal.getTime());
-
         long tstamp = cal.getTimeInMillis();
         System.out.println("Loading articles to cluster.");
         long startTime = System.currentTimeMillis();
@@ -121,11 +126,13 @@ public class BDEEventDetection {
                 configuration.getDocumentRetrievalTimeWindow(),configuration.getMaxNumberOfArticles()));
         List<BDEArticle> articles = repository.loadArticlesAsDemo_crawledInfo(tstamp, configuration.getMaxNumberOfArticles());
         long endTime = System.currentTimeMillis();
-        System.out.println("Took " + Long.toString((endTime - startTime)/1000l) + " sec");
+        System.out.println("Took " + Long.toString((endTime - startTime)/1000l) + " sec to load articles");
 
         String clusteringMode = configuration.getClusteringMode();
         Map<String,Topic> articlesPerCluster = null;
         // clusterer
+        System.out.println("clustering articles...");
+
         if(clusteringMode.equals("base"))
         {
             System.out.println("Using base clusterer with cutoff threshold at [" + configuration.getCutOffThreshold() + "]");
@@ -146,8 +153,8 @@ public class BDEEventDetection {
             factory.releaseResources();
             return;
         }
+        System.out.println("Clsutering took  " + toc() + " sec. Clusters : ");
 
-        System.out.println("clustering articles...");
 
         for(String key : articlesPerCluster.keySet())
         {
@@ -160,11 +167,6 @@ public class BDEEventDetection {
             }
         }
         System.out.println("\n");
-
-
-        startTime = System.currentTimeMillis();
-        endTime = System.currentTimeMillis();
-        System.out.println("Took " + Long.toString((endTime - startTime)/1000l) + " sec");
 
 
         // the below should be already populated after news crawls

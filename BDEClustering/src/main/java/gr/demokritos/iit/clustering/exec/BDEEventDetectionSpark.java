@@ -16,6 +16,7 @@ package gr.demokritos.iit.clustering.exec;
 
 import gr.demokritos.iit.base.util.Utils;
 import gr.demokritos.iit.clustering.clustering.BaseSparkClusterer;
+import gr.demokritos.iit.clustering.clustering.BaseSparkClusterer2;
 import gr.demokritos.iit.clustering.config.BDESparkContextContainer;
 import gr.demokritos.iit.clustering.config.BDESparkConf;
 import gr.demokritos.iit.clustering.config.ISparkConf;
@@ -105,9 +106,9 @@ public class BDEEventDetectionSpark {
         // Cluster with a predefined method
         // -----------------------------------
 
-        sparkClusteringWithPrecomputeGraphs(repo,timestamp,conf,sc);
+        //sparkClusteringWithPrecomputeGraphs(repo,timestamp,conf,sc);
         //sparkClusteringDefault(repo,timestamp,conf,sc);
-
+        sparkClustering_JohnApproach(repo,timestamp,conf,sc);
         // -----------------------------------
         long endTotal  = System.currentTimeMillis();
         System.out.println( "Total clustering time : " + Long.toString((endTotal - startTotal)/1000l) + "sec" );
@@ -117,10 +118,27 @@ public class BDEEventDetectionSpark {
     }
     private static void sparkClustering_JohnApproach(CassandraSparkRepository repo, long timestamp, ISparkConf conf, JavaSparkContext sc)
     {
+        System.out.println("************ Serial graph creation approach");
 
+        JavaRDD<Tuple4<String, String, String, Long>> articles = repo.loadArticlesPublishedLaterThan(timestamp);
+        BaseSparkClusterer2 clust = new BaseSparkClusterer2(JavaSparkContext.toSparkContext(sc),conf.getSimilarityMode(),conf.getCutOffThreshold(),conf.getNumPartitions());
+        clust.calculateClusters(articles);
+
+
+        Map<String, Topic> res = clust.getArticlesPerCluster();
+        System.out.println("Printing clustering results.");
+        for(String clustid : res.keySet())
+        {
+            System.out.println("cluster " + clustid);
+            for(Article art : res.get(clustid))
+            {
+                System.out.println("\t art" + art.toString());
+            }
+        }
     }
     private static void sparkClusteringDefault(CassandraSparkRepository repo, long timestamp, ISparkConf conf, JavaSparkContext sc)
     {
+        System.out.println("*********  Default approach");
         JavaRDD<Tuple4<String, String, String, Long>> articles = repo.loadArticlesPublishedLaterThan(timestamp);
         BaseSparkClusterer clusterer = new BaseSparkClusterer(JavaSparkContext.toSparkContext(sc),conf.getSimilarityMode(),conf.getCutOffThreshold(), conf.getNumPartitions());
 
@@ -141,6 +159,7 @@ public class BDEEventDetectionSpark {
     }
     private static void sparkClusteringWithPrecomputeGraphs(CassandraSparkRepository repo, long timestamp, ISparkConf conf, JavaSparkContext sc)
     {
+        System.out.println("************ Precomputed graphs approach");
         JavaRDD<Tuple4<String, String, String, Long>> articles = repo.loadArticlesPublishedLaterThan(timestamp);
         BaseSparkClusterer clusterer = new BaseSparkClusterer(JavaSparkContext.toSparkContext(sc),conf.getSimilarityMode(),conf.getCutOffThreshold(), conf.getNumPartitions());
 

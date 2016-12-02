@@ -6,7 +6,7 @@ BDE Event Detection module
 >       BDETwitterListener
 >       BDERSSCrawler
 >       BDELocationExtraction
->       BDECLustering
+>       BDEClustering
 
 > **twitter listener:**
 
