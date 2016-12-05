@@ -58,7 +58,7 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
 
     protected IClusteringConf configuration;
     private boolean status;
-    private List<BDEArticle> articles;
+    protected List<BDEArticle> articles;
 
 
     protected HashMap<String, Topic> ArticlesPerCluster;
@@ -433,8 +433,6 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
     }
 
 
-    IArticleClusterer smClusterer;
-    IClassifier smClassifier;
     @Override
     public void processTweets() {
         Collection<TwitterResult> tweets = getTweets();
@@ -637,6 +635,12 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
         return ArticlesPerCluster;
     }
 
+
+    protected void setPlacesPerArticle(List<Tuple2<String,ArrayList<String>>> placesPerArticle)
+    {
+        // get the geometries for each place
+
+    }
 
     protected Map<String,Map<String,String>> getGeometryInformationFromRepository(List<String> art)
     {

@@ -23,27 +23,29 @@ import scala.Tuple5;
  *
  * @author George K. <gkiom@iit.demokritos.gr>
  */
-public class CassandraArticleRowToTuple4RDD implements Function<CassandraRow, Tuple4<String, String, String, Long>> {
+public class CassandraArticleRowToTuple5RDD implements Function<CassandraRow, Tuple5<String, String, String, Long, Long>> {
 
     private final String string_row_1_field;
     private final String string_row_2_field;
     private final String string_row_3_field;
     private final String long_row_4_field;
+    private final String long_row_5_field;
 
-    public CassandraArticleRowToTuple4RDD(String string_row_1_field, String string_row_2_field,
-                                          String string_row_3_field, String long_row_4_field) {
+    public CassandraArticleRowToTuple5RDD(String string_row_1_field, String string_row_2_field, String string_row_3_field, String long_row_4_field, String long_row_5_field) {
         this.string_row_1_field = string_row_1_field;
         this.string_row_2_field = string_row_2_field;
         this.string_row_3_field = string_row_3_field;
         this.long_row_4_field = long_row_4_field;
+        this.long_row_5_field = long_row_5_field;
     }
 
     @Override
-    public Tuple4<String, String, String, Long> call(CassandraRow arg0) throws Exception {
-        return new Tuple4(
+    public Tuple5<String, String, String, Long, Long> call(CassandraRow arg0) throws Exception {
+        return new Tuple5(
                 arg0.getString(string_row_1_field),
                 arg0.getString(string_row_2_field),
                 arg0.getString(string_row_3_field),
-                arg0.getLong(long_row_4_field));
+                arg0.getLong(long_row_4_field),
+                arg0.getLong(long_row_5_field));
     }
 }
