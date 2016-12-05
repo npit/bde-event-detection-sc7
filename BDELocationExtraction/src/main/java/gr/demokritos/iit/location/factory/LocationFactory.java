@@ -69,6 +69,7 @@ public class LocationFactory implements ILocFactory {
     public IPolygonExtraction createPolygonExtractionClient() throws NoSuchMethodException, ClassNotFoundException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
     {
         String poly_extraction_impl = conf.getPolygonExtractionImpl();
+
         try {
             if (poly_extraction_impl.equals("local"))
                 return createLocalPolygonExtractionClient();

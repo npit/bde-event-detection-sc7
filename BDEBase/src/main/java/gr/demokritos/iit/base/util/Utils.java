@@ -90,7 +90,7 @@ public class Utils {
             }
             resp = response.toString();
             rd.close();
-            System.out.println("server response:\n\t" + resp);
+            //System.out.println("server response:\n\t" + resp);
         }
         catch(MalformedURLException exc)
         {

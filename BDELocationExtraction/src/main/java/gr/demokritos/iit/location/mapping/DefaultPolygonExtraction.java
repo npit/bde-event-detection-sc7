@@ -22,6 +22,7 @@ import com.google.gson.reflect.TypeToken;
 import gr.demokritos.iit.location.mapping.client.DebugRestClient;
 import gr.demokritos.iit.location.mapping.client.IRestClient;
 import gr.demokritos.iit.location.mapping.client.JBossRestClient;
+import gr.demokritos.iit.location.mapping.client.SimpleRestClient;
 import gr.demokritos.iit.location.util.GeometryFormatTransformer;
 import org.json.simple.parser.ParseException;
 
@@ -65,7 +66,7 @@ public class DefaultPolygonExtraction implements IPolygonExtraction {
     public DefaultPolygonExtraction(String locURL) {
 	System.out.println("Initializing remote polygon extractor, @ url : " + locURL +  ".");
         this.polURL = locURL;
-        this.client = new JBossRestClient();
+        this.client = new SimpleRestClient();
         this.location_cache  = CacheBuilder.newBuilder()
                 .initialCapacity(100)
                 .maximumSize(1000l)
@@ -98,20 +99,19 @@ public class DefaultPolygonExtraction implements IPolygonExtraction {
         // API accepts only JsonArray
         final Collection<String> input = new ArrayList() {{add(locationEntity);}};
         try {
-            Response response = client.execJSONPost(polURL, gs.toJson(input, Collection.class), String.class);
+            String responseEntity = client.execJSONPost(polURL, gs.toJson(input, Collection.class), String.class);
 
-            String ent = (String) response.getEntity();
             // debug!
             //System.out.println("POST response entity : " + ent); //debugprint
             // debug!
             // responses from the API: when smth wrong: 'null', when error in call (?) 'code:400, message:exception"
-            if (ent != null && !ent.contains("null") && !ent.equals("{\"code\":400,\"message\":\"exception\"}")) {
+            if (responseEntity != null && !responseEntity.contains("null") && !responseEntity.equals("{\"code\":400,\"message\":\"exception\"}")) {
                 // add to cache
-                location_cache.put(locationEntity, ent);
-                res = ent;
+                location_cache.put(locationEntity, responseEntity);
+                res = responseEntity;
             }
             // when the server returns html junk
-            if(ent.contains("The requested resource is not available."))
+            if(responseEntity.contains("The requested resource is not available."))
             {
                 throw new Exception ("Polygon extraction server says resource is not available.");
             }
