@@ -216,7 +216,8 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
 
     @Override
     public Set<String> getLocationTokens(String text) {
-        associationCache.clear();
+	if( useAdditionalSources )
+        	associationCache.clear();
 
         if (text == null || text.trim().isEmpty()) {
             return Collections.EMPTY_SET;
