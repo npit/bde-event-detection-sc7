@@ -57,6 +57,11 @@ public class LocConf extends BaseConfiguration implements ILocConf {
     }
 
     @Override
+    public String getRestClientImpl() {
+        return properties.getProperty("rest_client_impl","");
+    }
+
+    @Override
     public String getLocationExtractionImpl() {
         return properties.getProperty("location_extraction_impl");
     }
@@ -111,4 +116,6 @@ public class LocConf extends BaseConfiguration implements ILocConf {
         }
         return false;
     }
+
+
 }

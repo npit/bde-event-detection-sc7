@@ -139,10 +139,9 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
         }
 
     }
-    public void configure(ILocConf conf)
+    public boolean configure(ILocConf conf)
     {
-        if(! conf.useAdditionalExternalNames()) return;
-
+        if(! conf.useAdditionalExternalNames()) return true;
         // naive additions from GPapadakis' dataset
         // get extra names
 
@@ -151,6 +150,13 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
         associationCache = new HashSet<>();
         extraNamesOverride = new HashMap<>();
         String extrapath=conf.getLocationExtractionSourceFile();
+       if(extrapath.isEmpty())
+       {
+               System.out.print("Did not provide extra locations file.");
+               return false;
+       }
+
+
         readLocationsFile(extrapath);
         System.out.print("Reading extra names file [" + extrapath + "].");
 
@@ -161,6 +167,7 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
         useAdditionalSources = true;
         if(conf.onlyUseAdditionalExternalNames())
             onlyUseAdditionalSources = true;
+	return true;
     }
     /**
      *
@@ -216,8 +223,8 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
 
     @Override
     public Set<String> getLocationTokens(String text) {
-	if( useAdditionalSources )
-        	associationCache.clear();
+        if(useAdditionalSources)
+            associationCache.clear();
 
         if (text == null || text.trim().isEmpty()) {
             return Collections.EMPTY_SET;

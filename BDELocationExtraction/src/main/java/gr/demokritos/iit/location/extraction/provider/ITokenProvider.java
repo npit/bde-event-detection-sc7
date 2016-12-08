@@ -42,5 +42,5 @@ public interface ITokenProvider {
      * @return
      */
     Set<String> getLocationTokens(String text);
-    void configure(ILocConf conf);
+    boolean configure(ILocConf conf);
 }
