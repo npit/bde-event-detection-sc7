@@ -31,5 +31,5 @@ public interface ILocationExtractor {
      * @return
      */
     Set<String> extractLocation(String document);
-    void configure(ILocConf conf);
+    boolean configure(ILocConf conf);
 }

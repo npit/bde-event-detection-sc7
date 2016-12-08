@@ -103,7 +103,10 @@ public class LocationFactory implements ILocFactory {
                 client = (IRestClient) ctor.newInstance();
             }
             else
+	    {
                 System.out.println("No rest implementation provided. Using Simple.");
+		Failed = true;
+	    }
 
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
@@ -116,14 +119,17 @@ public class LocationFactory implements ILocFactory {
         } catch (IllegalAccessException e) {
             e.printStackTrace();
             System.out.println("IllegalAccessException for Rest implementation " + impl + ". Using Simple.");
+            Failed = true;
 
         } catch (InstantiationException e) {
             e.printStackTrace();
             System.out.println("InstantiationExceptionfor Rest implementation " + impl + ". Using Simple.");
+            Failed = true;
 
         } catch (InvocationTargetException e) {
             e.printStackTrace();
             System.out.println("InvocationTargetException for Rest implementation " + impl + ". Using Simple.");
+            Failed = true;
 
         }
 
