@@ -16,6 +16,8 @@ import gr.demokritos.iit.location.extraction.provider.ITokenProvider;
 import gr.demokritos.iit.location.mapping.DefaultPolygonExtraction;
 import gr.demokritos.iit.location.mapping.IPolygonExtraction;
 import gr.demokritos.iit.location.mapping.LocalPolygonExtraction;
+import gr.demokritos.iit.location.mapping.client.IRestClient;
+import gr.demokritos.iit.location.mapping.client.SimpleRestClient;
 import gr.demokritos.iit.location.repository.LocationCassandraRepository;
 import gr.demokritos.iit.location.repository.ILocationRepository;
 import gr.demokritos.iit.location.sentsplit.ISentenceSplitter;
@@ -88,10 +90,47 @@ public class LocationFactory implements ILocFactory {
     @Override
     public IPolygonExtraction createDefaultPolygonExtractionClient() throws IllegalArgumentException {
         String url = conf.getPolygonExtractionURL();
+        String impl = conf.getRestClientImpl();
+        IRestClient client = null;
         if (url == null || url.trim().isEmpty()) {
             throw new IllegalArgumentException(String.format("should provide 'polygon_extraction_url' in properties file."));
         }
-        return new DefaultPolygonExtraction(url);
+        boolean Failed = false;
+        try {
+            if(!impl.isEmpty()) {
+                Class C = Class.forName(impl);
+                Constructor ctor = C.getConstructor();
+                client = (IRestClient) ctor.newInstance();
+            }
+            else
+                System.out.println("No rest implementation provided. Using Simple.");
+
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            System.out.println("Rest implementation " + impl + " is not defined. Using Simple.");
+            Failed = true;
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+            System.out.println("Failed to get constructor for Rest implementation " + impl + ". Using Simple.");
+            Failed = true;
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+            System.out.println("IllegalAccessException for Rest implementation " + impl + ". Using Simple.");
+
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+            System.out.println("InstantiationExceptionfor Rest implementation " + impl + ". Using Simple.");
+
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+            System.out.println("InvocationTargetException for Rest implementation " + impl + ". Using Simple.");
+
+        }
+
+        if(Failed)
+            client = new SimpleRestClient();
+
+        return new DefaultPolygonExtraction(url,1000,client);
     }
 
     @Override

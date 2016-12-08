@@ -142,7 +142,6 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
     public void configure(ILocConf conf)
     {
         if(! conf.useAdditionalExternalNames()) return;
-
         // naive additions from GPapadakis' dataset
         // get extra names
 
@@ -216,7 +215,8 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
 
     @Override
     public Set<String> getLocationTokens(String text) {
-        associationCache.clear();
+        if(useAdditionalSources)
+            associationCache.clear();
 
         if (text == null || text.trim().isEmpty()) {
             return Collections.EMPTY_SET;
