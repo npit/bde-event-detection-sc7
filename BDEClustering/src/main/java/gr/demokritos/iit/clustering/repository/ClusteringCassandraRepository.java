@@ -373,7 +373,14 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
             System.out.println("Using base clusterer with cutoff threshold at [" + configuration.getCutOffThreshold() + "]");
             IArticleClusterer cl = new ParameterizedBaseArticleClusterer(articles, configuration.getCutOffThreshold());
             cl.calculateClusters();
-            ArticlesPerCluster = (HashMap)cl.getArticlesPerCluster();
+            Map<String,Topic> res = cl.getArticlesPerCluster();
+            if(! res.isEmpty()) ArticlesPerCluster = (HashMap) res;
+            else
+            {
+                System.err.println("Zero clusters discovered!");
+                this.status = false;
+                //ArticlesPerCluster = new HashMap();
+            }
         }
         else if (clusteringMode.equals("mcl"))
         {

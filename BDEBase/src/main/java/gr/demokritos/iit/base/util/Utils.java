@@ -129,7 +129,11 @@ public class Utils {
     }
     public static void tocTell()
     {
-        System.out.println("Operation duration : " + toc());
+        tocTell("");
+    }
+    public static void tocTell(String operation)
+    {
+        System.out.println("Tic-toc for [" + operation + "]  : " + toc());
 
     }
     /**

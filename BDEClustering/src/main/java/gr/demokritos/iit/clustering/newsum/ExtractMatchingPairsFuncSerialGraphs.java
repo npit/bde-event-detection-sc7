@@ -28,27 +28,30 @@ public class ExtractMatchingPairsFuncSerialGraphs implements Function<Tuple2<Tup
 
     // <entry_url, title, clean_text, timestamp>, <entry_url, title, clean_text, timestamp>
     @Override
-    public Boolean call(Tuple2<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>> v1) throws Exception {
+    public Boolean call(Tuple2<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>> arg) throws Exception {
 
         // spark-context
         // get text from first item
 
-        String article1Representation = new StringBuilder().append(v1._1()._2()).append(" ").append(v1._1()._3()).toString();
-        String article2Representation = new StringBuilder().append(v1._2()._2()).append(" ").append(v1._2()._3()).toString();
-        NGramGraph g1 = new NGramGraph(1,1);
+        String article1Representation = new StringBuilder().append(arg._1()._2()).append(" ").append(arg._1()._3()).toString();
+        String article2Representation = new StringBuilder().append(arg._2()._2()).append(" ").append(arg._2()._3()).toString();
+        NGramGraph g1 = new NGramGraph(3,3);
         g1.fromString(article1Representation);
 
-        NGramGraph g2 = new NGramGraph(1,1);
+        NGramGraph g2 = new NGramGraph(3,3);
         g2.fromString(article2Representation);
         GraphSimilarityComparator gsc = new GraphSimilarityComparator();
         Similarity gs = gsc.getSimilarity(g1,g2);
 
-        //System.out.println("Similarity: " + (double) gs.getSimilarityComponents().get(SimilarityMode.NVS.getGraphSimilarity()).get() + " , cutoff "  + simCutOff);
+//        System.out.println("Similarity: " + (double) gs.getSimilarityComponents().get(SimilarityMode.NVS.getGraphSimilarity()).get() + " , cutoff "  + simCutOff);
+//        System.out.println("\twith t1: ["  + arg._1()._2()+ "]  and t2: [" +arg._2()._2()+ "]");
+
 
 
         // decide based on mode
         switch (mode) {
             case NVS:
+                double val = (double) gs.getSimilarityComponents().get(SimilarityMode.NVS.getGraphSimilarity()).get();
                 return (double) gs.getSimilarityComponents().get(SimilarityMode.NVS.getGraphSimilarity()).get() >= simCutOff;
             case VS:
                 return (double) gs.getSimilarityComponents().get(SimilarityMode.VS.getGraphSimilarity()).get() >= simCutOff;

@@ -52,7 +52,14 @@ public class ParameterizedBaseArticleClusterer extends BaseArticleClusterer {
             double NVS = gs.SizeSimilarity == 0.0D?0.0D:gs.ValueSimilarity / gs.SizeSimilarity;
             boolean bMatch = NVS > NVSThreshold && gs.SizeSimilarity > 0.1D;
             boolean TitleMatch = this.isPossiblySameSentence(aA.getTitle(), aB.getTitle());
-            //System.out.println(String.format("%s - %s ||| nvs: %f , gs: %f , returning %d",aA.getTitle(),aB.getTitle(),NVS,gs.SizeSimilarity,bMatch || TitleMatch));
+
+//            int bres = bMatch ? 1 : 0;
+//            int tres = TitleMatch ? 1 : 0;
+//            System.out.println(String.format("nvs: %f (%f) , gs: %f (0.1) , returning (%d , %d) ||| \n\t%s - %s ||| ",
+//
+//                    NVS,NVSThreshold, gs.SizeSimilarity,bres, tres,
+//                    aA.getTitle(),aB.getTitle()
+//            ));
             return bMatch || TitleMatch;
         }
     }

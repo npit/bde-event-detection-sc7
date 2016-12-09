@@ -16,6 +16,6 @@ public class FilterRowNumber implements Function<Tuple2<CassandraRow,Long>,Boole
     }
     @Override
     public Boolean call(Tuple2<CassandraRow, Long> v1) throws Exception {
-        return(v1._2() <= limit);
+        return(v1._2() < limit);
     }
 }

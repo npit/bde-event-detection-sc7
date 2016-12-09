@@ -164,7 +164,7 @@ public class ClusteringCassandraSparkRepository extends ClusteringCassandraRepos
                         Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PLACE_LITERAL.getColumnName()
                 ));
         articles = bdeArticlesRDD.collect();
-        System.out.println("Mapped " + articles.size() + " elements.Getting geometries.");
+        System.out.print("Mapped " + articles.size() + " elements.Getting geometries...");
 
 
 
@@ -210,7 +210,7 @@ public class ClusteringCassandraSparkRepository extends ClusteringCassandraRepos
             art.setPlaces_to_polygons(currPlacesGeometries);
         }
 
-        System.out.println("Got geoms.");
+        System.out.println("done.");
 
         articles4RDD = sortedRowsFiltered.map(new CassandraArticleRowToTuple4RDD(
                 Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName(),
@@ -254,14 +254,12 @@ public class ClusteringCassandraSparkRepository extends ClusteringCassandraRepos
     private void calcBooleanMatches()
     {
         System.out.println("Calculating boolean similarity matches...");
-        Utils.tic();
         // generate article combinations
         articlePairsRDD = articles4RDD.cartesian(articles4RDD).filter(new DocumentPairGenerationFilterFunction());
         // map to similarity, threshold to boolean matches
         JavaRDD<Boolean> matchesrdd = articlePairsRDD.map(new ExtractMatchingPairsFuncSerialGraphs(
                 configuration.getSimilarityMode(), configuration.getCutOffThreshold()));
         matches =  matchesrdd.collect();
-        Utils.tocTell();
     }
 
 

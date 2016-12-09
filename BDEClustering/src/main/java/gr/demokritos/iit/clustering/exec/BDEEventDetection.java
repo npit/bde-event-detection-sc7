@@ -53,6 +53,7 @@ import org.scify.newsum.server.summarization.Summarizer;
 
 import static gr.demokritos.iit.base.util.Utils.tic;
 import static gr.demokritos.iit.base.util.Utils.toc;
+import static gr.demokritos.iit.base.util.Utils.tocTell;
 
 /**
  * @author George K. <gkiom@iit.demokritos.gr>
@@ -94,15 +95,16 @@ public class BDEEventDetection {
         }
 
 
-        tic();
+
         // specify the range of news articles to extract from, for clustering
         Calendar cal = Utils.getCalendarFromStringTimeWindow(configuration.getDocumentRetrievalTimeWindow());
         System.out.println("calendar retrieval setting: " + cal.getTime());
         long tstamp = cal.getTimeInMillis();
 
         repository.loadArticlesToCluster(tstamp);
-
+        tic();
         repository.clusterArticles();
+        tocTell("clustering");
         if(!repository.good())
         {
             repository.destroy();
@@ -121,8 +123,6 @@ public class BDEEventDetection {
             factory.releaseResources();
             return;
         }
-        System.out.println("loading tweets");
-        // get token dictionary from topics
 
         // process tweets
         repository.loadTweetsToCluster(tstamp);
@@ -156,7 +156,7 @@ public class BDEEventDetection {
             System.out.println("Releasing resources.");
             factory.releaseResources();
         }
-
+        repository.destroy();
         System.out.println("Done");
         return;
 
