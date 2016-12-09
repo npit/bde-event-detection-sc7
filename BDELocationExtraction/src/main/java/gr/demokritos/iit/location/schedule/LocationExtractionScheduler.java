@@ -128,6 +128,7 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                     //System.out.println("Extracting location for article " + permalink);
                     System.out.print("\tArticle " + count +  "/" +  items.size() + " : "  + permalink); //debugprint
 
+
                     Set<String> locationsFound = locExtractor.extractLocation(clean_text);
 
                     if (!locationsFound.isEmpty()) {
