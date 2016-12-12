@@ -73,7 +73,12 @@ public class LocationExtraction {
                     repos.setUpdateEvents();
                 // init location extractor
                 ILocationExtractor locExtractor = factory.createDefaultLocationExtractor();
-                locExtractor.configure(conf);
+                if(locExtractor.configure(conf) == false) {
+                    System.out.println("Location extractor configuration failed.");
+                    factory.releaseResources();
+                    return;
+                }
+
                 // load polygon extraction client
                 IPolygonExtraction poly = factory.createPolygonExtractionClient();
                 // according to mode, execute location extraction schedule.

@@ -1,5 +1,6 @@
 package gr.demokritos.iit.crawlers.rss.extractors;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -37,7 +38,15 @@ public class DateExtractor {
     }
     public static Date getDate(Document doc,String url) {
         Date articleDate = null;
-        String datestr = DateExtractor.getDateString(doc, url);
+        String datestr="";
+        try {
+            datestr = DateExtractor.getDateString(doc, url);
+        }
+        catch(NullPointerException ex)
+        {
+            System.err.println("Failed to extract date : " + ex.getMessage());
+            return error();
+        }
         if(datestr == null || datestr.isEmpty())
         {
             System.err.println("\tNo date string found in article source.");
@@ -83,7 +92,7 @@ public class DateExtractor {
         return null;
 
     }
-    private static String getDateString(Document doc, String urladdress) {
+    private static String getDateString(Document doc, String urladdress) throws NullPointerException {
 
         // try with jsoup
         Element head = doc.head();

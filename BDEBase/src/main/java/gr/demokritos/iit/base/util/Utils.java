@@ -90,7 +90,7 @@ public class Utils {
             }
             resp = response.toString();
             rd.close();
-            System.out.println("server response:\n\t" + resp);
+            //System.out.println("server response:\n\t" + resp);
         }
         catch(MalformedURLException exc)
         {
@@ -126,6 +126,15 @@ public class Utils {
         Long timethen = tictoc.pop();
 
         return Long.toString((timenow-timethen)/1000l) + " sec ";
+    }
+    public static void tocTell()
+    {
+        tocTell("");
+    }
+    public static void tocTell(String operation)
+    {
+        System.out.println("Tic-toc for [" + operation + "]  : " + toc());
+
     }
     /**
      * return a 'yyyy-MM-dd' represantation of the date passed. For usage in

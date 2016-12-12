@@ -32,9 +32,9 @@ import java.util.Set;
  */
 public class DefaultLocationExtractor implements ILocationExtractor {
 
-    public void configure(ILocConf conf)
+    public boolean configure(ILocConf conf)
     {
-        token_provider.configure(conf);
+        return token_provider.configure(conf);
     }
     /**
      * The interface for token extraction

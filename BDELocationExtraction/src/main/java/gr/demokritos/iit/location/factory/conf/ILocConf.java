@@ -36,6 +36,8 @@ public interface ILocConf extends IBaseConf {
 
     String getOperationMode();
 
+    String getRestClientImpl();
+
 
 
 }

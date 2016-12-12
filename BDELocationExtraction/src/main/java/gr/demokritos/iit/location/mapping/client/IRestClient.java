@@ -31,7 +31,7 @@ public interface IRestClient {
      * @return the entity received from the couch API
      * @throws Exception
      */
-    Response execGet(String base_url, Map<String, String> params, Class class_of_entity) throws Exception;
+    String execGet(String base_url, Map<String, String> params, Class class_of_entity) throws Exception;
 
-    Response execJSONPost(String base_url, String json_data, Class class_of_entity) throws Exception;
+    String execJSONPost(String base_url, String json_data, Class class_of_entity) throws Exception;
 }

@@ -98,9 +98,19 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
         try (BufferedReader br = new BufferedReader(new FileReader(extrapath))) {
             // read newline delimited source names file
             String line;
+            int linecount=0, skipcount=0;
             while ((line = br.readLine()) != null) {
+                ++linecount;
                 line = line.trim();
-                if(line.startsWith("#")) continue; // skip comments
+                if(line.startsWith("#")) {
+                    System.out.println("Skipping comment @ line " + linecount); ++skipcount;
+                    continue; // skip comments
+                }
+                if(line.isEmpty())
+                {
+                    System.out.println("Skipping empty @ line " + linecount); ++skipcount;
+                    continue; // skip empties
+                }
                 String[] parts = line.split(delimiter);
                 String[] overrParts = parts[0].split(overrideDelimiter);
                 String locationBaseName="", locationOverrideName;
@@ -108,7 +118,7 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
                 {
                     if(overrParts.length > 2)
                     {
-                        System.err.printf("Location name override should be like name1%sname2",overrideDelimiter);
+                        System.err.printf("Location name override should be like name1%sname2",overrideDelimiter); ++skipcount;
                         continue;
                     }
                     locationBaseName = overrParts[0];
@@ -121,7 +131,15 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
                 if(!extraNames.keySet().contains(locationBaseName))
                 {
                     extraNames.put(locationBaseName,locationBaseName.toLowerCase());
+                    //System.out.println(extraNames.size() + ":" + locationBaseName);
                 }
+                else
+                {
+                    ++skipcount;
+                    System.out.println("\tSkipping duplicate entry [" + locationBaseName + "].");
+                }
+
+
                 if(parts.length > 1)
                 {
                     extraNamesAssociation.put(locationBaseName, new ArrayList());
@@ -134,15 +152,16 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
                 }
             }
 
+            System.out.println("Skipped " + skipcount + " extra location name entries.");
+
         } catch (IOException e) {
             e.printStackTrace();
         }
 
     }
-    public void configure(ILocConf conf)
+    public boolean configure(ILocConf conf)
     {
-        if(! conf.useAdditionalExternalNames()) return;
-
+        if(! conf.useAdditionalExternalNames()) return true;
         // naive additions from GPapadakis' dataset
         // get extra names
 
@@ -151,6 +170,13 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
         associationCache = new HashSet<>();
         extraNamesOverride = new HashMap<>();
         String extrapath=conf.getLocationExtractionSourceFile();
+       if(extrapath.isEmpty())
+       {
+               System.out.print("Did not provide extra locations file.");
+               return false;
+       }
+
+
         readLocationsFile(extrapath);
         System.out.print("Reading extra names file [" + extrapath + "].");
 
@@ -161,6 +187,7 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
         useAdditionalSources = true;
         if(conf.onlyUseAdditionalExternalNames())
             onlyUseAdditionalSources = true;
+	return true;
     }
     /**
      *
@@ -216,7 +243,8 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
 
     @Override
     public Set<String> getLocationTokens(String text) {
-        associationCache.clear();
+        if(useAdditionalSources)
+            associationCache.clear();
 
         if (text == null || text.trim().isEmpty()) {
             return Collections.EMPTY_SET;
@@ -247,65 +275,102 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
 
     protected Map<String, String> getTokenMap(String text) {
 
-        String text_lowercase = new String(text).toLowerCase();
+//        String text_lowercase = new String(text).toLowerCase();
         if (text == null || text.isEmpty()) {
             return Collections.EMPTY_MAP;
         }
         Map<String,String> additional_res = new HashMap<>();
         Map<String, String> res = new HashMap();
         String[] ss = text.split("\\s+");
-        for (NameFinderME model : models) {
-            Span[] found_spans = model.find(ss);
-            int s = 0;
-            for (Span span : found_spans) {
-                double prob = model.probs(found_spans)[s++];
-                if (prob >= prob_cutoff) {
-                    int start = span.getStart();
-                    int end = span.getEnd();
-                    StringBuilder sb = new StringBuilder();
-                    for (int i = start; i < end; i++) {
-                        sb.append(ss[i]).append(" ");
-                    }
-                    String ne = sb.toString().trim();
-                    String type = span.getType();
-                    res.put(ne, type);
-                }
-            }
 
-            // check for existence of manually supplied location names
-            //System.out.println("Checkign text "  + text_lowercase);
-            if( useAdditionalSources )
-            {
-                // just check the text
-                for(String extraName : extraNames.keySet())
-                {
-                    if(!additional_res.containsKey(extraName))
-                    {
-                        if (text_lowercase.contains(extraNames.get(extraName)))
-                        {
-                            //System.out.println("***FOUND " + extraNames.get(extraName));
-                            addToAdditionalResult(extraName,additional_res);
-                            applyLocationAssociations(extraName,additional_res);
-
-
+        if(!onlyUseAdditionalSources) {
+            for (NameFinderME model : models) {
+                Span[] found_spans = model.find(ss);
+                int s = 0;
+                for (Span span : found_spans) {
+                    double prob = model.probs(found_spans)[s++];
+                    if (prob >= prob_cutoff) {
+                        int start = span.getStart();
+                        int end = span.getEnd();
+                        StringBuilder sb = new StringBuilder();
+                        for (int i = start; i < end; i++) {
+                            sb.append(ss[i]).append(" ");
                         }
-                        //else System.out.println("Does not contain " + extraNames.get(extraName));
-
+                        String ne = sb.toString().trim();
+                        String type = span.getType();
+                        res.put(ne, type);
                     }
                 }
             }
         }
+        // check for existence of manually supplied location names
+        //System.out.println("Checkign text "  + text_lowercase);
         if( useAdditionalSources )
         {
-            if(onlyUseAdditionalSources)
-                res.clear();
+            //checkExtraSources(text,additional_res);
+            checkExtraSources(ss,text,additional_res);
+        }
+
+
+        if( useAdditionalSources )
+        {
             res.putAll(additional_res);
         }
 
         return res;
     }
 
+    private void checkExtraSources(String [] tokens, String text, Map<String,String> additional_res)
+    {
+        for(String extraName : extraNames.keySet()) {
+            if (additional_res.containsKey(extraName)) continue;
 
+            //checkPerToken(tokens,additional_res);
+            checkWholeText(text, extraName, additional_res);
+        }
+    }
+    private boolean checkPerToken(String [] tokens, String extraName, Map<String,String> additional_res)
+    {
+
+            // check if token exists
+            for(String tok : tokens)
+            {
+                if (tok.equals(extraName))
+                //                        if (text.contains(extraNames.get(extraName))) // searches lowercase
+                {
+                    //System.out.println("***FOUND " + extraNames.get(extraName));
+                    addToAdditionalResult(extraName, additional_res);
+                    applyLocationAssociations(extraName, additional_res);
+                    return true;
+
+                }
+                //else System.out.println("Does not contain " + extraNames.get(extraName));
+            } // for each token
+        return false;
+    }
+
+    private void checkWholeText(String text, String extraName, Map<String,String> additional_res)
+    {
+
+        if(text.contains(extraName))
+        {
+            // if the extra name is space-delimited it will never be matched in a tokenization.
+            // Search with contains, with restrictions before and after the word
+
+            // check characters before and after
+            int idx = text.indexOf(extraName);
+
+            if(idx > 0) // word is NOT at the start of a sentence
+                if(Character.isAlphabetic(text.charAt(idx-1)))
+                    return; // pre-word character is a letter : fail
+            if(idx + extraName.length() < text.length() - 1) // word is not at the end of the sentence
+                if(Character.isAlphabetic(text.charAt(idx + extraName.length())))
+                    return; // post-word  character is a letter : fail
+            // if flow reaches this, all's good: add it
+            addToAdditionalResult(extraName, additional_res);
+            applyLocationAssociations(extraName, additional_res);
+        }
+    }
     private void applyLocationAssociations(String location, Map<String,String> additionalRes)
     {
         // the location argument was just added to the additional results set.

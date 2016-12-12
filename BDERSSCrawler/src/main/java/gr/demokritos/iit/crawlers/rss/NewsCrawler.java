@@ -49,12 +49,15 @@ public class NewsCrawler extends AbstractCrawler {
         if (args.length == 0) {
             throw new IllegalArgumentException(USAGE);
         }
+        System.out.println("Running NewsCrawler with configuration file " + args[0]);
         IRSSConf configuration = new RSSConf(args[0]);
         // init lang detect
         CybozuLangDetect.setProfiles(configuration.getLangDetectionProfiles());
         RSSCrawlFactory factory = null; 
         try {
+
             factory = new RSSCrawlFactory(configuration);
+
             NewsCrawler crawler = new NewsCrawler(factory, configuration);
             IRSSConf.OperationMode opmode = configuration.getOperationMode();
             System.err.println("Running newscrawler in mode [" + opmode + "]");
@@ -74,7 +77,6 @@ public class NewsCrawler extends AbstractCrawler {
 
         } catch (Exception e) {
             log.severe(e.getMessage());
-            System.exit(1);
         } finally {
             if (factory != null && !configuration.runForever()) {
                 factory.releaseResources();

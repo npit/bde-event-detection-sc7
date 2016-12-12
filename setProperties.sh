@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #base="$(pwd)/BDEEventDetection"
-#editor="$EDITOR"
-editor="nano"
+editor="$EDITOR"
+#editor="nano"
 
 if [ "$#" -gt 0 ]; then
 	editor="$1"
@@ -9,12 +9,14 @@ fi
 
 base="$(pwd)"
 P=""
-P+=" $base/BDECLustering/res/clustering.properties"
-P+=" $base/BDELocationExtraction/res/location_extraction.properties"
-P+=" $base/BDERSSCrawler/res/newscrawler_configuration.properties"
-P+=" $base/BDERSSCrawler/res/news_urls.txt"
+P+=" $base/BDEClustering/res/clustering.properties"
+P+=" $base/BDELocationExtraction/res/location.properties"
+P+=" $base/BDELocationExtraction/res/location.extras"
+P+=" $base/BDERSSCrawler/res/news.properties"
+P+=" $base/BDERSSCrawler/res/news.urls"
 P+=" $base/BDETwitterListener/res/twitter.properties"
 P+=" $base/BDETwitterListener/res/twitter.queries"
+P+=" $base/BDETwitterListener/res/twitter.accounts"
 
 for p in $P; 
 do

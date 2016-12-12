@@ -29,7 +29,6 @@ import java.util.Map;
 public interface ILocationRepository extends IBaseRepository {
 
 
-    void storeAndChangeDetectionEvents(String strabonURL);
     /**
      *
      * @param permalink the URL of the article

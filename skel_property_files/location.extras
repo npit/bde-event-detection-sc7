@@ -1,0 +1,16 @@
+# comment
+# Format expected:
+# location string name to match /// actual location string name that will be stored *** additional location string name to assign
+# For example:
+# Exharcheia /// Athens *** Attica
+# articles containing "Exarcheia" will be assigned with location Athens instead of Exharceia. The additional location name "Attica" will also be assigned.
+
+
+
+
+
+
+
+
+
+

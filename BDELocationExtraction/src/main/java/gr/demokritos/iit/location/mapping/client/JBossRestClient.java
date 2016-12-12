@@ -33,10 +33,10 @@ import java.util.Map;
 public class JBossRestClient implements IRestClient {
 
     @Override
-    public Response execGet(String base_url, Map<String, String> params, Class class_of_entity) throws Exception {
+    public String execGet(String base_url, Map<String, String> params, Class class_of_entity) throws Exception {
         ClientRequest req
                 = get(base_url, params);
-        return (Response) req.get(class_of_entity);
+        return (String) req.get(class_of_entity).getEntity();
     }
 
     private ClientRequest get(String base_url, Map<String, String> params) {
@@ -59,20 +59,20 @@ public class JBossRestClient implements IRestClient {
     }
 
     @Override
-    public Response execJSONPost(String url, String json_data, Class response_entity_class) throws Exception {
+    public String execJSONPost(String url, String json_data, Class response_entity_class) throws Exception {
         ClientRequestFactory crf = new ClientRequestFactory();
         ClientRequest req = crf.createRequest(url);
         req.accept(MediaType.APPLICATION_JSON);
         req.body(MediaType.APPLICATION_JSON, json_data);
-        return req.post(response_entity_class);
+        return (String) req.post(response_entity_class).getEntity();
     }
 
-    public static void main(String[] args) throws Exception {
-        IRestClient cl = new JBossRestClient();
-        List<String> places = new ArrayList();
-        places.add("Athens, Greece");
-        String json_data = new Gson().toJson(places, List.class);
-        ClientResponse execPost = (ClientResponse) cl.execJSONPost("http://popeye.di.uoa.gr:8080/changeDetection/location/geocode", json_data, String.class);
-        System.out.println(execPost.getEntity());
-    }
+//    public static void main(String[] args) throws Exception {
+//        IRestClient cl = new JBossRestClient();
+//        List<String> places = new ArrayList();
+//        places.add("Athens, Greece");
+//        String json_data = new Gson().toJson(places, List.class);
+//        ClientResponse execPost = (ClientResponse) cl.execJSONPost("http://popeye.di.uoa.gr:8080/changeDetection/location/geocode", json_data, String.class);
+//        System.out.println(execPost.getEntity());
+//    }
 }
