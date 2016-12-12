@@ -1,16 +1,12 @@
 package gr.demokritos.iit.clustering.parallelngg.graph
-import org.apache.spark.graphx.Graph
-import org.apache.spark.graphx.Edge
-import java.io.IOException
 
+import java.io.IOException;
 import gr.demokritos.iit.clustering.parallelngg.traits.DocumentGraph;
-
-
 
 /**
   * @author Kontopoulos Ioannis
   */
-class NGramGraph(ngram: Int, dwin: Int) extends DocumentGraph {
+class WordNGramGraph(ngram: Int, dwin: Int) extends DocumentGraph {
 
   // variable that holds the edges of the graph
   override var edges: Map[(String,String),Double] = Map()
@@ -21,10 +17,10 @@ class NGramGraph(ngram: Int, dwin: Int) extends DocumentGraph {
     * @param dataString string text
     */
   override def fromString(dataString: String): Unit = {
-    val vertices = dataString
+    val vertices = dataString.split("\\s+")
       .sliding(ngram)
-      .map(atom => (("_" + atom), atom))
-      .toArray
+      .map(_.mkString(" "))
+      .map(atom => (("_" + atom), atom)).toArray
 
     val createdEdges = (vertices ++ Array.fill(dwin)(("", null))) //add dummy vertices at the end
       .sliding(dwin + 1) //slide over dwin + 1 vertices at the time

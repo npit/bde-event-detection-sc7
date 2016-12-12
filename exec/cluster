@@ -1,3 +1,6 @@
 #!/usr/bin/env bash
 cfile="../BDEClustering/res/clustering.properties"
-java -cp $(cat classpathfile | tr '\n' ':') gr.demokritos.iit.clustering.exec.BDEEventDetection $cfile
+[ $# -gt 0 ] && cfile="$1"
+
+echo "Properties file: $cfile"
+java -cp $(cat classpathfile  | tr '\n' ':') gr.demokritos.iit.clustering.exec.BDEEventDetection $cfile

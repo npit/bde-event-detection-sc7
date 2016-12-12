@@ -28,21 +28,13 @@ public class ClusteringFactory {
     IClusteringConf conf;
     private Cluster cluster;
 
-    private IClusteringConf.OperationMode overridingOperationMode;
-    private boolean OverrideOperationMode;
-    public void setOverrideOperationMode(IClusteringConf.OperationMode  mode)
-    {
-        overridingOperationMode = mode;
-        OverrideOperationMode = true;
-    }
     public ClusteringFactory(IClusteringConf conf)
     {
         this.conf = conf;
-        OverrideOperationMode = false;
     }
     public IClusteringRepository getRepository()
     {
-        IClusteringConf.OperationMode opmode = (OverrideOperationMode) ? overridingOperationMode : conf.getOperationMode();
+        IClusteringConf.OperationMode opmode =  conf.getOperationMode();
         if( opmode == IClusteringConf.OperationMode.PARALLEL)
             return getParallelRepository();
         else if(opmode == IClusteringConf.OperationMode.DISTRIBUTED)
@@ -99,7 +91,9 @@ public class ClusteringFactory {
         }
         else if(conf.getOperationMode() == IClusteringConf.OperationMode.DISTRIBUTED)
         {
-            ;
+            if (cluster != null) {
+                cluster.close();
+            }
         }
 
 

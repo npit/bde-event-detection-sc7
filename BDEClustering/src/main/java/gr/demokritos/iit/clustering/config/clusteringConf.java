@@ -189,6 +189,11 @@ public class clusteringConf extends BaseConfiguration implements IClusteringConf
         return Integer.valueOf(properties.getProperty(NUM_PARTITIONS, "4"));
     }
 
+    @Override
+    public String getNGramMode()
+    {
+        return properties.getProperty("ngram_graph_mode", "word");
+    }
 
 
 }

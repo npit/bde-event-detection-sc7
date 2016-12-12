@@ -1,4 +1,4 @@
-package gr.demokritos.iit.clustering.newsum;
+package gr.demokritos.iit.clustering.clustering;
 
 import org.apache.spark.api.java.JavaRDD;
 import org.scify.newsum.server.model.datacollections.Articles;

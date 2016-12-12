@@ -14,45 +14,15 @@
  */
 package gr.demokritos.iit.clustering.exec;
 
-import com.vividsolutions.jts.io.ParseException;
 import gr.demokritos.iit.base.util.Utils;
-import gr.demokritos.iit.clustering.clustering.MCLClusterer;
-import gr.demokritos.iit.clustering.clustering.ParameterizedBaseArticleClusterer;
 import gr.demokritos.iit.clustering.config.*;
 import gr.demokritos.iit.clustering.factory.ClusteringFactory;
-import gr.demokritos.iit.clustering.factory.DemoClusteringFactory;
-import gr.demokritos.iit.clustering.model.BDEArticle;
-import gr.demokritos.iit.clustering.newsum.IClusterer;
-import gr.demokritos.iit.clustering.repository.ClusteringCassandraRepository;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.*;
 
 import gr.demokritos.iit.clustering.repository.IClusteringRepository;
-import gr.demokritos.iit.location.util.GeometryFormatTransformer;
-import org.apache.spark.api.java.JavaSparkContext;
-import org.scify.asset.server.model.datacollections.CleanResultCollection;
-import org.scify.asset.server.model.structures.social.TwitterResult;
-import org.scify.asset.social.classification.IClassifier;
-import org.scify.asset.social.clustering.SocialMediaClusterer;
-import org.scify.asset.social.data.preprocessing.DefaultSocialMediaCleaner;
-import org.scify.asset.social.data.preprocessing.ISocialMediaCleaner;
-import org.scify.asset.social.data.preprocessing.IStemmer;
-import org.scify.asset.social.data.preprocessing.TwitterStemmer;
-import org.scify.newsum.server.clustering.IArticleClusterer;
-import org.scify.newsum.server.model.datacollections.Articles;
-import org.scify.newsum.server.model.structures.Article;
-import org.scify.newsum.server.model.structures.Sentence;
-import org.scify.newsum.server.model.structures.Summary;
-import org.scify.newsum.server.model.structures.Topic;
-import org.scify.newsum.server.nlp.sentsplit.DefaultSentenceSplitter;
-import org.scify.newsum.server.nlp.sentsplit.ISentenceSplitter;
-import org.scify.newsum.server.summarization.ISummarizer;
-import org.scify.newsum.server.summarization.Summarizer;
 
 import static gr.demokritos.iit.base.util.Utils.tic;
-import static gr.demokritos.iit.base.util.Utils.toc;
 import static gr.demokritos.iit.base.util.Utils.tocTell;
 
 /**
@@ -73,15 +43,13 @@ public class BDEEventDetection {
 
         // load base configuration, initialize repository
         IClusteringConf configuration = new clusteringConf(properties);
-        boolean SendToStrabon = configuration.sendToStrabon();
-        boolean onlySendToStrabon = configuration.justSendToStrabon();
 
         ClusteringFactory factory = new ClusteringFactory(configuration);
         IClusteringRepository repository = factory.getRepository();
 
         repository.initialize();
         // just send to strabon and exit, if that mode is specified
-        if(onlySendToStrabon)
+        if(configuration.justSendToStrabon())
         {
             System.out.print("Note: No clustering: will only send events to strabon, to url:["
                     +configuration.getStrabonURL()+"].");
@@ -101,7 +69,11 @@ public class BDEEventDetection {
         System.out.println("calendar retrieval setting: " + cal.getTime());
         long tstamp = cal.getTimeInMillis();
 
+        tic();
         repository.loadArticlesToCluster(tstamp);
+        tocTell("Article loading");
+        repository.printArticles();
+
         tic();
         repository.clusterArticles();
         tocTell("clustering");
@@ -130,7 +102,7 @@ public class BDEEventDetection {
 
         repository.localStoreEvents();
 
-        if (SendToStrabon) {
+        if (configuration.sendToStrabon()) {
 	        String strabonURL=configuration.getStrabonURL();
             System.out.print("Finally,sending events to strabon to url ["+strabonURL+"].");
             repository.remoteStoreEvents();

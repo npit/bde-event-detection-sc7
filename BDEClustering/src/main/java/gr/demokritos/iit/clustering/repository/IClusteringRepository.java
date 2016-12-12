@@ -20,6 +20,7 @@ public interface IClusteringRepository {
     boolean good();
     void destroy();
     void printClusters();
+    void printArticles();
 
     void calculateSummarization();
 

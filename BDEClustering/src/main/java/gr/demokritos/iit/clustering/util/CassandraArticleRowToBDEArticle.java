@@ -15,18 +15,20 @@ public class CassandraArticleRowToBDEArticle implements Function<CassandraRow,BD
 
     private String placesColumn;
     private String urlColumn;
-    private String title;
+    private String titleColumn;
     public CassandraArticleRowToBDEArticle(String urlColumn,String title,String  placesColumn)
 
     {
         this.urlColumn = urlColumn;
         this.placesColumn = placesColumn;
-        this.title = title;
+        this.titleColumn = title;
     }
     @Override
     public BDEArticle call(CassandraRow v1) throws Exception {
         // constructor is
         // public BDEArticle(String sSource, String Title, String Text, String Category, String Feed, URLImage imageUrl, Date date, Map<String, String> placesMap) {
+        String url = v1.getString(urlColumn);
+        String title = v1.getString(titleColumn);
         Set<String> places = (Set) v1.getSet(placesColumn);
         HashMap<String,String> justPlaces = new HashMap<>();
         for(String pl : places)
@@ -34,6 +36,6 @@ public class CassandraArticleRowToBDEArticle implements Function<CassandraRow,BD
             justPlaces.put(pl,"");
         }
 
-        return new BDEArticle(urlColumn, title, "","","",null,new Date(),justPlaces);
+        return new BDEArticle(url, title, "","","",null,new Date(),justPlaces);
     }
 }

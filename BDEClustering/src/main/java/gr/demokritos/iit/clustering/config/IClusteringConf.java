@@ -95,6 +95,7 @@ public interface IClusteringConf extends IBaseConf {
      */
     int getNumPartitions();
 
+    String getNGramMode();
 
 
 }

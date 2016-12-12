@@ -1,25 +1,21 @@
 package gr.demokritos.iit.clustering.clustering;
 
 import Jama.Matrix;
-import gr.demokritos.iit.clustering.newsum.IClusterer;
 import gr.demokritos.iit.jinsect.documentModel.comparators.NGramCachedGraphComparator;
 import gr.demokritos.iit.jinsect.documentModel.representations.DocumentNGramSymWinGraph;
 import gr.demokritos.iit.jinsect.documentModel.representations.DocumentWordGraph;
 import gr.demokritos.iit.jinsect.events.WordEvaluatorListener;
 import gr.demokritos.iit.jinsect.structs.GraphSimilarity;
 import org.apache.spark.api.java.JavaRDD;
-import org.scify.newsum.server.clustering.ArticleMCLClusterer;
 import org.scify.newsum.server.model.datacollections.Articles;
 import org.scify.newsum.server.model.structures.Article;
 import org.scify.newsum.server.model.structures.Topic;
 import scala.Tuple4;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 
 /**
  * Created by nik on 11/17/16.

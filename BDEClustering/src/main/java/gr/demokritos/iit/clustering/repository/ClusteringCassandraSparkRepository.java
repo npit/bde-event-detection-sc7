@@ -29,6 +29,9 @@ import gr.demokritos.iit.clustering.util.*;
 
 import java.util.*;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
@@ -64,6 +67,11 @@ public class ClusteringCassandraSparkRepository extends ClusteringCassandraRepos
     @Override
     public void initialize() {
 
+        Logger.getRootLogger().setLevel(Level.ERROR);
+
+        Logger.getLogger("org").setLevel(Level.ERROR);
+        Logger.getLogger("akka").setLevel(Level.ERROR);
+
         status = true;
         sparkconf = new SparkConf(true)
                 .setMaster(configuration.getMaster())
@@ -73,6 +81,7 @@ public class ClusteringCassandraSparkRepository extends ClusteringCassandraRepos
                 .set(IClusteringConf.SPARK_CASSANDRA_CONNECTION_PORT, String.valueOf(configuration.getCassandraPort()));
         this.sc = new JavaSparkContext(sparkconf);
         this.scjf = CassandraJavaUtil.javaFunctions(sc);
+
 
         super.initialize();
 
@@ -121,6 +130,7 @@ public class ClusteringCassandraSparkRepository extends ClusteringCassandraRepos
                 configuration.getDocumentRetrievalTimeWindow(),configuration.getMaxNumberOfArticles()));
         // TODO improve query: try to filter by timestamp on cassandra, not afterwards
         //System.out.println("DEBUG - LIMIT up to 20 articles"); // fixme
+
         JavaRDD<CassandraRow> fetchedRows = scjf
                 .cassandraTable(keyspace, Cassandra.RSS.Tables.NEWS_ARTICLES_PER_PUBLISHED_DATE.getTableName())
         .select(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName(),
@@ -135,7 +145,7 @@ public class ClusteringCassandraSparkRepository extends ClusteringCassandraRepos
         // ---------------------
         System.out.println("Got " + fetchedRows.count() + " elements from the database. Sorting by crawled date...");
         JavaRDD<CassandraRow> sortedRows =
-                fetchedRows.sortBy( new SortCassandraRowsByCrawledDate(Cassandra.RSS.TBL_ARTICLES.FLD_CRAWLED.getColumnName()),true,1);
+                fetchedRows.sortBy( new SortCassandraRowsByCrawledDate(Cassandra.RSS.TBL_ARTICLES.FLD_CRAWLED.getColumnName()),false,1);
 
         // limit to max articles
         // ------------------------
@@ -228,8 +238,14 @@ public class ClusteringCassandraSparkRepository extends ClusteringCassandraRepos
 
     @Override
     public void destroy() {
+        super.destroy();
     }
 
+//    @Override
+//    public void printArticles()
+//    {
+//        articles4
+//    }
     @Override
     public void clusterArticles()
     {
@@ -258,7 +274,7 @@ public class ClusteringCassandraSparkRepository extends ClusteringCassandraRepos
         articlePairsRDD = articles4RDD.cartesian(articles4RDD).filter(new DocumentPairGenerationFilterFunction());
         // map to similarity, threshold to boolean matches
         JavaRDD<Boolean> matchesrdd = articlePairsRDD.map(new ExtractMatchingPairsFuncSerialGraphs(
-                configuration.getSimilarityMode(), configuration.getCutOffThreshold()));
+                configuration.getSimilarityMode(), configuration.getCutOffThreshold(), configuration.getNGramMode()));
         matches =  matchesrdd.collect();
     }
 

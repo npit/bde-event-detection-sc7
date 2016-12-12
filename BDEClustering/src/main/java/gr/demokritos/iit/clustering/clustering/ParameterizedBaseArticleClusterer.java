@@ -1,6 +1,7 @@
 package gr.demokritos.iit.clustering.clustering;
 
 import gr.demokritos.iit.clustering.model.BDEArticle;
+import gr.demokritos.iit.clustering.structs.SimilarityMode;
 import gr.demokritos.iit.jinsect.structs.GraphSimilarity;
 
 import java.util.*;
@@ -49,17 +50,25 @@ public class ParameterizedBaseArticleClusterer extends BaseArticleClusterer {
             return false;
         } else {
             GraphSimilarity gs = this.compareArticles(aA, aB);
+
             double NVS = gs.SizeSimilarity == 0.0D?0.0D:gs.ValueSimilarity / gs.SizeSimilarity;
+
+
             boolean bMatch = NVS > NVSThreshold && gs.SizeSimilarity > 0.1D;
             boolean TitleMatch = this.isPossiblySameSentence(aA.getTitle(), aB.getTitle());
 
-//            int bres = bMatch ? 1 : 0;
-//            int tres = TitleMatch ? 1 : 0;
-//            System.out.println(String.format("nvs: %f (%f) , gs: %f (0.1) , returning (%d , %d) ||| \n\t%s - %s ||| ",
-//
-//                    NVS,NVSThreshold, gs.SizeSimilarity,bres, tres,
-//                    aA.getTitle(),aB.getTitle()
-//            ));
+            int bres = bMatch ? 1 : 0;
+            int tres = TitleMatch ? 1 : 0;
+
+//            System.out.printf("NVS: %2.9f VS: %2.9f CS: %2.9f SS: %2.9f",
+//                    NVS,
+//                    gs.ValueSimilarity,
+//                    gs.ContainmentSimilarity,
+//                    gs.SizeSimilarity
+//            );
+//            System.out.println(" ||| Article pair: t1: ["  + aA.getTitle()+ "]  and t2: [" + aB.getTitle() + "] : ");
+
+
             return bMatch || TitleMatch;
         }
     }

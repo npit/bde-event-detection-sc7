@@ -12,7 +12,7 @@ import gr.demokritos.iit.clustering.clustering.MCLClusterer;
 import gr.demokritos.iit.clustering.clustering.ParameterizedBaseArticleClusterer;
 import gr.demokritos.iit.clustering.config.IClusteringConf;
 import gr.demokritos.iit.clustering.model.BDEArticle;
-import gr.demokritos.iit.clustering.newsum.IClusterer;
+import gr.demokritos.iit.clustering.clustering.IClusterer;
 import gr.demokritos.iit.location.repository.LocationCassandraRepository;
 import gr.demokritos.iit.location.util.GeometryFormatTransformer;
 import org.scify.asset.server.model.datacollections.CleanResultCollection;
@@ -26,7 +26,6 @@ import org.scify.asset.social.data.preprocessing.IStemmer;
 import org.scify.asset.social.data.preprocessing.TwitterStemmer;
 import org.scify.newsum.server.clustering.IArticleClusterer;
 import org.scify.newsum.server.model.datacollections.Articles;
-import org.scify.newsum.server.model.datacollections.Summaries;
 import org.scify.newsum.server.model.structures.Article;
 import org.scify.newsum.server.model.structures.Sentence;
 import org.scify.newsum.server.model.structures.Summary;
@@ -335,7 +334,7 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
 
         ArrayList<Long> crawledDatesSorted = (ArrayList) crawled_dates.clone();
         Collections.sort(crawledDatesSorted);
-        Collections.reverse(crawledDatesSorted);
+        Collections.reverse(crawledDatesSorted); // descending date
         articles = new ArrayList<>();
         // for each crawled timestamp
         for(int i=0;i<crawledDatesSorted.size();++i)
@@ -395,7 +394,6 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
             status = false;
             return;
         }
-        System.out.println("Clsutering took  " + toc() + " sec. Clusters : ");
     }
     @Override
     public void loadTweetsToCluster(long timestamp) {
@@ -556,7 +554,15 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
         System.out.println("\n");
     }
 
-
+    @Override
+    public void printArticles()
+    {
+        int count=1;
+        for(BDEArticle art : articles)
+        {
+            System.out.println(count++ + " : " + art.getSource() + " | " + art.getTitle());
+        }
+    }
 
     /**
      * Function to send events to strabon for storage and/or change detection
