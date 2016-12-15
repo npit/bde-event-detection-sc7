@@ -49,6 +49,7 @@ public class NewsCrawler extends AbstractCrawler {
         if (args.length == 0) {
             throw new IllegalArgumentException(USAGE);
         }
+	System.out.println("Running NewsCrawler ||| ");
         System.out.println("Running NewsCrawler with configuration file " + args[0]);
         IRSSConf configuration = new RSSConf(args[0]);
         // init lang detect

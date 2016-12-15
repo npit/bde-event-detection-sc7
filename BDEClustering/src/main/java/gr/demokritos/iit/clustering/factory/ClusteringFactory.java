@@ -84,6 +84,8 @@ public class ClusteringFactory {
         return new ClusteringCassandraSparkRepository(session,conf);
     }
     public void releaseResources() {
+        System.out.println("Clustering repository factory releasing resources.");
+
         if(conf.getOperationMode() == IClusteringConf.OperationMode.PARALLEL) {
             if (cluster != null) {
                 cluster.close();

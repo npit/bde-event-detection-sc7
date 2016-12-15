@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
-cfile="../BDERSSCrawler/res/news.properties"
-
+cfile="/home/npittaras/Documents/project/BDE/BDEproject/BDEEventDetection/BDERSSCrawler/res/news.properties"
+[ $# -gt 0 ] && cfile="$1" 
 java -cp $(cat classpathfile | tr '\n' ':') gr.demokritos.iit.crawlers.rss.NewsCrawler $cfile

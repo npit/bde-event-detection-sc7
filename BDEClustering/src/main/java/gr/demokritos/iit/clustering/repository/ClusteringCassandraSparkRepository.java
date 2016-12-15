@@ -24,11 +24,15 @@ import gr.demokritos.iit.base.util.Utils;
 import gr.demokritos.iit.clustering.config.IClusteringConf;
 
 import gr.demokritos.iit.clustering.model.BDEArticle;
+import gr.demokritos.iit.clustering.model.IdentifiableDocumentWordGraph;
+import gr.demokritos.iit.clustering.newsum.ExtractMatchingGraphPairsFuncSerialGraphs;
 import gr.demokritos.iit.clustering.newsum.ExtractMatchingPairsFuncSerialGraphs;
 import gr.demokritos.iit.clustering.util.*;
 
+import java.io.Serializable;
 import java.util.*;
 
+import gr.demokritos.iit.jinsect.events.WordEvaluatorListener;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -36,12 +40,15 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.jsoup.nodes.Document;
 import org.scify.newsum.server.model.structures.Topic;
 import scala.Tuple2;
 import scala.Tuple4;
 import scala.Tuple5;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
+import static gr.demokritos.iit.base.util.Utils.tic;
+import static gr.demokritos.iit.base.util.Utils.tocTell;
 
 /**
  *
@@ -57,20 +64,22 @@ public class ClusteringCassandraSparkRepository extends ClusteringCassandraRepos
 
     // data
     private JavaRDD<Tuple4<String, String, String,  Long>> articles4RDD;
-    private JavaRDD<Tuple5<String, String, String, Long, Long>> articles5RDD;
     private JavaPairRDD<
             Tuple4<String, String, String, Long>,
             Tuple4<String, String, String, Long>> articlePairsRDD;
     private Map<String,Topic> articlesPerCluster ;
     private List<Boolean> matches;
     List<Tuple2<String,ArrayList<String>>> PlacesPerArticle;
+
+    List<IdentifiableDocumentWordGraph> graphs;
+
     @Override
     public void initialize() {
 
-        Logger.getRootLogger().setLevel(Level.ERROR);
-
-        Logger.getLogger("org").setLevel(Level.ERROR);
-        Logger.getLogger("akka").setLevel(Level.ERROR);
+        Level desiredLevel = Level.OFF;
+        Logger.getRootLogger().setLevel(desiredLevel);
+        Logger.getLogger("org").setLevel(desiredLevel);
+        Logger.getLogger("akka").setLevel(desiredLevel);
 
         status = true;
         sparkconf = new SparkConf(true)
@@ -110,6 +119,45 @@ public class ClusteringCassandraSparkRepository extends ClusteringCassandraRepos
         return now.getTimeInMillis();
     }
 
+
+    @Override
+    public void loadArticlesToCluster(long timestamp)
+    {
+        graphs = new ArrayList<>();
+        super.loadArticlesToCluster(timestamp);
+        articlesToArticleTuples4();
+
+//        articleOrder = new HashMap<>();
+//        for(BDEArticle art : articles)
+//        {
+//            IdentifiableDocumentWordGraph wg = new IdentifiableDocumentWordGraph();
+//            wg.WordEvaluator = new WordEvaluatorListener() {
+//                public boolean evaluateWord(String string) {
+//                    return string.length() > 3 && string.matches("\\p{javaUpperCase}+.*");
+//                }
+//            };
+//            wg.setDataString(art.getTitle()+" "+art.getDescription());
+//            graphs.add(wg);
+//            // keep track of the pairings
+//            articleOrder.put(wg,art);
+//
+//        }
+
+    }
+
+
+    public void articlesToArticleTuples4()
+    {
+        List<Tuple4<String,String,String,Long>> articlesTuple4List = new ArrayList<>();
+        for(BDEArticle art : articles)
+        {
+            Tuple4<String,String,String,Long> t4 = new Tuple4<>(art.getSource(),art.getTitle(),art.getDescription(),art.getDate().getTimeInMillis());
+            articlesTuple4List.add(t4);
+        }
+        this.articles4RDD = this.sc.parallelize(articlesTuple4List,configuration.getNumPartitions());
+
+    }
+
     /**
      * load articles in a tuple4 format
      * <br>
@@ -118,8 +166,8 @@ public class ClusteringCassandraSparkRepository extends ClusteringCassandraRepos
      * @param timestamp from epoch
      * @return <entry_url, title, clean_text, timestamp>
      */
-    @Override
-    public void loadArticlesToCluster(long timestamp) {
+    //@Override
+    public void loadArticlesToCluster_(long timestamp) {
 
         org.apache.log4j.Logger L = org.apache.log4j.Logger.getRootLogger();
         L.setLevel(org.apache.log4j.Level.WARN);
@@ -241,16 +289,58 @@ public class ClusteringCassandraSparkRepository extends ClusteringCassandraRepos
         super.destroy();
     }
 
+
 //    @Override
-//    public void printArticles()
+//    public void clusterArticles()
 //    {
-//        articles4
+//
+//        JavaRDD<IdentifiableDocumentWordGraph> graphsRDD = sc.parallelize(graphs,configuration.getNumPartitions());
+//
+//        tic();
+//        JavaPairRDD<IdentifiableDocumentWordGraph,IdentifiableDocumentWordGraph> uniqueGraphPairsRDD =
+//                graphsRDD.cartesian(graphsRDD).filter(new GraphPairGenerationFilterFunction());
+//        StructUtils.printGraphPairs(uniqueGraphPairsRDD,-1);
+//
+//        JavaRDD<Boolean> matchesrdd = uniqueGraphPairsRDD.map(new ExtractMatchingGraphPairsFuncSerialGraphs(
+//                configuration.getSimilarityMode(), configuration.getCutOffThreshold(), configuration.getNGramMode()));
+//        matches =  matchesrdd.collect();
+//        tocTell("graph clustering");
+//
+//
+//        List<Tuple2<
+//                Tuple4<String, String, String, Long>,
+//                Tuple4<String, String, String, Long>>>
+//                articlePairsList = new ArrayList<>();
+//        List<Tuple2<IdentifiableDocumentWordGraph,IdentifiableDocumentWordGraph>> graphPairs = uniqueGraphPairsRDD.collect();
+//        for(Tuple2<IdentifiableDocumentWordGraph,IdentifiableDocumentWordGraph> t : graphPairs)
+//        {
+//            BDEArticle a1 =  articleOrder.get(t._1());
+//            BDEArticle a2 = articleOrder.get(t._2());
+//            articlePairsList.add( StructUtils.articlesToTuple4Pair(a1,a2));
+//        }
+//
+//
+//        HashMap<Tuple2<
+//                Tuple4<String, String, String, Long>,
+//                Tuple4<String, String, String, Long>>,Boolean> articlePairsToBoolean = new HashMap<>();
+//        for(int i=0;i<matches.size();++i)
+//        {
+//            articlePairsToBoolean.put(articlePairsList.get(i),matches.get(i));
+//        }
+//
+//        super.setPlacesPerArticle(PlacesPerArticle);
+//        this.ArticlesPerCluster = (HashMap) super.justCluster(articlePairsToBoolean);
+//
 //    }
+
+
     @Override
     public void clusterArticles()
     {
         // use te base repository
-        calcBooleanMatches();
+        //calcBooleanMatches();
+        calcBooleanMatches2();
+
         List<Tuple2<
                 Tuple4<String, String, String, Long>,
                 Tuple4<String, String, String, Long>>>
@@ -278,7 +368,28 @@ public class ClusteringCassandraSparkRepository extends ClusteringCassandraRepos
         matches =  matchesrdd.collect();
     }
 
+    private void calcBooleanMatches2()
+    {
+        System.out.println("Calculating boolean similarity matches...");
+        // generate article combinations
+        JavaRDD<IdentifiableDocumentWordGraph> graphsRDD = articles4RDD.map(new ArticleGraphCalculator());
+        List<IdentifiableDocumentWordGraph> graphsColl = graphsRDD.collect();
+        articlePairsRDD = articles4RDD.cartesian(articles4RDD).filter(new DocumentPairGenerationFilterFunction());
 
+        JavaPairRDD<IdentifiableDocumentWordGraph,IdentifiableDocumentWordGraph> graphPairsRDD =
+                graphsRDD.cartesian(graphsRDD).filter(new GraphPairGenerationFilterFunction());
+        System.out.println("Graph pairs : " + graphPairsRDD.count());
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        ;
+        // map to similarity, threshold to boolean matches
+        JavaRDD<Boolean> matchesrdd = graphPairsRDD.map(new ExtractMatchingGraphPairsFuncSerialGraphs(
+                configuration.getSimilarityMode(), configuration.getCutOffThreshold(), configuration.getNGramMode()));
+        matches =  matchesrdd.collect();
+    }
 
 
 }

@@ -14,6 +14,8 @@
  */
 package gr.demokritos.iit.base.util;
 
+import org.apache.commons.lang3.time.StopWatch;
+
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -114,15 +116,16 @@ public class Utils {
     public static void tic()
     {
 
+
         if(tictoc == null) tictoc = new Stack<>();
-        tictoc.push(System.currentTimeMillis());
+        tictoc.push(System.nanoTime());
 
     }
     public static String toc()
     {
         if(tictoc == null) return "[tictoc not initialized]";
         if(tictoc.isEmpty()) return "[empty tictoc]";
-        Long timenow = System.currentTimeMillis();
+        Long timenow = System.nanoTime();
         Long timethen = tictoc.pop();
 
         return Long.toString((timenow-timethen)/1000l) + " sec ";

@@ -21,6 +21,7 @@ import gr.demokritos.iit.clustering.factory.ClusteringFactory;
 import java.util.*;
 
 import gr.demokritos.iit.clustering.repository.IClusteringRepository;
+import org.apache.commons.lang3.time.StopWatch;
 
 import static gr.demokritos.iit.base.util.Utils.tic;
 import static gr.demokritos.iit.base.util.Utils.tocTell;
@@ -31,7 +32,7 @@ import static gr.demokritos.iit.base.util.Utils.tocTell;
 public class BDEEventDetection {
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args)  {
 
         // we require one argument, the config file
         String properties;
@@ -56,7 +57,6 @@ public class BDEEventDetection {
             repository.remoteStoreEvents();
             if(factory != null)
             {
-                System.out.println("Releasing resources.");
                 factory.releaseResources();
             }
             return;
@@ -75,16 +75,21 @@ public class BDEEventDetection {
         repository.printArticles();
 
         tic();
+        StopWatch watch = new StopWatch();
+        watch.start();
+        long start = System.nanoTime();
         repository.clusterArticles();
+        System.out.println("elapsed stopwatch: " + watch);
+        System.out.println("elapsed truly: " + (System.nanoTime() - start) / 1000000000l);
         tocTell("clustering");
-        if(!repository.good())
+        if(!repository.good() || true) // || true to stop here : time measurements
         {
             repository.destroy();
             factory.releaseResources();
             return;
         }
 
-        repository.printClusters();
+        //repository.printClusters();
 
 
 
@@ -125,7 +130,6 @@ public class BDEEventDetection {
 
         if(factory != null)
         {
-            System.out.println("Releasing resources.");
             factory.releaseResources();
         }
         repository.destroy();

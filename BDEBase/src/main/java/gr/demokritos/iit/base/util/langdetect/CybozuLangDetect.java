@@ -44,7 +44,12 @@ public class CybozuLangDetect implements ILangDetect {
 
     public static void  setProfiles(String path)
     {
-        if(pathInitialized) return;
+        if(pathInitialized) 
+	{
+		System.out.println("Lang detection profiles laready set. to [" + PROFILES_FILE_PROD +"]");
+		return;
+	}
+	System.out.println("Set language detection profiles to path:[" + path + "]");
         PROFILES_FILE_PROD = path;
         PROFILES_FILE_DEV = PROFILES_FILE_PROD;
     }
