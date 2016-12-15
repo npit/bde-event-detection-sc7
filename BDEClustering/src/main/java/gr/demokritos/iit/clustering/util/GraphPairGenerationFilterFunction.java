@@ -31,10 +31,12 @@ import java.util.*;
 public class GraphPairGenerationFilterFunction implements Function<Tuple2<IdentifiableDocumentWordGraph,IdentifiableDocumentWordGraph>, Boolean> {
 
     // keep a hash reference in RAM of each pair, and return item if the hash of each other is not equal or the pair does not exist
-    private static final Set<Integer> hash_cache = new HashSet<>();
-
+    private static final Set<Integer> hash_cache = new HashSet();
+    private synchronized boolean addToCache(int code)
+    {
+        return hash_cache.add(code);
+    }
     public GraphPairGenerationFilterFunction() {
-//        this.hash_cache = new HashSet();
     }
     // expects the full combination list of n articles (n*n). Filters the same instances of (i,j) - i.e where i=j and the 
     // around ones i.e. i, j = j, i
@@ -44,16 +46,16 @@ public class GraphPairGenerationFilterFunction implements Function<Tuple2<Identi
         IdentifiableDocumentWordGraph g1 = arg._1();
         IdentifiableDocumentWordGraph g2 = arg._2();
 
-        System.out.println("\t" + hash_cache);
+//        System.out.print("\t" + hash_cache + " --> " );
         boolean sameid = g1.getId() == g2.getId();
         int codePair = new DPair(g1.getId(),g2.getId()).hashCode();
-        boolean notAlreadyInserted = hash_cache.add(codePair);
-
-        System.out.printf("Id %d , %d : result :", g1.getId(),g2.getId());
-        if(!sameid) System.out.print("not same id"); else System.out.print("sameid");
-        System.out.println("  " );
-        if(!notAlreadyInserted) System.out.println("already inserted ");
-        else System.out.println("not alread ins.");
+        boolean notAlreadyInserted = addToCache(codePair);
+//        System.out.println("\t" + hash_cache);
+//        System.out.printf("Id %d , %d : result :", g1.getId(),g2.getId());
+//        if(!sameid) System.out.print("not same id"); else System.out.print("sameid");
+//        System.out.println("  " );
+//        if(!notAlreadyInserted) System.out.println("already inserted ");
+//        else System.out.println("not alread ins.");
 
 
         return !sameid && notAlreadyInserted;

@@ -31,8 +31,8 @@ echo ">Setting cassandra/mysql connection parameters and twitter credentials."
 # property files to modify
 paths="$BDE_ROOT_DIR/BDEClustering/res/clustering.properties"
 paths+=" $BDE_ROOT_DIR/BDETwitterListener/res/twitter.properties"
-paths+=" $BDE_ROOT_DIR/BDELocationExtraction/res/location_extraction.properties"
-paths+=" $BDE_ROOT_DIR/BDERSSCrawler/res/newscrawler_configuration.properties"
+paths+=" $BDE_ROOT_DIR/BDELocationExtraction/res/location.properties"
+paths+=" $BDE_ROOT_DIR/BDERSSCrawler/res/news.properties"
 
 # newline-delimit, let's not change IFS
 paths="$(echo $paths | sed  's/ /\n/g' )"

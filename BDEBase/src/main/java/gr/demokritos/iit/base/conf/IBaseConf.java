@@ -29,6 +29,7 @@ public interface IBaseConf {
     String DATE_FORMAT_ISO_8601 = "yyyy-MM-dd'T'HH:mmZ";
     String TIMEZONE_ID_UTC = "UTC";
 
+
     int getCacheSize();
 
     String getCassandraClusterName();
@@ -104,6 +105,8 @@ public interface IBaseConf {
     String getLangDetectionProfiles();
 
     String getDocumentRetrievalTimeWindow();
+
+    boolean hasModifier(String modifierName);
 
     public enum SourceMode
     {

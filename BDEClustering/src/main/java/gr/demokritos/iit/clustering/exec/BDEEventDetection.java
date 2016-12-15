@@ -75,12 +75,9 @@ public class BDEEventDetection {
         repository.printArticles();
 
         tic();
-        StopWatch watch = new StopWatch();
-        watch.start();
-        long start = System.nanoTime();
+
         repository.clusterArticles();
-        System.out.println("elapsed stopwatch: " + watch);
-        System.out.println("elapsed truly: " + (System.nanoTime() - start) / 1000000000l);
+
         tocTell("clustering");
         if(!repository.good() || true) // || true to stop here : time measurements
         {

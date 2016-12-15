@@ -339,7 +339,7 @@ public class ClusteringCassandraSparkRepository extends ClusteringCassandraRepos
     {
         // use te base repository
         //calcBooleanMatches();
-        calcBooleanMatches2();
+        calcBooleanMatches_precomputedGraphs();
 
         List<Tuple2<
                 Tuple4<String, String, String, Long>,
@@ -368,22 +368,24 @@ public class ClusteringCassandraSparkRepository extends ClusteringCassandraRepos
         matches =  matchesrdd.collect();
     }
 
-    private void calcBooleanMatches2()
+    private void calcBooleanMatches_precomputedGraphs()
     {
         System.out.println("Calculating boolean similarity matches...");
         // generate article combinations
         JavaRDD<IdentifiableDocumentWordGraph> graphsRDD = articles4RDD.map(new ArticleGraphCalculator());
-        List<IdentifiableDocumentWordGraph> graphsColl = graphsRDD.collect();
-        articlePairsRDD = articles4RDD.cartesian(articles4RDD).filter(new DocumentPairGenerationFilterFunction());
 
+        articlePairsRDD = articles4RDD.cartesian(articles4RDD).filter(new DocumentPairGenerationFilterFunction());
+//        List<Tuple2<Tuple4<String,String,String,Long>,Tuple4<String,String,String,Long>>> articlePairs = articlePairsRDD.collect();
+//        System.out.println();
         JavaPairRDD<IdentifiableDocumentWordGraph,IdentifiableDocumentWordGraph> graphPairsRDD =
                 graphsRDD.cartesian(graphsRDD).filter(new GraphPairGenerationFilterFunction());
-        System.out.println("Graph pairs : " + graphPairsRDD.count());
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+
+  //      List<Tuple2<IdentifiableDocumentWordGraph,IdentifiableDocumentWordGraph>> graphPairs = graphPairsRDD.collect();
+//        try {
+//            Thread.sleep(5000);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
         ;
         // map to similarity, threshold to boolean matches
         JavaRDD<Boolean> matchesrdd = graphPairsRDD.map(new ExtractMatchingGraphPairsFuncSerialGraphs(

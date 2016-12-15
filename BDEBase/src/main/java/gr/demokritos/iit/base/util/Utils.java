@@ -128,7 +128,7 @@ public class Utils {
         Long timenow = System.nanoTime();
         Long timethen = tictoc.pop();
 
-        return Long.toString((timenow-timethen)/1000l) + " sec ";
+        return Long.toString((timenow-timethen)/1000000000l) + " sec ";
     }
     public static void tocTell()
     {

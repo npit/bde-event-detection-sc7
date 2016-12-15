@@ -14,9 +14,14 @@
  */
 package gr.demokritos.iit.base.conf;
 
+import com.google.common.collect.Lists;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -160,6 +165,14 @@ public class BaseConfiguration implements IBaseConf {
     public String getDocumentRetrievalTimeWindow()
     {
         return properties.getProperty("retrieval_time_window","");
+    }
+
+    List<String> Modifiers;
+    @Override
+    public boolean hasModifier(String modifierName) {
+        if(Modifiers == null)
+            Modifiers = Arrays.asList(properties.getProperty("modifiers","").split(","));
+        return Modifiers.contains(modifierName);
     }
 
 

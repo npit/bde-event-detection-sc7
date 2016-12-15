@@ -29,16 +29,18 @@ public class DocumentPairGenerationFilterFunction implements
         Function<Tuple2<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>>, Boolean> {
 
     // keep a hash reference in RAM of each pair, and return item if the hash of each other is not equal or the pair does not exist
-    private final Set<Integer> hash_cache;
-
+    private static final Set<Integer> hash_cache = new HashSet<>();
+    private synchronized boolean addToCache(int code)
+    {
+        return hash_cache.add(code);
+    }
     public DocumentPairGenerationFilterFunction() {
-        this.hash_cache = new HashSet();
     }
     // expects the full combination list of n articles (n*n). Filters the same instances of (i,j) - i.e where i=j and the 
     // around ones i.e. i, j = j, i
     @Override
     public Boolean call(Tuple2<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>> v1) throws Exception {
-        boolean value = !v1._1._1().equals(v1._2._1()) && hash_cache.add(new DPair(v1._1._1(), v1._2._1()).hashCode());
+        boolean value = !v1._1._1().equals(v1._2._1()) && addToCache(new DPair(v1._1._1(), v1._2._1()).hashCode());
         //System.out.println("doc pair value : " + value);
         return value;
     }
