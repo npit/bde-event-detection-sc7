@@ -28,37 +28,30 @@ import java.util.*;
  *
  * @author George K. <gkiom@iit.demokritos.gr>
  */
-public class GraphPairGenerationFilterFunction implements Function<Tuple2<IdentifiableDocumentWordGraph,IdentifiableDocumentWordGraph>, Boolean> {
+public class GraphPairGenerationFilterFunction implements Function<Tuple2<Tuple2<Tuple4<String, String, String, Long>, IdentifiableDocumentWordGraph>,Tuple2<Tuple4<String, String, String, Long>, IdentifiableDocumentWordGraph>>, Boolean> {
 
     // keep a hash reference in RAM of each pair, and return item if the hash of each other is not equal or the pair does not exist
-    private static final Set<Integer> hash_cache = new HashSet();
-    private synchronized boolean addToCache(int code)
-    {
-        return hash_cache.add(code);
-    }
+    private final Set<Integer> hash_cache;
+
     public GraphPairGenerationFilterFunction() {
+        hash_cache = new HashSet();
     }
     // expects the full combination list of n articles (n*n). Filters the same instances of (i,j) - i.e where i=j and the 
     // around ones i.e. i, j = j, i
     @Override
-    public Boolean call(Tuple2<IdentifiableDocumentWordGraph,IdentifiableDocumentWordGraph> arg) throws Exception {
+    public Boolean call(Tuple2<Tuple2<Tuple4<String, String, String, Long>, IdentifiableDocumentWordGraph>,Tuple2<Tuple4<String, String, String, Long>, IdentifiableDocumentWordGraph>> arg) throws Exception {
 
-        IdentifiableDocumentWordGraph g1 = arg._1();
-        IdentifiableDocumentWordGraph g2 = arg._2();
+        IdentifiableDocumentWordGraph g1 = arg._1()._2();
+        IdentifiableDocumentWordGraph g2 = arg._2()._2();
 
-//        System.out.print("\t" + hash_cache + " --> " );
-        boolean sameid = g1.getId() == g2.getId();
-        int codePair = new DPair(g1.getId(),g2.getId()).hashCode();
-        boolean notAlreadyInserted = addToCache(codePair);
-//        System.out.println("\t" + hash_cache);
-//        System.out.printf("Id %d , %d : result :", g1.getId(),g2.getId());
-//        if(!sameid) System.out.print("not same id"); else System.out.print("sameid");
-//        System.out.println("  " );
-//        if(!notAlreadyInserted) System.out.println("already inserted ");
-//        else System.out.println("not alread ins.");
-
-
-        return !sameid && notAlreadyInserted;
+        int hash1 = (g1.getDataString()).hashCode();
+        int hash2 = (g2.getDataString()).hashCode();
+        boolean value = hash1 > hash2;
+//        String msg = g1.getDataString() + " " + hash1 + " | " + g2.getDataString() + " " + hash2;
+//        if(value) msg += (" true");
+//        else msg += (" false");
+//        System.out.println(msg);
+        return value;
 
     }
 }

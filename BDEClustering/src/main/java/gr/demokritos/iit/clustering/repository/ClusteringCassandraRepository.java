@@ -6,6 +6,7 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.vividsolutions.jts.io.ParseException;
+import gr.demokritos.iit.base.conf.IBaseConf;
 import gr.demokritos.iit.base.repository.views.Cassandra;
 import gr.demokritos.iit.base.util.Utils;
 import gr.demokritos.iit.clustering.clustering.MCLClusterer;
@@ -56,7 +57,7 @@ import static gr.demokritos.iit.base.util.Utils.toc;
 public class ClusteringCassandraRepository extends LocationCassandraRepository implements IClusteringRepository{
 
     protected IClusteringConf configuration;
-    private boolean status;
+    protected boolean status, IsVerbose;
     protected List<BDEArticle> articles;
 
 
@@ -74,6 +75,7 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
     {
         super(session);
         this.configuration = configuration;
+        IsVerbose = configuration.hasModifier(IClusteringConf.Modifiers.VERBOSE.toString());
     }
 
     // use this class to save topics for DEMO
@@ -299,16 +301,36 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
     }
 
 
-    public void  loadArticlesToCluster(long timestamp) {
+    public void  loadArticlesToCluster() {
         System.out.println(String.format("Loading articles using window :[%s] , max number of articles: [%d]",
                 configuration.getDocumentRetrievalTimeWindow(),configuration.getMaxNumberOfArticles()));
         int maxNumber = configuration.getMaxNumberOfArticles();
+
         ArrayList<BDEArticle> articlesUnfiltered = new ArrayList<>();
-        ArrayList<Long> crawled_dates = new ArrayList<>();
-        // npit edit : load all articles
-        //Collection<Map<String, Object>> items = loadAllArticles(5);
-        Collection<Map<String, Object>> items = loadArticles(timestamp);
+        ArrayList<Long> crawledDates = new ArrayList<>();
+        Map<Long,ArrayList<Integer>> crawledDatesToArtIdx = new HashMap<>();
+        Map<Long,Integer> CurrentMapIndex = new HashMap<>();
+
+        // if no time window is specified, load all articles limited to max_articles
+
+        String timeWindow = configuration.getDocumentRetrievalTimeWindow();
+        Collection<Map<String, Object>> items = null;
+
+        if(timeWindow.equals(IBaseConf.TIME_WINDOW_NONE))
+        {
+            items = loadAllArticles(maxNumber);
+        }
+        else
+        {
+            // specify the range of news articles to extract from, for clustering
+            Calendar cal = Utils.getCalendarFromStringTimeWindow(timeWindow);
+            System.out.println("calendar retrieval setting: " + cal.getTime());
+            long timestamp = cal.getTimeInMillis();
+            items = loadArticles(timestamp);
+        }
+
         // wrap to Article instances
+        int itemIndex = 0;
         for (Map<String, Object> eachItem : items) {
             String source_url = (String) eachItem.get(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName());
             String title = (String) eachItem.get(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_TITLE.getColumnName());
@@ -325,27 +347,40 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
                 places_to_polygons.put(eachPlace, (String) article.get(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_BOUNDING_BOX.getColumnName()));
             }
             articlesUnfiltered.add(new BDEArticle(source_url, title, clean_text, "Europe", feed_url, null, d, places_to_polygons));
-            crawled_dates.add(crawled);
 
+            if( ! crawledDatesToArtIdx.keySet().contains(crawled)) {
+                crawledDatesToArtIdx.put(crawled, new ArrayList<Integer>());
+                CurrentMapIndex.put(crawled, 0);
+            }
+            crawledDatesToArtIdx.get(crawled).add(itemIndex);
+            crawledDates.add(crawled);
+            itemIndex++;
         }
 
         // get at most maxNumber articles, the most recent
         System.out.print("\tLimiting article set to the " + maxNumber +  " most recently crawled articles...");
 
-        ArrayList<Long> crawledDatesSorted = (ArrayList) crawled_dates.clone();
+        ArrayList<Long> crawledDatesSorted = (ArrayList) crawledDates.clone();
+
         Collections.sort(crawledDatesSorted);
         Collections.reverse(crawledDatesSorted); // descending date
+
+
         articles = new ArrayList<>();
+
         // for each crawled timestamp
-        for(int i=0;i<crawledDatesSorted.size();++i)
+        for(int i=0;i<crawledDates.size();++i)
         {
             if (i >= maxNumber) break;
 
+            Long CrawledDate = crawledDatesSorted.get(i);
+            int idx = CurrentMapIndex.get(CrawledDate);
+            CurrentMapIndex.put(CrawledDate,idx+1);
             // get index of the curr crawled date on the original list
-            int articleIndex  = crawled_dates.indexOf(crawledDatesSorted.get(i));
+            int articleIndex  = crawledDatesToArtIdx.get(crawledDatesSorted.get(i)).get(idx);
+
             // get corresponding article, add it to the results
             articles.add(articlesUnfiltered.get(articleIndex));
-            // limit max number
         }
         System.out.println("done.\n\tArticle loader returning " + articles.size() + " items.");
     }
@@ -370,7 +405,8 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
         if(clusteringMode.equals("base"))
         {
             System.out.println("Using base clusterer with cutoff threshold at [" + configuration.getCutOffThreshold() + "]");
-            IArticleClusterer cl = new ParameterizedBaseArticleClusterer(articles, configuration.getCutOffThreshold());
+            ParameterizedBaseArticleClusterer cl = new ParameterizedBaseArticleClusterer(articles, configuration.getCutOffThreshold());
+            cl.setVerbosity(IsVerbose);
             cl.calculateClusters();
             Map<String,Topic> res = cl.getArticlesPerCluster();
             if(! res.isEmpty()) ArticlesPerCluster = (HashMap) res;
@@ -396,7 +432,11 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
         }
     }
     @Override
-    public void loadTweetsToCluster(long timestamp) {
+    public void loadTweetsToCluster() {
+
+        Calendar cal = Utils.getCalendarFromStringTimeWindow(configuration.getDocumentRetrievalTimeWindow());
+        System.out.println("calendar retrieval setting: " + cal.getTime());
+        long timestamp = cal.getTimeInMillis();
 
          tweets = new ArrayList();
 
@@ -541,9 +581,10 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
     @Override
     public void printClusters()
     {
+        if(! IsVerbose ) return;
+
         for(String key : ArticlesPerCluster.keySet())
         {
-
             System.out.println(key);
             Topic t = ArticlesPerCluster.get(key);
             for(Article art : t)
@@ -557,6 +598,7 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
     @Override
     public void printArticles()
     {
+        if(! IsVerbose ) return;
         int count=1;
         for(BDEArticle art : articles)
         {

@@ -1,6 +1,7 @@
 package gr.demokritos.iit.clustering.newsum;
 
 import gr.demokritos.iit.clustering.model.IdentifiableDocumentWordGraph;
+
 import gr.demokritos.iit.clustering.parallelngg.graph.GraphSimilarityComparator;
 import gr.demokritos.iit.clustering.parallelngg.graph.NGramGraph;
 import gr.demokritos.iit.clustering.parallelngg.graph.WordNGramGraph;

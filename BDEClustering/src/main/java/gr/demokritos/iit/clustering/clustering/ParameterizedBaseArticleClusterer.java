@@ -13,6 +13,7 @@ import java.util.logging.Level;
 
 import gr.demokritos.iit.jinsect.structs.Pair;
 import org.scify.newsum.server.clustering.BaseArticleClusterer;
+import org.scify.newsum.server.model.datacollections.Articles;
 import org.scify.newsum.server.model.structures.Article;
 import org.scify.newsum.server.model.structures.Topic;
 import org.scify.newsum.server.model.structures.URLImage;
@@ -29,6 +30,12 @@ public class ParameterizedBaseArticleClusterer extends BaseArticleClusterer {
 //    protected HashMap<Article, String> hsClusterPerArticle;
     double NVSThreshold;
 
+    public void setVerbosity(boolean verbose) {
+        IsVerbose = verbose;
+    }
+
+    boolean IsVerbose;
+
     public List<Article> getProcessedCache() {
         return ProcessedCache;
     }
@@ -37,11 +44,13 @@ public class ParameterizedBaseArticleClusterer extends BaseArticleClusterer {
     public ParameterizedBaseArticleClusterer(List<? extends Article> lsArticles, double thresh) {
         super(lsArticles);
         NVSThreshold = thresh;
+        IsVerbose = false;
     }
 
     public ParameterizedBaseArticleClusterer(double thresh) {
         super(new ArrayList());
         NVSThreshold = thresh;
+        IsVerbose = false;
     }
 
     @Override
@@ -57,17 +66,25 @@ public class ParameterizedBaseArticleClusterer extends BaseArticleClusterer {
             boolean bMatch = NVS > NVSThreshold && gs.SizeSimilarity > 0.1D;
             boolean TitleMatch = this.isPossiblySameSentence(aA.getTitle(), aB.getTitle());
 
-            int bres = bMatch ? 1 : 0;
-            int tres = TitleMatch ? 1 : 0;
+            if(IsVerbose) {
 
-//            System.out.printf("NVS: %2.9f VS: %2.9f CS: %2.9f SS: %2.9f",
-//                    NVS,
-//                    gs.ValueSimilarity,
-//                    gs.ContainmentSimilarity,
-//                    gs.SizeSimilarity
-//            );
-//            System.out.println(" ||| Article pair: t1: ["  + aA.getTitle()+ "]  and t2: [" + aB.getTitle() + "] : ");
+//                System.out.printf("NVS: %2.9f VS: %2.9f CS: %2.9f SS: %2.9f",
+//                        NVS,
+//                        gs.ValueSimilarity,
+//                        gs.ContainmentSimilarity,
+//                        gs.SizeSimilarity
+//                );
+                boolean b = bMatch || TitleMatch;
+                String msg;
+                if (b)
+                    msg = ("true  :");
+                else
+                    msg = ("false :");
+                msg += "x : "+ aA.getTitle() + " | " + aB.getTitle() + " | " + NVS + " " + gs.SizeSimilarity + " " + gs.ContainmentSimilarity + " " + gs.ValueSimilarity;
+                System.out.println(msg);
 
+
+            }
 
             return bMatch || TitleMatch;
         }
@@ -199,5 +216,6 @@ public class ParameterizedBaseArticleClusterer extends BaseArticleClusterer {
             }
         }
     }
+
 
 }

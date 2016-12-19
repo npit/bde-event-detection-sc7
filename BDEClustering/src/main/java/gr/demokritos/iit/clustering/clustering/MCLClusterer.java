@@ -23,6 +23,8 @@ import java.util.concurrent.TimeUnit;
 public class MCLClusterer implements IClusterer
 {
 
+
+
     protected HashMap<String, Topic> hsArticlesPerCluster;
     protected HashMap<String, Topic> PreviousClusteredTopics;
     protected HashMap<Article, String> hsClusterPerArticle;
@@ -174,10 +176,7 @@ public class MCLClusterer implements IClusterer
         return hsRes;
     }
 
-    @Override
-    public void calculateClusters(JavaRDD<Tuple4<String, String, String, Long>> articles) {
 
-    }
 
     @Override
     public void calculateClusters(Articles articles) {
@@ -212,4 +211,6 @@ public class MCLClusterer implements IClusterer
     {
         return this.hsArticlesPerCluster;
     }
+
+
 }

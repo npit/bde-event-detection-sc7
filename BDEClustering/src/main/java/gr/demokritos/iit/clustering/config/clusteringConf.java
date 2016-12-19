@@ -13,6 +13,7 @@ public class clusteringConf extends BaseConfiguration implements IClusteringConf
     public static final String TWEETS="both";
     public static final String BOTH="tweets";
 
+
     public clusteringConf(String path)
     {
         super(path);

@@ -34,6 +34,7 @@ public class BDEEventDetection {
 
     public static void main(String[] args)  {
 
+
         // we require one argument, the config file
         String properties;
         if (args.length < 1 ) {
@@ -64,13 +65,10 @@ public class BDEEventDetection {
 
 
 
-        // specify the range of news articles to extract from, for clustering
-        Calendar cal = Utils.getCalendarFromStringTimeWindow(configuration.getDocumentRetrievalTimeWindow());
-        System.out.println("calendar retrieval setting: " + cal.getTime());
-        long tstamp = cal.getTimeInMillis();
+
 
         tic();
-        repository.loadArticlesToCluster(tstamp);
+        repository.loadArticlesToCluster();
         tocTell("Article loading");
         repository.printArticles();
 
@@ -86,7 +84,7 @@ public class BDEEventDetection {
             return;
         }
 
-        //repository.printClusters();
+       repository.printClusters();
 
 
 
@@ -99,7 +97,7 @@ public class BDEEventDetection {
         }
 
         // process tweets
-        repository.loadTweetsToCluster(tstamp);
+        repository.loadTweetsToCluster();
         repository.processTweets();
 
         repository.localStoreEvents();

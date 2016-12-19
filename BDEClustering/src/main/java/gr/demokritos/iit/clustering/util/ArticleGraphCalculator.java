@@ -6,12 +6,13 @@ import gr.demokritos.iit.clustering.parallelngg.structs.StringEntity;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.graphx.Graph;
+import scala.Tuple2;
 import scala.Tuple4;
 
 /**
  * Created by npittaras on 3/10/2016.
  */
-public class ArticleGraphCalculator implements Function<Tuple4<String,String,String, Long>,IdentifiableDocumentWordGraph>
+public class ArticleGraphCalculator implements Function<Tuple4<String,String,String, Long>, Tuple2<Tuple4<String,String,String, Long>,IdentifiableDocumentWordGraph>>
 {
     private static transient SparkContext sc;
     private int numPartitions;
@@ -20,9 +21,9 @@ public class ArticleGraphCalculator implements Function<Tuple4<String,String,Str
     {
 
     }
-    public IdentifiableDocumentWordGraph call(Tuple4<String,String,String, Long> articleTuple)
+    public Tuple2<Tuple4<String,String,String, Long>,IdentifiableDocumentWordGraph> call(Tuple4<String,String,String, Long> articleTuple)
     {
-        return  StructUtils.articleTupleToDWG(articleTuple);
+        return  new Tuple2<>(articleTuple, StructUtils.articleTupleToDWG(articleTuple));
     }
 
 }

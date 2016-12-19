@@ -8,6 +8,7 @@ import gr.demokritos.iit.clustering.parallelngg.graph.WordNGramGraph;
 import gr.demokritos.iit.clustering.parallelngg.traits.DocumentGraph;
 import gr.demokritos.iit.clustering.parallelngg.traits.Similarity;
 import gr.demokritos.iit.clustering.structs.SimilarityMode;
+import gr.demokritos.iit.clustering.util.StructUtils;
 import gr.demokritos.iit.jinsect.documentModel.comparators.NGramCachedGraphComparator;
 import gr.demokritos.iit.jinsect.documentModel.representations.DocumentWordGraph;
 import gr.demokritos.iit.jinsect.events.WordEvaluatorListener;
@@ -41,16 +42,17 @@ public class ExtractMatchingPairsFuncSerialGraphs implements Function<Tuple2<Tup
     private final SimilarityMode mode;
     private final double simCutOff;
     private NGRAM_MODE NGramMode;
+    private boolean IsVerbose;
 
 
-
-    public ExtractMatchingPairsFuncSerialGraphs(SimilarityMode modeArg, double simCutOffArg, String NGramMode) {
+    public ExtractMatchingPairsFuncSerialGraphs(SimilarityMode modeArg, double simCutOffArg, String NGramMode, boolean verbose) {
         this.mode = modeArg;
         this.simCutOff = simCutOffArg;
         if(NGramMode.equals("word"))
             this.NGramMode = NGRAM_MODE.WORD;
         else
             this.NGramMode = NGRAM_MODE.CHAR;
+        IsVerbose = verbose;
 
     }
     public ExtractMatchingPairsFuncSerialGraphs(SimilarityMode modeArg, double simCutOffArg) {
@@ -64,7 +66,7 @@ public class ExtractMatchingPairsFuncSerialGraphs implements Function<Tuple2<Tup
 
 
 
-        double similarityValue  = this.compareGraphsJInsect(arg._1()._2(),arg._1()._3(),arg._2()._2(),arg._2()._3());
+        double similarityValue  = this.compareGraphsJInsect(arg);
         //double similarityValue  = this.compareGraphsParallelNGG(arg._1()._2(),arg._1()._3(),arg._2()._2(),arg._2()._3());
 
 
@@ -127,36 +129,33 @@ public class ExtractMatchingPairsFuncSerialGraphs implements Function<Tuple2<Tup
     }
 
     // calculate graph similarity using JInsect
-    private double compareGraphsJInsect(String title1,String text1, String title2, String text2)
+    private double compareGraphsJInsect(Tuple2<Tuple4<String, String, String, Long>, Tuple4<String, String, String, Long>> arg)
     {
         GraphSimilarity gs = null;
 
-        DocumentWordGraph jig1 = new DocumentWordGraph();
-        DocumentWordGraph jig2 = new DocumentWordGraph();
-
-
-        jig1.WordEvaluator = new WordEvaluatorListener() {
-            public boolean evaluateWord(String string) {
-                return string.length() > 3 && string.matches("\\p{javaUpperCase}+.*");
-            }
-        };
-        jig2.WordEvaluator = jig1.WordEvaluator;
-        jig1.setDataString(title1+" "+text1);
-        jig2.setDataString(title2+" "+text2);
+        DocumentWordGraph jig1 = StructUtils.articleTupleToDWG(arg._1());
+        DocumentWordGraph jig2 = StructUtils.articleTupleToDWG(arg._2());
 
 
         NGramCachedGraphComparator ngc = new NGramCachedGraphComparator();
         gs = ngc.getSimilarityBetween(jig1, jig2);
 
         double NVS = gs.SizeSimilarity == 0.0D?0.0D:gs.ValueSimilarity / gs.SizeSimilarity;
-//
-//        System.out.printf("JINS: NVS: %2.9f VS: %2.9f CS: %2.9f SS: %2.9f",
-//                NVS,
-//                gs.ValueSimilarity,
-//                gs.ContainmentSimilarity,
-//                gs.SizeSimilarity
-//        );
-//        System.out.println(" ||| Article pair: t1: ["  + title1+ "]  and t2: [" +title2+ "] : ");
+
+
+        boolean retValue = NVS >= this.simCutOff;
+        if(IsVerbose)
+        {
+            boolean b = retValue;
+            String msg;
+            if (b)
+                msg = ("true  :");
+            else
+                msg = ("false :");
+            msg += "x : " + arg._1()._2() + " | " + arg._2()._2() + " " + NVS + " " + gs.SizeSimilarity + " " + gs.ContainmentSimilarity + " " + gs.ValueSimilarity;
+            System.out.println(msg);
+        }
+
 
         switch (mode) {
             case NVS:

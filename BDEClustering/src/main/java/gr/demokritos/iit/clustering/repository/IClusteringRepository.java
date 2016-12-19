@@ -14,7 +14,7 @@ public interface IClusteringRepository {
     void localStoreEvents();
     void changeDetectionTrigger();
 
-    void loadArticlesToCluster(long timestamp);
+    void loadArticlesToCluster();
     void clusterArticles();
 
     boolean good();
@@ -24,7 +24,7 @@ public interface IClusteringRepository {
 
     void calculateSummarization();
 
-    void loadTweetsToCluster(long timestamp);
+    void loadTweetsToCluster();
     void processTweets();
     Collection<TwitterResult> getTweets();
 }

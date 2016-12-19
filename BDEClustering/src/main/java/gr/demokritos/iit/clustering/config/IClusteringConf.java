@@ -30,6 +30,28 @@ public interface IClusteringConf extends IBaseConf {
             return type;
         }
     }
+
+    enum Modifiers
+    {
+        VERBOSE("verbose"), PRECOMPUTE_GRAPHS("precompute_graphs");
+        private String type;
+        private Modifiers(String type) {
+            this.type = type;
+        }
+        public static boolean supports(String candidate)
+        {
+            for(OperationMode elem : OperationMode.values())
+            {
+                if(elem.toString().equals(candidate)) return true;
+            }
+            return false;
+        }
+        @Override
+        public String toString() {
+            return type;
+        }
+    }
+
     String SIMILARITY_MODE_PARAM = "similarity_mode";
     String CUTOFF_THRESHOLD_PARAM = "cutoff_threshold";
 
