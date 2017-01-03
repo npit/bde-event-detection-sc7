@@ -30,6 +30,27 @@ public interface ILocationExtractor {
      * @param document
      * @return
      */
+    // what part of the article the location extractor requires, i.e. the text or the url, etc
+    LE_RESOURCE_TYPE getRequiredResource();
+    enum LE_RESOURCE_TYPE
+    {
+        URL("url"),CLEAN_TEXT("clean_text");
+        LE_RESOURCE_TYPE(String s)
+        {
+            name = s;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        private final String name;
+        @Override
+        public String toString()
+        {
+            return name;
+        }
+    }
     Set<String> extractLocation(String document);
     boolean configure(ILocConf conf);
 }

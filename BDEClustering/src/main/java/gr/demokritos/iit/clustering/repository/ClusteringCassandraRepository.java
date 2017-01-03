@@ -886,18 +886,24 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
     //        System.out.println("HARDCODED");
     //        minGeom="POLYGON ((13.1680793762208 42.6952133178712, 13.4106550216675 42.6952133178712, 13.4106550216675 42.5705032348633, 13.1680793762208 42.5705032348633, 13.1680793762208 42.6952133178712))";
 
-                String payload = null;
-                try {
-                    payload = url + "?extent=" + java.net.URLEncoder.encode(minGeom,"UTF-8") +
-                            "&reference_date=" + java.net.URLEncoder.encode(eventDate,"UTF-8") +
-                            "&event_date=" + java.net.URLEncoder.encode(eventDate,"UTF-8") +
-                            "&polarisations=" + java.net.URLEncoder.encode("[VH, VV]","UTF-8") +
-                            "&username=" + username +
-                            "&password=" + password;
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
-
+//                String payload = null;
+//                try {
+//                    payload = url + "?extent=" + java.net.URLEncoder.encode(minGeom,"UTF-8") +
+//                            "&reference_date=" + java.net.URLEncoder.encode(eventDate,"UTF-8") +
+//                            "&event_date=" + java.net.URLEncoder.encode(eventDate,"UTF-8") +
+//                            "&polarisations=" + java.net.URLEncoder.encode("[VH, VV]","UTF-8") +
+//                            "&username=" + username +
+//                            "&password=" + password;
+//                } catch (UnsupportedEncodingException e) {
+//                    e.printStackTrace();
+//                }
+                String [] paramNames = new String [] {"extent","reference_date","event_date",
+                        "polarisations","username","password"};
+                String [] paramVals = new String [] {minGeom,eventDate,eventDate,
+                        "[VH, VV]",username,password};
+                String payload = Utils.encodeParameterizedURL(url,
+                        (ArrayList<String>) Arrays.asList(paramNames) ,
+                        (ArrayList<String>) Arrays.asList(paramVals));
                 System.out.println("Sending to [" + payload + "]");
                 // send that min area
                 String resp = null;

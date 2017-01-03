@@ -175,6 +175,12 @@ public class DefaultLocationExtractor implements ILocationExtractor {
     }
 
     @Override
+    public LE_RESOURCE_TYPE getRequiredResource() {
+        return LE_RESOURCE_TYPE.CLEAN_TEXT;
+
+    }
+
+    @Override
     public Set<String> extractLocation(String document) {
         if (document == null || document.trim().isEmpty()) {
             return Collections.EMPTY_SET;

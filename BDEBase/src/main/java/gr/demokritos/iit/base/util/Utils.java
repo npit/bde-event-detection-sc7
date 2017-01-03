@@ -29,7 +29,53 @@ import java.util.*;
  * @author George K. <gkiom@scify.org>
  */
 public class Utils {
+    public static ArrayList<String> readFileLines(String path)
+    {
+        ArrayList<String> res = new ArrayList<>();
+        try {
+            BufferedReader bf = new BufferedReader(new FileReader(new File(path)));
+            String line;
+            while((line = bf.readLine()) != null)
+            {
+                res.add(line.trim());
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return null;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+        finally {
 
+        }
+        return res;
+    }
+
+    public static String encodeParameterizedURL(String base,ArrayList<String> paramNames, ArrayList<String> paramValues)
+    {
+        if(paramNames.size() != paramValues.size())
+        {
+            System.err.printf("Unequal number of params + values : %d vs %d \n",paramNames.size(), paramValues.size());
+            return "";
+        }
+        String result = base;
+        for(int i=0;i<paramNames.size(); ++i)
+        {
+            if(i==0) result += "?";
+            else result += "&";
+            result += paramNames.get(i);
+            try {
+                result += java.net.URLEncoder.encode(paramValues.get(i),"UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                System.err.println("Failed to encode URL parameter [" + paramValues.get(i) +"]");
+                e.printStackTrace();
+                return "";
+            }
+        }
+
+        return result;
+    }
     public static boolean checkResponse(String resp)
     {
         if (resp.equals("{\"code\":400,\"message\":\"exception\"}") || resp.isEmpty())

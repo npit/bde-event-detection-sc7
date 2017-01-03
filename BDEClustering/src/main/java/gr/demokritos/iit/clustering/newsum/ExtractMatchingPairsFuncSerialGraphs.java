@@ -143,10 +143,10 @@ public class ExtractMatchingPairsFuncSerialGraphs implements Function<Tuple2<Tup
         double NVS = gs.SizeSimilarity == 0.0D?0.0D:gs.ValueSimilarity / gs.SizeSimilarity;
 
 
-        boolean retValue = NVS >= this.simCutOff;
+
         if(IsVerbose)
         {
-            boolean b = retValue;
+            boolean b = NVS >= this.simCutOff;;
             String msg;
             if (b)
                 msg = ("true  :");
