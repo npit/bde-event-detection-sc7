@@ -141,6 +141,7 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
 
                     if (!locationsFound.isEmpty()) {
                         Map<String, String> places_polygons = poly.extractPolygon(locationsFound);
+
                         // update entry
                         // edit geometry
                         places_polygons = poly.postProcessGeometries(places_polygons);

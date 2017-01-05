@@ -62,8 +62,13 @@ public class LocConf extends BaseConfiguration implements ILocConf {
     }
 
     @Override
-    public String getLocationExtractionImpl() {
-        return properties.getProperty("location_extraction_impl");
+    public String getLocationExtractor() {
+        String res = properties.getProperty("extractor","");
+        if(res.isEmpty()) {
+            System.err.println("Location extractor not specified, using default.");
+            res = "default";
+        }
+        return res;
     }
     @Override
     public String getPolygonExtractionImpl()

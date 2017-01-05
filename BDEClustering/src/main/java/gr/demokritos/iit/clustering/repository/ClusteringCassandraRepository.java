@@ -901,7 +901,7 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
                         "polarisations","username","password"};
                 String [] paramVals = new String [] {minGeom,eventDate,eventDate,
                         "[VH, VV]",username,password};
-                String payload = Utils.encodeParameterizedURL(url,
+                String payload = url + Utils.encodeParameterizedURL(
                         (ArrayList<String>) Arrays.asList(paramNames) ,
                         (ArrayList<String>) Arrays.asList(paramVals));
                 System.out.println("Sending to [" + payload + "]");

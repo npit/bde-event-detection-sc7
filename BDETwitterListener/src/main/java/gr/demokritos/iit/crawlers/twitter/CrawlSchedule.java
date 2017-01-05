@@ -184,7 +184,11 @@ public class CrawlSchedule {
         CybozuLangDetect.setProfiles(config.getLangDetectionProfiles());
         TwitterListenerFactory factory = new TwitterListenerFactory(config);
         Set<SearchQuery> queries = getQueries(config);
-        if(queries.isEmpty()) return;
+        if(queries.isEmpty())
+        {
+            System.err.println("Empty input queries file!");
+            return;
+        }
 
         ITwitterRestConsumer crawler;
         try {

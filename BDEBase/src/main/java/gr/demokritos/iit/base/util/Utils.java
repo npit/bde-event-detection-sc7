@@ -29,7 +29,7 @@ import java.util.*;
  * @author George K. <gkiom@scify.org>
  */
 public class Utils {
-    public static ArrayList<String> readFileLines(String path)
+    public static ArrayList<String> readFileLinesDropComments(String path)
     {
         ArrayList<String> res = new ArrayList<>();
         try {
@@ -37,6 +37,8 @@ public class Utils {
             String line;
             while((line = bf.readLine()) != null)
             {
+                if(line.isEmpty()) continue;
+                if(line.startsWith("#")) continue;
                 res.add(line.trim());
             }
         } catch (FileNotFoundException e) {
@@ -52,19 +54,19 @@ public class Utils {
         return res;
     }
 
-    public static String encodeParameterizedURL(String base,ArrayList<String> paramNames, ArrayList<String> paramValues)
+    public static String encodeParameterizedURL(ArrayList<String> paramNames, ArrayList<String> paramValues)
     {
         if(paramNames.size() != paramValues.size())
         {
             System.err.printf("Unequal number of params + values : %d vs %d \n",paramNames.size(), paramValues.size());
             return "";
         }
-        String result = base;
+        String result = "";
         for(int i=0;i<paramNames.size(); ++i)
         {
             if(i==0) result += "?";
             else result += "&";
-            result += paramNames.get(i);
+            result += paramNames.get(i) + "=";
             try {
                 result += java.net.URLEncoder.encode(paramValues.get(i),"UTF-8");
             } catch (UnsupportedEncodingException e) {
@@ -101,6 +103,85 @@ public class Utils {
         if(conn!=null) conn.disconnect();
         return result.toString();
     }
+
+    public static String sendGETAuth(String address, String authEncoded) throws IOException {
+        StringBuilder result = new StringBuilder();
+        URL url = new URL(address);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+        conn.setRequestProperty("Authorization", "Basic " + authEncoded);
+
+        BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        String line;
+        while ((line = rd.readLine()) != null) {
+            result.append(line);
+        }
+        rd.close();
+        if(conn!=null) conn.disconnect();
+        return result.toString();
+    }
+
+    public static String sendPOSTAuth(String payload, String address, String authEncoded)
+    {
+        URL url;
+        HttpURLConnection connection = null;
+        String resp = "";
+        try
+        {
+            // open connection, set JSONic properties
+            url = new URL(address);
+            connection = (HttpURLConnection)url.openConnection();
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("Content-Type","application/json");
+            connection.setRequestProperty("Accept","application/json");
+            connection.setRequestProperty("Content-Length",
+                    Integer.toString(payload.getBytes().length));
+            connection.setRequestProperty("Content-Language", "en-US");
+            connection.setRequestProperty("Authorization", "Basic " + authEncoded);
+
+            connection.setUseCaches(false);
+            connection.setDoOutput(true);
+
+            //Send request
+            DataOutputStream wr = new DataOutputStream (
+                    connection.getOutputStream());
+            wr.writeBytes(payload);
+            wr.close();
+            //Get Response
+            InputStream is = connection.getInputStream();
+            BufferedReader rd = new BufferedReader(new InputStreamReader(is));
+            // parse to string
+            StringBuilder response = new StringBuilder(); // or StringBuffer if not Java 5+
+            String line;
+            while((line = rd.readLine()) != null) {
+                response.append(line);
+                response.append('\r');
+            }
+            resp = response.toString();
+            rd.close();
+            //System.out.println("server response:\n\t" + resp);
+        }
+        catch(MalformedURLException exc)
+        {
+            System.err.println("Malformed event processing URL:\n\t" + address);
+            resp="";
+        }
+        catch(IOException exc)
+        {
+            System.err.println("IO error during event processing connection initialization:\n");
+            System.err.println(exc.getMessage());
+            System.err.println(exc.toString());
+            exc.printStackTrace();
+            resp="";
+        }
+        finally
+        {
+            if(connection != null)
+                connection.disconnect();
+        }
+        return resp;
+    }
+
     public static String sendPOST(String payload, String address)
     {
         URL url;
@@ -143,13 +224,17 @@ public class Utils {
         catch(MalformedURLException exc)
         {
             System.err.println("Malformed event processing URL:\n\t" + address);
+            System.err.println("payload/address: ["+payload+"] , ["+address+"]");
+
+            resp="";
         }
         catch(IOException exc)
         {
-            System.err.println("IO error during event processing connection initialization:\n");
+
             System.err.println(exc.getMessage());
-            System.err.println(exc.toString());
+            System.err.println("payload/address: ["+payload+"] , ["+address+"]");
             exc.printStackTrace();
+            resp="";
         }
         finally
         {

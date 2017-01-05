@@ -98,6 +98,7 @@ public class DefaultPolygonExtraction implements IPolygonExtraction {
         String res = "";
         // API accepts only JsonArray
         final Collection<String> input = new ArrayList() {{add(locationEntity);}};
+
         try {
             String responseEntity = client.execJSONPost(polURL, gs.toJson(input, Collection.class), String.class);
 
@@ -114,6 +115,11 @@ public class DefaultPolygonExtraction implements IPolygonExtraction {
             if(responseEntity.contains("The requested resource is not available."))
             {
                 throw new Exception ("Polygon extraction server says resource is not available.");
+            }
+            else if(responseEntity.contains("code:400"))
+            {
+                throw new Exception ("Bad request response. Payload was [" + gs.toJson(input, Collection.class).toString() + "] , url : " + polURL);
+
             }
         } catch (Exception ex) {
             Logger.getLogger(DefaultPolygonExtraction.class.getName()).log(Level.SEVERE, null, ex);

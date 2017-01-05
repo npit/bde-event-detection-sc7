@@ -5,6 +5,7 @@
  */
 package gr.demokritos.iit.location.factory;
 
+import gr.demokritos.iit.location.extraction.PoolPartyLocationExtractor;
 import gr.demokritos.iit.location.factory.conf.ILocConf;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
@@ -169,12 +170,21 @@ public class LocationFactory implements ILocFactory {
 
     @Override
     public ILocationExtractor createLocationExtractor() throws NoSuchMethodException, ClassNotFoundException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        ITokenProvider tp = createTokenProvider();
-        String locExImpl = conf.getLocationExtractionImpl();
-        Class tpSourceCl = Class.forName(locExImpl);
-        Constructor class_constructor;
-        class_constructor = tpSourceCl.getConstructor(ITokenProvider.class);
-        return (ILocationExtractor) class_constructor.newInstance(tp);
+//        ITokenProvider tp = createTokenProvider();
+//        String locExImpl = conf.getLocationExtractor();
+//        Class tpSourceCl = Class.forName(locExImpl);
+//        Constructor class_constructor;
+//        class_constructor = tpSourceCl.getConstructor(ITokenProvider.class);
+//        return (ILocationExtractor) class_constructor.newInstance(tp);
+        String extractor = conf.getLocationExtractor();
+
+        if(extractor.equals("default")) return createDefaultLocationExtractor();
+        else if(extractor.equals("poolparty")) return new PoolPartyLocationExtractor();
+        else
+        {
+            System.err.println("Undefined location extractor: [" + extractor + "]");
+            return null;
+        }
     }
 
     @Override
