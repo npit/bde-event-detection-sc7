@@ -14,6 +14,7 @@
  */
 package gr.demokritos.iit.location.extraction.provider;
 
+import gr.demokritos.iit.base.util.Utils;
 import gr.demokritos.iit.location.factory.conf.ILocConf;
 import gr.demokritos.iit.location.sentsplit.ISentenceSplitter;
 import gr.demokritos.iit.location.sentsplit.OpenNLPSentenceSplitter;
@@ -91,72 +92,70 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
         // In that scenario, if name1 exists in the text, then name2,name3 ...  will (also) be added as a location name.
         // this is helpful if name1 is too specific for a geometry to exist, so we manually add superegions for which
         // we know that a geometry is availabe
-
+        System.out.println("Reading default LE token provider extra locations file: ["+ extrapath+"]");
+        ArrayList<String> lines = Utils.readFileLinesDropComments(extrapath);
+        if(lines.isEmpty())
+        {
+            System.err.println("Nothing read out of extra locations file ["+extrapath+"]");
+            return;
+        }
         String delimiter = "[*]{3}";
         String overrideDelimiter = "[/]{3}";
 
-        try (BufferedReader br = new BufferedReader(new FileReader(extrapath))) {
-            // read newline delimited source names file
-            String line;
-            int linecount=0, skipcount=0;
-            while ((line = br.readLine()) != null) {
-                ++linecount;
-                line = line.trim();
-                if(line.startsWith("#")) {
-                    System.out.println("Skipping comment @ line " + linecount); ++skipcount;
-                    continue; // skip comments
-                }
-                if(line.isEmpty())
-                {
-                    System.out.println("Skipping empty @ line " + linecount); ++skipcount;
-                    continue; // skip empties
-                }
-                String[] parts = line.split(delimiter);
-                String[] overrParts = parts[0].split(overrideDelimiter);
-                String locationBaseName="", locationOverrideName;
-                if(overrParts.length > 1)
-                {
-                    if(overrParts.length > 2)
-                    {
-                        System.err.printf("Location name override should be like name1%sname2",overrideDelimiter); ++skipcount;
-                        continue;
-                    }
-                    locationBaseName = overrParts[0];
-                    locationOverrideName = overrParts[1];
-                    extraNamesOverride.put(locationBaseName,locationOverrideName);
-                }
-                else
-                    locationBaseName = parts[0];
-
-                if(!extraNames.keySet().contains(locationBaseName))
-                {
-                    extraNames.put(locationBaseName,locationBaseName.toLowerCase());
-                    //System.out.println(extraNames.size() + ":" + locationBaseName);
-                }
-                else
-                {
-                    ++skipcount;
-                    System.out.println("\tSkipping duplicate entry [" + locationBaseName + "].");
-                }
+        String line="";
+        int linecount=0, skipcount=0;
+        for(String l : lines)        {
+        // read newline delimited source names file
 
 
-                if(parts.length > 1)
-                {
-                    extraNamesAssociation.put(locationBaseName, new ArrayList());
 
-                    // add the associated places
-                    for (int i = 1; i < parts.length; ++i) {
-                        if (!extraNamesAssociation.get(locationBaseName).contains(parts[i]))
-                            extraNamesAssociation.get(locationBaseName).add(parts[i]);
-                    }
+            ++linecount;
+            line = line.trim();
+
+            String[] parts = line.split(delimiter);
+            String[] overrParts = parts[0].split(overrideDelimiter);
+            String locationBaseName="", locationOverrideName;
+            if(overrParts.length > 1)
+            {
+                if(overrParts.length > 2)
+                {
+                    System.err.printf("Location name override should be like name1%sname2",overrideDelimiter); ++skipcount;
+                    continue;
                 }
+                locationBaseName = overrParts[0];
+                locationOverrideName = overrParts[1];
+                extraNamesOverride.put(locationBaseName,locationOverrideName);
+            }
+            else
+                locationBaseName = parts[0];
+
+            if(!extraNames.keySet().contains(locationBaseName))
+            {
+                extraNames.put(locationBaseName,locationBaseName.toLowerCase());
+                //System.out.println(extraNames.size() + ":" + locationBaseName);
+            }
+            else
+            {
+                ++skipcount;
+                System.out.println("\tSkipping duplicate entry [" + locationBaseName + "].");
             }
 
-            System.out.println("Skipped " + skipcount + " extra location name entries.");
 
-        } catch (IOException e) {
-            e.printStackTrace();
+            if(parts.length > 1)
+            {
+                extraNamesAssociation.put(locationBaseName, new ArrayList());
+
+                // add the associated places
+                for (int i = 1; i < parts.length; ++i) {
+                    if (!extraNamesAssociation.get(locationBaseName).contains(parts[i]))
+                        extraNamesAssociation.get(locationBaseName).add(parts[i]);
+                }
+            }
         }
+
+        System.out.println("Skipped " + skipcount + " extra location name entries.");
+
+
 
     }
     public boolean configure(ILocConf conf)

@@ -50,7 +50,8 @@ sensitive/*
 BDELocationExtraction/res/local/
 installPOMs/
 *res/locationnames
-BDELocationExtraction/res/locationnames
+BDELocationExtraction/res/location.*
+BDELocationExtraction/res/*.properties
 BDERSSCrawler/res/*.urls
 
 exec/*

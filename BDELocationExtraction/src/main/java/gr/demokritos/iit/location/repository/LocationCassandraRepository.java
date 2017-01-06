@@ -100,7 +100,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
                 .value(Cassandra.Location.TBL_LOCATION_LOG.FLD_ITEMS_UPDATED.getColumnName(), 0l) // avoid nulls
                 .value(Cassandra.Location.TBL_LOCATION_LOG.FLD_LAST_PARSED.getColumnName(), last_parsed)
                 .value(Cassandra.Location.TBL_LOCATION_LOG.FLD_START.getColumnName(), new Date().getTime());
-        System.out.println(insert.toString());
+
         session.execute(insert);
         return curSched;
     }

@@ -85,9 +85,12 @@ public class PoolPartyLocationExtractor implements ILocationExtractor {
     }
 
     private static String removeAccents(String str) {
+        String res;
         String nfdNormalizedString = Normalizer.normalize(str, Normalizer.Form.NFD);
         Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
-        return pattern.matcher(nfdNormalizedString).replaceAll("");
+        res = pattern.matcher(nfdNormalizedString).replaceAll("");
+        res = res.replaceAll("[^A-Za-z0-9 ]"," ");
+        return res;
     }
     @Override
     public boolean configure(ILocConf conf) {
@@ -104,6 +107,8 @@ public class PoolPartyLocationExtractor implements ILocationExtractor {
 
 
         String ppConfFile = conf.getLocationExtractionSourceFile();
+        System.out.println("Reading poolparty LE configuration file: ["+ ppConfFile+"]");
+
         ArrayList<String> contents = Utils.readFileLinesDropComments(ppConfFile);
         if(contents == null)
         {
@@ -150,9 +155,9 @@ public class PoolPartyLocationExtractor implements ILocationExtractor {
     public static void main(String [] args)
     {
         PoolPartyLocationExtractor pp = new PoolPartyLocationExtractor();
-        ILocConf conf = new LocConf();
-        pp.configure();
-        String test = "Republic of Côte";
+        ILocConf conf = new LocConf("/home/nik/work/iit/BDE/bde-event-detection-sc7/BDELocationExtraction/res/location.properties");
+        pp.configure(conf);
+        String test = "Republic of Côte d'Angelo";
         System.out.println(removeAccents(test));
     }
 }

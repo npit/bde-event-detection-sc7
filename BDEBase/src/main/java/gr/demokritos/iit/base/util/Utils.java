@@ -31,6 +31,7 @@ import java.util.*;
 public class Utils {
     public static ArrayList<String> readFileLinesDropComments(String path)
     {
+
         ArrayList<String> res = new ArrayList<>();
         try {
             BufferedReader bf = new BufferedReader(new FileReader(new File(path)));
@@ -42,9 +43,11 @@ public class Utils {
                 res.add(line.trim());
             }
         } catch (FileNotFoundException e) {
+            System.out.println("readFileLinesDropComments: Exception during read of ["+path+"]");
             e.printStackTrace();
             return null;
         } catch (IOException e) {
+            System.out.println("readFileLinesDropComments: Exception during read of ["+path+"]");
             e.printStackTrace();
             return null;
         }
