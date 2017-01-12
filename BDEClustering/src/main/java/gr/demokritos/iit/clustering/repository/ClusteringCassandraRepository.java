@@ -886,6 +886,7 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
     //        System.out.println("HARDCODED");
     //        minGeom="POLYGON ((13.1680793762208 42.6952133178712, 13.4106550216675 42.6952133178712, 13.4106550216675 42.5705032348633, 13.1680793762208 42.5705032348633, 13.1680793762208 42.6952133178712))";
 
+
 //                String payload = null;
 //                try {
 //                    payload = url + "?extent=" + java.net.URLEncoder.encode(minGeom,"UTF-8") +
@@ -904,6 +905,7 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
                 String payload = url + Utils.encodeParameterizedURL(
                         (ArrayList<String>) Arrays.asList(paramNames) ,
                         (ArrayList<String>) Arrays.asList(paramVals));
+
                 System.out.println("Sending to [" + payload + "]");
                 // send that min area
                 String resp = null;

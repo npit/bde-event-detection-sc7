@@ -144,9 +144,10 @@ public class ExtractMatchingPairsFuncSerialGraphs implements Function<Tuple2<Tup
 
 
 
+        boolean retValue = NVS >= this.simCutOff;
         if(IsVerbose)
         {
-            boolean b = NVS >= this.simCutOff;;
+            boolean b = retValue;
             String msg;
             if (b)
                 msg = ("true  :");

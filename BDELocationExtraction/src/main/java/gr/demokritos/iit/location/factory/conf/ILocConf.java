@@ -20,7 +20,9 @@ public interface ILocConf extends IBaseConf {
     boolean useAdditionalExternalNames();
     boolean onlyUseAdditionalExternalNames();
     boolean shouldUpdateEvents();
+
     String getLocationExtractor();
+
 
     String getTokenProviderImpl();
 

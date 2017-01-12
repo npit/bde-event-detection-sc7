@@ -52,6 +52,7 @@ installPOMs/
 *res/locationnames
 BDELocationExtraction/res/location.*
 BDELocationExtraction/res/*.properties
+
 BDERSSCrawler/res/*.urls
 
 exec/*

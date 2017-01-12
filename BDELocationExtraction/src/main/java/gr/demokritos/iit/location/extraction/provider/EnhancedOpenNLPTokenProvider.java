@@ -14,7 +14,9 @@
  */
 package gr.demokritos.iit.location.extraction.provider;
 
+
 import gr.demokritos.iit.base.util.Utils;
+
 import gr.demokritos.iit.location.factory.conf.ILocConf;
 import gr.demokritos.iit.location.sentsplit.ISentenceSplitter;
 import gr.demokritos.iit.location.sentsplit.OpenNLPSentenceSplitter;
@@ -83,7 +85,11 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
         onlyUseAdditionalSources = false;
 
 
+
     }
+
+   
+    
 
     private void readLocationsFile(String extrapath)
     {
@@ -182,6 +188,7 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
         System.out.println("done.\n\t Read " + extraNames.size() + " additional location names.");
         System.out.println("\tRead " + extraNamesAssociation.size() + " location associations.");
         System.out.println("\tRead " + extraNamesOverride.size() + " location overrides.");
+
 
         useAdditionalSources = true;
         if(conf.onlyUseAdditionalExternalNames())

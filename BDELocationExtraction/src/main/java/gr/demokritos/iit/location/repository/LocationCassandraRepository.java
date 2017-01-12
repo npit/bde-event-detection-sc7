@@ -66,7 +66,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
         java.util.Calendar window = Calendar.getInstance();
         return scheduleInitialized(mode,window);
     }
-        @Override
+    @Override
     public LocSched scheduleInitialized(OperationMode mode,java.util.Calendar window) {
         String schedule_type = new StringBuilder().append(SCHEDULE_TYPE_BASE).append("_").append(mode.getMode()).toString();
         Statement select = QueryBuilder
@@ -151,7 +151,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
                 .with(set(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PLACE_LITERAL.getColumnName(), places))
                 .where(eq(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName(), permalink))
                 .and(eq(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.getColumnName(),
-                                Utils.extractYearMonthDayLiteral(crawled)))
+                        Utils.extractYearMonthDayLiteral(crawled)))
                 .and(eq(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CRAWLED.getColumnName(), crawled));
         session.execute(upsert);
         Statement insert;
@@ -512,7 +512,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
                         .and(eq(Cassandra.RSS.TBL_ARTICLES.FLD_ENTRY_URL.getColumnName(), url));
                 session.execute(query);
 
-                    // delete from news articles per place
+                // delete from news articles per place
                 query = QueryBuilder.delete().from(
                         session.getLoggedKeyspace(),
                         Cassandra.RSS.Tables.NEWS_ARTICLES_PER_PLACE.getTableName())
@@ -547,7 +547,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
         int removedEvents = 0;
         query = QueryBuilder.select(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName(),
                 Cassandra.Event.TBL_EVENTS.FLD_EVENT_SOURCE_URLS.getColumnName()
-                ).
+        ).
                 from(session.getLoggedKeyspace(),Cassandra.Event.Tables.EVENTS.getTableName());
         results = session.execute(query);
         ArrayList<String> eventIDs = new ArrayList<>();
@@ -558,8 +558,8 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
         {
             eventIDs.add(row.getString(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName()));
             event_sources.add(new ArrayList<String>(
-                    row.getMap(Cassandra.Event.TBL_EVENTS.FLD_EVENT_SOURCE_URLS.getColumnName(),String.class,String.class).keySet()
-            )
+                            row.getMap(Cassandra.Event.TBL_EVENTS.FLD_EVENT_SOURCE_URLS.getColumnName(),String.class,String.class).keySet()
+                    )
             );
 
         }
@@ -633,11 +633,11 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
                     if(doDelete)
                     {
                         query = QueryBuilder.delete().from(
-                                    session.getLoggedKeyspace(),
-                                    Cassandra.Event.Tables.EVENTS_PER_PLACE.getTableName())
-                                    .where(eq(Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_EVENT_ID.getColumnName(), eventID))
-                                    .and(eq(Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_PLACE_LITERAL.getColumnName(), place));
-                            session.execute(query);
+                                session.getLoggedKeyspace(),
+                                Cassandra.Event.Tables.EVENTS_PER_PLACE.getTableName())
+                                .where(eq(Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_EVENT_ID.getColumnName(), eventID))
+                                .and(eq(Cassandra.Event.TBL_EVENTS_PER_PLACE.FLD_PLACE_LITERAL.getColumnName(), place));
+                        session.execute(query);
                     }
                 } // for each event place
             } // if delete event
@@ -1084,7 +1084,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
                             continue;
                         }
                         if(tweet_places_polygons.get(idx).keySet().size() > 0)
-                        System.out.print("\t\t>>> Inserting from tweet " + tweetCount++ + "/" + tweetsPerEvent.get(ev).size() + " : "  + post_id);
+                            System.out.print("\t\t>>> Inserting from tweet " + tweetCount++ + "/" + tweetsPerEvent.get(ev).size() + " : "  + post_id);
                         // add all its geometries
                         for (String locname : tweet_places_polygons.get(idx).keySet()) {
                             String geom = tweet_places_polygons.get(idx).get(locname);
@@ -1116,13 +1116,13 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
     public Map<String, Object> loadArticlePerPlace(String place_literal, String entry_url) {
         ResultSet results;
         Statement select = QueryBuilder
-            .select()
-            .all()
-            .from(session.getLoggedKeyspace(), Cassandra.RSS.Tables.NEWS_ARTICLES_PER_PLACE.getTableName())
-            .where(eq(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_PLACE_LITERAL.getColumnName(), place_literal))
-            .and(eq(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_ENTRY_URL.getColumnName(), entry_url))
-            // we expect only one entry
-            .limit(1);
+                .select()
+                .all()
+                .from(session.getLoggedKeyspace(), Cassandra.RSS.Tables.NEWS_ARTICLES_PER_PLACE.getTableName())
+                .where(eq(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_PLACE_LITERAL.getColumnName(), place_literal))
+                .and(eq(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_ENTRY_URL.getColumnName(), entry_url))
+                // we expect only one entry
+                .limit(1);
         results = session.execute(select);
         Map<String, Object> res = new HashMap();
         for (Row row : results) {
@@ -1358,4 +1358,4 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
     }
 
 }
-    // test only
+// test only

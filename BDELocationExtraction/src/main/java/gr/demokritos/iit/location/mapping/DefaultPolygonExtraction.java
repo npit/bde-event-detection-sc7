@@ -115,6 +115,7 @@ public class DefaultPolygonExtraction implements IPolygonExtraction {
             if(responseEntity.contains("The requested resource is not available."))
             {
                 throw new Exception ("Polygon extraction server says resource is not available.");
+
             }
             else if(responseEntity.contains("code:400"))
             {

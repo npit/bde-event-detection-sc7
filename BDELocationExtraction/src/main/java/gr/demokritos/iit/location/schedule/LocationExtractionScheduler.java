@@ -127,6 +127,7 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                     // extract location entities
                     //System.out.println("Extracting location for article " + permalink);
                     System.out.print("\tArticle " + count +  "/" +  items.size() + " : "  + permalink); //debugprint
+
                     String RequiredResource;
                     if(locExtractor.getRequiredResource().equals(ILocationExtractor.LE_RESOURCE_TYPE.URL))
                         RequiredResource = permalink;
@@ -183,6 +184,7 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                     //System.out.println("Extracting location for tweet " + post_id);
 
 
+
                     if( ! locExtractor.getRequiredResource().equals(ILocationExtractor.LE_RESOURCE_TYPE.CLEAN_TEXT))
                     {
                         System.err.println("Location extractor for tweets must deal with clean text only.");
@@ -190,12 +192,9 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                         break;
                     }
 
-
                     Set<String> locationsFound = locExtractor.extractLocation(clean_tweet);
                     // extract coordinates for each entity
                     System.out.print("\tTweet " + count +  "/" +  items.size() + " : "  + post_id); //debugprint
-
-
 
                     if (!locationsFound.isEmpty()) {
                         Map<String, String> places_polygons = poly.extractPolygon(locationsFound);

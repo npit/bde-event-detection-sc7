@@ -70,6 +70,8 @@ public class LocConf extends BaseConfiguration implements ILocConf {
         }
         return res;
     }
+
+
     @Override
     public String getPolygonExtractionImpl()
     {

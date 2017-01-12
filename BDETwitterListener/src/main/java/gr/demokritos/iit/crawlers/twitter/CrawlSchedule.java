@@ -184,11 +184,13 @@ public class CrawlSchedule {
         CybozuLangDetect.setProfiles(config.getLangDetectionProfiles());
         TwitterListenerFactory factory = new TwitterListenerFactory(config);
         Set<SearchQuery> queries = getQueries(config);
+
         if(queries.isEmpty())
         {
             System.err.println("Empty input queries file!");
             return;
         }
+
 
         ITwitterRestConsumer crawler;
         try {
@@ -226,7 +228,6 @@ public class CrawlSchedule {
 
             factory.releaseResources();
         }
-
     }
 
 
@@ -255,8 +256,6 @@ public class CrawlSchedule {
             // get it from remote source
             String querySourceURL = conf.getQueriesSource();
             System.out.println(String.format("Read queries source :[%s]",querySourceURL));
-
-
             System.err.println("Remote query fetching is TODO");
         }
         else
@@ -265,6 +264,7 @@ public class CrawlSchedule {
         }
         return queries;
     }
+
 
 
     // removed
