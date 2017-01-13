@@ -121,7 +121,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
 
     @Override
     public void updateArticlesWithReferredPlaceMetadata(String permalink, Map<String, String> places_polygons) {
-        System.out.println(String.format("\tupdating with places: %s", places_polygons.keySet().toString()));
+        System.out.println(String.format(" %s", places_polygons.keySet().toString()));
 
         // load metadata
         Map<String, Object> article = loadArticle(permalink);
@@ -182,7 +182,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
         if (places_polygons == null || places_polygons.isEmpty()) {
             return;
         }
-        System.out.println(" - updating with places: " + places_polygons.keySet().toString());
+        System.out.println(" " + places_polygons.keySet().toString());
         // load tweet from repository
         Map<String, Object> tweet = loadTweet(post_id);
         // update twitter post with referred place

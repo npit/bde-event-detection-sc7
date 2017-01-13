@@ -12,10 +12,7 @@ import org.json.simple.parser.ParseException;
 import java.io.IOException;
 import java.io.StringReader;
 import java.text.Normalizer;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -24,6 +21,9 @@ import java.util.regex.Pattern;
 public class PoolPartyLocationExtractor implements ILocationExtractor {
     private ArrayList<String> urlParamNames, urlParamValues;
     String baseURL, authEncoded;
+    // you can run the extractor with the below main parameters for each article
+    private final String[] SupportedModes = {"url", "text"};
+    private final LE_RESOURCE_TYPE[] SupportedModesRequire = {LE_RESOURCE_TYPE.URL, LE_RESOURCE_TYPE.CLEAN_TEXT};
 
     public PoolPartyLocationExtractor() {
         this.urlParamNames = new ArrayList<>();
@@ -34,9 +34,78 @@ public class PoolPartyLocationExtractor implements ILocationExtractor {
 
     @Override
     public LE_RESOURCE_TYPE getRequiredResource() {
-        return LE_RESOURCE_TYPE.URL;
+        return SupportedModesRequire[Arrays.asList(SupportedModes).indexOf(urlParamNames.get(0))];
     }
 
+    private ArrayList<String> splitTextAPICall(String document)
+    {
+        ArrayList<String> res = new ArrayList<>();
+        int numChunks = 2;
+        while(true)
+        {
+            //System.out.println("\tSpliting to " + numChunks + " parts.");
+            // split text
+            ArrayList<String> parts = new ArrayList<>();
+
+            String []chunks = document.split(" ");
+            int chunksPerPart = chunks.length / numChunks;
+
+            int counter = 0, partIndex=0;
+            String accumulatedStr = "";
+            for(String chunk : chunks)
+            {
+
+                if(counter++ > chunksPerPart)
+                {
+                    // add accumulated string to the list
+                    parts.add(accumulatedStr);
+                    accumulatedStr = "";
+                    counter = 0;
+                }
+                accumulatedStr += chunk + " ";
+            }
+            if(!accumulatedStr.isEmpty())
+                parts.add(accumulatedStr);
+            // try the GET
+            String response;
+            try {
+                for (String part : parts) {
+                    String payload = formPayload(part);
+                    String partialResponse = contactAPI(baseURL + payload, authEncoded);
+                    if(partialResponse == null) continue;
+                    if(partialResponse.isEmpty()) continue;
+                    res.add(partialResponse);
+                }
+                return res;
+            } catch (IOException e) {
+                if(e.getMessage().contains("HTTP response code: 414"))
+                {
+                    ++numChunks;
+                    continue;
+                }
+            }
+
+            return res;
+        }
+    }
+
+    private String contactAPI(String url, String auth) throws IOException
+    {
+        String response = null;
+
+//        System.out.println("CONTACT API, url:");
+//        System.out.println(url);
+//        System.out.println();
+        response = Utils.sendGETAuth(url, authEncoded);
+        return response;
+
+    }
+
+    private String formPayload(String articleArgument)
+    {
+        urlParamValues.set(0,articleArgument);
+        return Utils.encodeParameterizedURL(urlParamNames,urlParamValues);
+    }
     @Override
     public Set<String> extractLocation(String document) {
         if (document == null || document.trim().isEmpty()) {
@@ -44,14 +113,20 @@ public class PoolPartyLocationExtractor implements ILocationExtractor {
         }
 
         // set article url
-        urlParamValues.set(0,document);
-        String payload = Utils.encodeParameterizedURL(urlParamNames,urlParamValues);
-        String response = null;
-        try {
-            response = Utils.sendGETAuth(baseURL + payload, authEncoded);
-        } catch (IOException e) {
-            e.printStackTrace();
+        String payload = formPayload(document);
 
+        // use an arraylist, since we may have to split the article text, in that mode.
+        ArrayList<String> response = new ArrayList<>();
+
+        try {
+            String apiResponse = contactAPI(baseURL + payload, authEncoded);
+            response.add(apiResponse);
+        } catch (IOException e) {
+            if(e.getMessage().contains("HTTP response code: 414"))
+            {
+                //System.out.println("\n\tBreaking up text due to too large URI.");
+                response = splitTextAPICall(document);
+            }
         }
         if(response == null)
             return null;
@@ -60,27 +135,29 @@ public class PoolPartyLocationExtractor implements ILocationExtractor {
         return parse(response);
     }
 
-    Set<String> parse(String data)
+    Set<String> parse(ArrayList<String> data)
     {
         Set<String> res = new HashSet<>();
+        JSONParser parser = new JSONParser();
 
-        try {
-            JSONParser parser = new JSONParser();
-            JSONObject obj = (JSONObject) parser.parse(new StringReader(data));
+        for(String datum : data) {
+            try {
 
-            JSONArray locations = (JSONArray) obj.get("locations");
-            if(locations != null) {
-                for (Object o : locations) {
-                    String rawName =(String) ((JSONObject) o).get("name");
-                    res.add(removeAccents(rawName));
+                JSONObject obj = (JSONObject) parser.parse(new StringReader(datum));
+
+                JSONArray locations = (JSONArray) obj.get("locations");
+                if (locations != null) {
+                    for (Object o : locations) {
+                        String rawName = (String) ((JSONObject) o).get("name");
+                        res.add(removeAccents(rawName));
+                    }
                 }
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (ParseException e) {
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ParseException e) {
-            e.printStackTrace();
         }
-
         return res;
     }
 
@@ -117,13 +194,21 @@ public class PoolPartyLocationExtractor implements ILocationExtractor {
         }
         if(contents.size() < 2)
         {
-            System.err.println("Poolparty config needs at least 2 params: the base URL, and the param to assign the article url.");
+            System.err.println("Poolparty config needs at least 2 params: the base API URL, and the param to assign the article url.");
             System.err.println("Instead found params:{" + contents + "}");
             return false;
         }
         baseURL = contents.get(0);
-        // article-url parameter is the first after the base api url
-        urlParamNames.add(contents.get(1));
+        // article-url parameter or article-text is the first after the base api url
+        String articleParameter = contents.get(1);
+        if(!Arrays.asList(SupportedModes).contains(articleParameter))
+        {
+            System.err.println("Unsupported article parameter : " + articleParameter + "]. Supported parameter modes are:");
+            System.err.println(SupportedModes);
+            return false;
+        }
+        urlParamNames.add(articleParameter);
+
         urlParamValues.add("");
         if(contents.size() <= 3) return true; // no params specfied
 
@@ -148,10 +233,21 @@ public class PoolPartyLocationExtractor implements ILocationExtractor {
             System.err.println("No username, password fields were provided in configuration file [" + ppConfFile + "].");
             return false;
         }
+        tellStatus();
         return true;
     }
 
-
+    private void tellStatus()
+    {
+        System.out.println("Poolparty config:");
+        System.out.println("----------------------------");
+        System.out.println("baseurl:[" + baseURL +"]");
+        for(int i=0;i< urlParamNames.size(); ++i)
+        {
+            System.out.println(urlParamNames.get(i) + ":[" + urlParamValues.get(i) +"]");
+        }
+        System.out.println("----------------------------");
+    }
     public static void main(String [] args)
     {
         PoolPartyLocationExtractor pp = new PoolPartyLocationExtractor();

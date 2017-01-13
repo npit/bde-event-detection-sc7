@@ -156,7 +156,6 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                     {
                         article_geometries.add(new HashMap<String,String>());
                         noLocationCount++;
-                        System.out.println(" - no location found");
                     }
                     permalinks.add(permalink);
 

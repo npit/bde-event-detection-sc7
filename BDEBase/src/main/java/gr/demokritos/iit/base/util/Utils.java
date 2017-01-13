@@ -70,13 +70,16 @@ public class Utils {
             if(i==0) result += "?";
             else result += "&";
             result += paramNames.get(i) + "=";
+
             try {
-                result += java.net.URLEncoder.encode(paramValues.get(i),"UTF-8");
+                result += java.net.URLEncoder.encode(paramValues.get(i), "UTF-8");
             } catch (UnsupportedEncodingException e) {
-                System.err.println("Failed to encode URL parameter [" + paramValues.get(i) +"]");
+                System.err.println("Failed to encode URL parameter [" + paramValues.get(i) + "]");
                 e.printStackTrace();
                 return "";
             }
+
+
         }
 
         return result;
