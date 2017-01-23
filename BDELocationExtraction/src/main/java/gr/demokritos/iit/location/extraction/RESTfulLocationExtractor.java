@@ -18,14 +18,17 @@ import java.util.regex.Pattern;
 /**
  * Created by nik on 12/29/16.
  */
-public class PoolPartyLocationExtractor implements ILocationExtractor {
-    private ArrayList<String> urlParamNames, urlParamValues;
-    String baseURL, authEncoded;
-    // you can run the extractor with the below main parameters for each article
-    private final String[] SupportedModes = {"url", "text"};
-    private final LE_RESOURCE_TYPE[] SupportedModesRequire = {LE_RESOURCE_TYPE.URL, LE_RESOURCE_TYPE.CLEAN_TEXT};
 
-    public PoolPartyLocationExtractor() {
+// implements location extraction by querying an online RESTful service
+public class RESTfulLocationExtractor implements ILocationExtractor {
+    private ArrayList<String> urlParamNames, urlParamValues;    // param. names and values of the request
+    String baseURL, authEncoded;    // base url of the request, encoded authentication info
+    // you can run the extractor with the below main parameters for each article / tweet
+    private final String[] SupportedModes = {"url", "text"};
+    private final String[] SupportedOutputModes = {"json"};
+    private final LE_RESOURCE_TYPE[] SupportedModesRequire = {LE_RESOURCE_TYPE.URL, LE_RESOURCE_TYPE.CLEAN_TEXT};
+    private String outputMode, outputSPecifier;
+    public RESTfulLocationExtractor() {
         this.urlParamNames = new ArrayList<>();
         this.urlParamValues = new ArrayList<>();
         authEncoded="";
@@ -37,6 +40,8 @@ public class PoolPartyLocationExtractor implements ILocationExtractor {
         return SupportedModesRequire[Arrays.asList(SupportedModes).indexOf(urlParamNames.get(0))];
     }
 
+    // if the text is too large to fit in a URI, split it as many times as needed and perform separate calls
+    // split is done around a white space
     private ArrayList<String> splitTextAPICall(String document)
     {
         ArrayList<String> res = new ArrayList<>();
@@ -96,7 +101,10 @@ public class PoolPartyLocationExtractor implements ILocationExtractor {
 //        System.out.println("CONTACT API, url:");
 //        System.out.println(url);
 //        System.out.println();
-        response = Utils.sendGETAuth(url, authEncoded);
+        if(authEncoded.isEmpty())
+            response = Utils.sendGET(url);
+        else
+            response = Utils.sendGETAuth(url, authEncoded);
         return response;
 
     }
@@ -129,13 +137,13 @@ public class PoolPartyLocationExtractor implements ILocationExtractor {
             }
         }
         if(response == null)
-            return null;
+            return Collections.EMPTY_SET;
         if(response.isEmpty())
-            return null;
+            return Collections.EMPTY_SET;
         return parse(response);
     }
 
-    Set<String> parse(ArrayList<String> data)
+    Set<String> parseJSON(ArrayList<String> data)
     {
         Set<String> res = new HashSet<>();
         JSONParser parser = new JSONParser();
@@ -145,7 +153,7 @@ public class PoolPartyLocationExtractor implements ILocationExtractor {
 
                 JSONObject obj = (JSONObject) parser.parse(new StringReader(datum));
 
-                JSONArray locations = (JSONArray) obj.get("locations");
+                JSONArray locations = (JSONArray) obj.get(outputSPecifier);
                 if (locations != null) {
                     for (Object o : locations) {
                         String rawName = (String) ((JSONObject) o).get("name");
@@ -161,6 +169,18 @@ public class PoolPartyLocationExtractor implements ILocationExtractor {
         return res;
     }
 
+    Set<String> parse(ArrayList<String> data)
+    {
+        if(outputMode.equals("json"))
+            return parseJSON(data);
+        else
+        {
+            System.err.println("Restful LE reached parse phase with no valid output mode!");
+            return null;
+        }
+
+    }
+
     private static String removeAccents(String str) {
         String res;
         String nfdNormalizedString = Normalizer.normalize(str, Normalizer.Form.NFD);
@@ -169,38 +189,35 @@ public class PoolPartyLocationExtractor implements ILocationExtractor {
         res = res.replaceAll("[^A-Za-z0-9 ]"," ");
         return res;
     }
+
     @Override
     public boolean configure(ILocConf conf) {
-        // For pool party LE, use the location extraction source file for config
-        // It should contain
-        //
-        // // API call example:
-        //
-//        https://bde.poolparty.biz/extractor/api/extract?
-//      url=http://feeds.reuters.com/~r/Reuters/worldNews/~3/9X3IBEcr6ug/us-israel-palestinians-un-idUSKBN14B033&language=en&projectId=1DE00F04-C1B9-0001-404F-52256800BE20&locationExtraction=true
-//
-//
-//        1DE00F04-C1B9-0001-404F-52256800BE20
 
-
-        String ppConfFile = conf.getLocationExtractionSourceFile();
-        System.out.println("Reading poolparty LE configuration file: ["+ ppConfFile+"]");
-
-        ArrayList<String> contents = Utils.readFileLinesDropComments(ppConfFile);
-        if(contents == null)
-        {
-            System.err.println("Poolparty config file parse error.");
+        String confFile = conf.getLocationExtractorConfig();
+        if(confFile.isEmpty()) {
+            System.err.println("No extractor config. file specified.");
             return false;
         }
-        if(contents.size() < 2)
+        System.out.println("Reading RESTful LE configuration file: ["+ confFile+"]");
+
+        ArrayList<String> contents = Utils.readFileLinesDropComments(confFile);
+        int contentIdx=0;
+
+        if(contents == null)
         {
-            System.err.println("Poolparty config needs at least 2 params: the base API URL, and the param to assign the article url.");
+            System.err.println("RESTful LE config file parse error.");
+            return false;
+        }
+        if(contents.size() < 4)
+        {
+            System.err.println("RESTful LE config needs at least 4 params:");
+            System.err.println("the base API URL,\n the param to assign the article url/text to\nthe output format,\nthe output specifier.");
             System.err.println("Instead found params:{" + contents + "}");
             return false;
         }
-        baseURL = contents.get(0);
+        baseURL = contents.get(contentIdx++);
         // article-url parameter or article-text is the first after the base api url
-        String articleParameter = contents.get(1);
+        String articleParameter = contents.get(contentIdx++);
         if(!Arrays.asList(SupportedModes).contains(articleParameter))
         {
             System.err.println("Unsupported article parameter : " + articleParameter + "]. Supported parameter modes are:");
@@ -209,11 +226,21 @@ public class PoolPartyLocationExtractor implements ILocationExtractor {
         }
         urlParamNames.add(articleParameter);
 
-        urlParamValues.add("");
-        if(contents.size() <= 3) return true; // no params specfied
+        outputMode = contents.get(contentIdx++);
+        if(!Arrays.asList(SupportedOutputModes).contains(outputMode))
+        {
+            System.err.println("Unsupported article parameter : " + outputMode + "]. Supported parameter modes are:");
+            System.err.println(SupportedOutputModes);
+            return false;
+        }
 
-        String delimiter = contents.get(2);
-        for(String p : contents.subList(3,contents.size()))
+        outputSPecifier = contents.get(contentIdx++);
+
+        urlParamValues.add("");
+        if(contents.size() == contentIdx) return true; // no params specfied
+
+        String delimiter = contents.get(contentIdx++);
+        for(String p : contents.subList(contentIdx,contents.size()))
         {
 
             String [] nameval = p.split(delimiter);
@@ -228,18 +255,19 @@ public class PoolPartyLocationExtractor implements ILocationExtractor {
             urlParamNames.add(nameval[0].trim());
             urlParamValues.add(nameval[1].trim());
         }
-        if(authEncoded.isEmpty())
-        {
-            System.err.println("No username, password fields were provided in configuration file [" + ppConfFile + "].");
-            return false;
-        }
+//      Not mandatory in all restful LEs, isn't it now?
+//        if(authEncoded.isEmpty())
+//        {
+//            System.err.println("No username, password fields were provided in configuration file [" + confFile + "].");
+//            return false;
+//        }
         tellStatus();
         return true;
     }
 
     private void tellStatus()
     {
-        System.out.println("Poolparty config:");
+        System.out.println("RESTful LE config:");
         System.out.println("----------------------------");
         System.out.println("baseurl:[" + baseURL +"]");
         for(int i=0;i< urlParamNames.size(); ++i)
@@ -250,7 +278,7 @@ public class PoolPartyLocationExtractor implements ILocationExtractor {
     }
     public static void main(String [] args)
     {
-        PoolPartyLocationExtractor pp = new PoolPartyLocationExtractor();
+        RESTfulLocationExtractor pp = new RESTfulLocationExtractor();
         ILocConf conf = new LocConf("/home/nik/work/iit/BDE/bde-event-detection-sc7/BDELocationExtraction/res/location.properties");
         pp.configure(conf);
         String test = "Republic of Côte d'Angelo";

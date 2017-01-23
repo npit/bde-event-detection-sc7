@@ -38,7 +38,6 @@ public class DefaultCrawlSchedule implements CrawlSchedule {
     @Override
     public String nextUrl() {
         if (needsLoading()) {
-            System.out.println("CrawlSchedule object loading urls.");
             this.load();
         }
 

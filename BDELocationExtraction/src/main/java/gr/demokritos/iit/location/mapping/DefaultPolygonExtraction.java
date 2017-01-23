@@ -143,7 +143,6 @@ public class DefaultPolygonExtraction implements IPolygonExtraction {
             {
                 if( ! polyWarnCache.contains(loc)) {
                     polyWarnCache.add(loc);
-                    Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "Polygon extraction failed for [" + loc + "]");
                 }
             }
         }

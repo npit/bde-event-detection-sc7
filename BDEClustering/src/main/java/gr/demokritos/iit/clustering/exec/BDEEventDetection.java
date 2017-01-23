@@ -77,7 +77,7 @@ public class BDEEventDetection {
         repository.clusterArticles();
 
         tocTell("clustering");
-        if(!repository.good() || true) // || true to stop here : time measurements
+        if(!repository.good()) // || true to stop here : time measurements
         {
             repository.destroy();
             factory.releaseResources();
