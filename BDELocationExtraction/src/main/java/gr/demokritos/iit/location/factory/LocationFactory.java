@@ -5,7 +5,7 @@
  */
 package gr.demokritos.iit.location.factory;
 
-import gr.demokritos.iit.location.extraction.PoolPartyLocationExtractor;
+import gr.demokritos.iit.location.extraction.RESTfulLocationExtractor;
 import gr.demokritos.iit.location.factory.conf.ILocConf;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
@@ -105,7 +105,7 @@ public class LocationFactory implements ILocFactory {
             }
             else
 	    {
-                System.out.println("No rest implementation provided. Using Simple.");
+                System.out.println("No rest client implementation provided for the polygon extractor. Using Simple.");
 		Failed = true;
 	    }
 
@@ -179,7 +179,7 @@ public class LocationFactory implements ILocFactory {
         String extractor = conf.getLocationExtractor();
 
         if(extractor.equals("default")) return createDefaultLocationExtractor();
-        else if(extractor.equals("poolparty")) return new PoolPartyLocationExtractor();
+        else if(extractor.equals("restful")) return new RESTfulLocationExtractor();
         else
         {
             System.err.println("Undefined location extractor: [" + extractor + "]");

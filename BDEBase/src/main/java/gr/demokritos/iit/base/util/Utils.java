@@ -32,6 +32,10 @@ public class Utils {
     public static ArrayList<String> readFileLinesDropComments(String path)
     {
 
+        if(path.isEmpty()) {
+            System.err.println("Empty path supplied to readFileLinesDropComments ");
+            return new ArrayList<>();
+        }
         ArrayList<String> res = new ArrayList<>();
         try {
             BufferedReader bf = new BufferedReader(new FileReader(new File(path)));

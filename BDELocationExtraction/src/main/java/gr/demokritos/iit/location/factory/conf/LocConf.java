@@ -1,3 +1,4 @@
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -84,25 +85,9 @@ public class LocConf extends BaseConfiguration implements ILocConf {
     }
 
     @Override
-    public String getLocationExtractionSourceFile(){ return properties.getProperty("location_extraction_sourcefile");}
-    @Override
-    public boolean useAdditionalExternalNames(){
-        String value = properties.getProperty("use_additional_external_location_src","");
-        if(!value.isEmpty())
-        {
-            if(value.toLowerCase().equals("yes")) return true;
-        }
-        return false;
-    }
-    @Override
-    public boolean onlyUseAdditionalExternalNames(){
-        String value = properties.getProperty("only_use_additional_external_location_src","");
-        if(!value.isEmpty())
-        {
-            if(value.toLowerCase().equals("yes")) return true;
-        }
-        return false;
-    }
+
+    public String getLocationExtractorConfig(){ return properties.getProperty("extractor_config","");}
+
     @Override
     public boolean onlyUpdateEvents()
     {

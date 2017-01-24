@@ -132,7 +132,14 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                     if(locExtractor.getRequiredResource().equals(ILocationExtractor.LE_RESOURCE_TYPE.URL))
                         RequiredResource = permalink;
                     else if(locExtractor.getRequiredResource().equals(ILocationExtractor.LE_RESOURCE_TYPE.CLEAN_TEXT))
+                    {
+                        if(clean_text == null || clean_text.isEmpty())
+                        {
+                            System.out.println(" (!) Empty or null clean text");
+                            continue;
+                        }
                         RequiredResource = clean_text;
+                    }
                     else
                     {
                         System.err.println("Undefined required resource : [" + locExtractor.getRequiredResource().toString() +"]");
@@ -149,6 +156,7 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
 
                         repos.updateArticlesWithReferredPlaceMetadata(permalink, places_polygons);
                         article_geometries.add(places_polygons);
+                        System.out.println(String.format(" %s", places_polygons.keySet().toString()));
 
                         i++;
                     }
@@ -156,6 +164,8 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                     {
                         article_geometries.add(new HashMap<String,String>());
                         noLocationCount++;
+                        System.out.println("");
+
                     }
                     permalinks.add(permalink);
 
