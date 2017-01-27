@@ -85,7 +85,6 @@ public class LocConf extends BaseConfiguration implements ILocConf {
     }
 
     @Override
-
     public String getLocationExtractorConfig(){ return properties.getProperty("extractor_config","");}
 
     @Override

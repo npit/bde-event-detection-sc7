@@ -194,12 +194,10 @@ public class RESTfulLocationExtractor implements ILocationExtractor {
     public boolean configure(ILocConf conf) {
 
         String confFile = conf.getLocationExtractorConfig();
-
         if(confFile.isEmpty()) {
             System.err.println("No extractor config. file specified.");
             return false;
         }
-
         System.out.println("Reading RESTful LE configuration file: ["+ confFile+"]");
 
         ArrayList<String> contents = Utils.readFileLinesDropComments(confFile);
