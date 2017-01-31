@@ -16,6 +16,7 @@ package gr.demokritos.iit.location.extraction.provider;
 
 
 import gr.demokritos.iit.base.conf.BaseConfiguration;
+import gr.demokritos.iit.base.conf.IBaseConf;
 import gr.demokritos.iit.base.util.Utils;
 
 import gr.demokritos.iit.location.factory.conf.ILocConf;
@@ -28,7 +29,10 @@ import opennlp.tools.util.Span;
 import org.opengis.filter.expression.Add;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /**
@@ -90,88 +94,14 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
 
     }
 
-   
-    
 
-    private void readLocationsFile(String extrapath)
-    {
-        // special optional format:
-        // name1***name2***name3 ...
-        // In that scenario, if name1 exists in the text, then name2,name3 ...  will (also) be added as a location name.
-        // this is helpful if name1 is too specific for a geometry to exist, so we manually add superegions for which
-        // we know that a geometry is availabe
-        System.out.println("Reading default LE token provider extra locations file: ["+ extrapath+"]");
-        ArrayList<String> lines = Utils.readFileLinesDropComments(extrapath);
-        if(lines.isEmpty())
-        {
-            System.err.println("Nothing read out of extra locations file ["+extrapath+"]");
-            return;
-        }
-        String delimiter = "[*]{3}";
-        String overrideDelimiter = "[/]{3}";
-
-        String line="";
-        int linecount=0, skipcount=0;
-        for(String l : lines)        {
-        // read newline delimited source names file
-
-
-
-            ++linecount;
-            line = line.trim();
-
-            String[] parts = line.split(delimiter);
-            String[] overrParts = parts[0].split(overrideDelimiter);
-            String locationBaseName="", locationOverrideName;
-            if(overrParts.length > 1)
-            {
-                if(overrParts.length > 2)
-                {
-                    System.err.printf("Location name override should be like name1%sname2",overrideDelimiter); ++skipcount;
-                    continue;
-                }
-                locationBaseName = overrParts[0];
-                locationOverrideName = overrParts[1];
-                extraNamesOverride.put(locationBaseName,locationOverrideName);
-            }
-            else
-                locationBaseName = parts[0];
-
-            if(!extraNames.contains(locationBaseName))
-            {
-                extraNames.add(locationBaseName);
-                //System.out.println(extraNames.size() + ":" + locationBaseName);
-            }
-            else
-            {
-                ++skipcount;
-                System.out.println("\tSkipping duplicate entry [" + locationBaseName + "].");
-            }
-
-
-            if(parts.length > 1)
-            {
-                extraNamesAssociation.put(locationBaseName, new ArrayList());
-
-                // add the associated places
-                for (int i = 1; i < parts.length; ++i) {
-                    if (!extraNamesAssociation.get(locationBaseName).contains(parts[i]))
-                        extraNamesAssociation.get(locationBaseName).add(parts[i]);
-                }
-            }
-        }
-
-        System.out.println("Skipped " + skipcount + " extra location name entries.");
-
-
-
-    }
     public boolean configure(ILocConf conf)
     {
         String extractorConf = conf.getLocationExtractorConfig();
         Properties props = new Properties();
         try {
-            props.load(new FileInputStream(extractorConf));
+            FileInputStream instream = new FileInputStream(new File(extractorConf));
+            props.load(new InputStreamReader(instream, Charset.forName("UTF-8")));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -181,77 +111,28 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
         extraNamesAssociation = new HashMap<>();
 
         extraNamesOverride = new HashMap<>();
+        String [] extraLocations = null;
         String value = props.getProperty("extra_locations","");
+        if(value.isEmpty())
+        {
+            value = props.getProperty("extra_locations_file","");
+            ArrayList<String> lines = Utils.readFileLinesDropComments(value);
+            if(lines == null) return true;
+            extraLocations = lines.toArray(new String[lines.size()]);
+        }
+        else
+        {
+            extraLocations = value.split(",");
+        }
         if(value.isEmpty()) return true;
 
-        String [] extraLocations = value.split(",");
+
         for(String extraloc : extraLocations)
         {
-            String baseName="";
-            String override="";
-            ArrayList<String> additionals = new ArrayList<>();
-            String metaData="";
-
-            String [] nameAndMeta = extraloc.split("/"); // check for overrides
-
-            // parse override
-            if(nameAndMeta.length == 1)
-            {
-                //no override
-                metaData = nameAndMeta[0];
-            }
-            else if(nameAndMeta.length == 2)
-            {
-                baseName = nameAndMeta[0].trim();
-                metaData = nameAndMeta[1];
-            }
-            else
-            {
-                System.err.println("Skipping extra location clause [" + value+ "] : Encountered more than 2  overrides (slashes) ");
-                System.err.println("Can have at most 1.");
-                continue;
-            }
-            // parse metadata : check additionals
-            nameAndMeta = metaData.split("\\+");
-            if(nameAndMeta.length == 1)
-            {
-                // no additionals
-                if(baseName.isEmpty())
-                {
-                    // no metadata at all
-                    baseName = metaData.trim();
-                }
-                else
-                {
-                    // meta data is only an override
-                    override = metaData.trim();
-                }
-            }
-            else
-            {
-                // additionals exist
-                if(baseName.isEmpty())
-                {
-                    // no overrides were encountered, so 1st token is the base name
-                    baseName = nameAndMeta[0].trim();
-                }
-                else
-                    override = (nameAndMeta[0]).trim();
-                // all the rest are additionals
-                for(int i=1;i<nameAndMeta.length;++i) additionals.add(nameAndMeta[i].trim());
-            }
-            extraNames.add(baseName);
-            if(! additionals.isEmpty())
-                extraNamesAssociation.put(override,additionals);
-            if(! override.isEmpty())
-                extraNamesOverride.put(baseName, override);
+            parseExtraLocationClause(extraloc,conf);
         }
 
-
-
-
-
-        System.out.println("done.\n\t Read " + extraNames.size() + " additional location names.");
+        System.out.println("done.\n\tRead " + extraNames.size() + " additional location names.");
         System.out.println("\tRead " + extraNamesAssociation.size() + " location associations.");
         System.out.println("\tRead " + extraNamesOverride.size() + " location overrides.");
 
@@ -271,6 +152,80 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
             if(extraNamesAssociation.containsKey(name)) immutableNames.addAll(extraNamesAssociation.get(name));
         }
     return true;
+    }
+
+    void parseExtraLocationClause(String extraloc, ILocConf conf)
+    {
+        String baseName="";
+        String override="";
+        ArrayList<String> additionals = new ArrayList<>();
+        String metaData="";
+
+        String [] nameAndMeta = extraloc.split("/"); // check for overrides
+
+        // parse override
+        if(nameAndMeta.length == 1)
+        {
+            //no override
+            metaData = nameAndMeta[0];
+        }
+        else if(nameAndMeta.length == 2)
+        {
+            baseName = nameAndMeta[0].trim();
+            metaData = nameAndMeta[1];
+        }
+        else
+        {
+            System.err.println("Skipping extra location clause [" + extraloc + "] : Encountered more than 2  overrides (slashes) ");
+            System.err.println("Can have at most 1.");
+            return;
+        }
+        // parse metadata : check additionals
+        nameAndMeta = metaData.split("\\+");
+        if(nameAndMeta.length == 1)
+        {
+            // no additionals
+            if(baseName.isEmpty())
+            {
+                // no metadata at all
+                baseName = metaData.trim();
+            }
+            else
+            {
+                // meta data is only an override
+                override = metaData.trim();
+            }
+        }
+        else
+        {
+            // additionals exist
+            if(baseName.isEmpty())
+            {
+                // no overrides were encountered, so 1st token is the base name
+                baseName = nameAndMeta[0].trim();
+            }
+            else
+                override = (nameAndMeta[0]).trim();
+            // all the rest are additionals
+            for(int i=1;i<nameAndMeta.length;++i) additionals.add(nameAndMeta[i].trim());
+        }
+        if(conf.hasModifier(ILocConf.Modifiers.VERBOSE.toString()))
+            System.out.println(baseName);
+        boolean inserted = extraNames.add(baseName);
+
+        if(! inserted) System.err.println("Duplicate location: " + baseName);
+        if(! additionals.isEmpty())
+        {
+            for(String a : additionals)
+                extraNames.add(a);
+            extraNamesAssociation.put(override, additionals);
+        }
+        if(! override.isEmpty())
+        {
+            extraNames.add(override);           // add it to the directly matched
+            extraNamesOverride.put(baseName, override);
+        }
+
     }
     /**
      *
@@ -329,9 +284,16 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
     private Set<String> AdditionalResultsPerArticle;
     public Set<String> getImmutableNames()
     {
+        if(immutableNames==null) return new HashSet<>();
         return immutableNames;
     }
 
+    private String processGreek(String word)
+    {
+        word = word.replaceAll("Α","A");
+
+        return word;
+    }
     @Override
     public Set<String> getLocationTokens(String text) {
 
@@ -388,6 +350,7 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
     void searchForAdditionalLocations(String text)
     {
         for(String extraName : extraNames) {
+
             // already processed
             if (AdditionalResultsPerArticle.contains(extraName)) continue;
             if(! validOccurence(extraName, text)) continue;
@@ -417,11 +380,6 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
             }
         }
         return augmentedNames;
-    }
-    String checkOverride(String name)
-    {
-        if(extraNamesOverride.containsKey(name)) name =extraNamesOverride.get(name);
-        return name;
     }
 
     boolean validOccurence(String extraName, String text)

@@ -1,0 +1,2 @@
+Use these commands to build the backends for the event-detection I/O
+Mysql suppoprts only storage (no location extraction / clustering)

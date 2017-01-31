@@ -1,0 +1,173 @@
+
+CREATE TABLE bde.news_articles_per_crawled_date (
+    year_month_day_literal text,
+    crawled bigint,
+    entry_url text,
+    clean_text text,
+    crawl_id bigint,
+    feed_url text,
+    language text,
+    place_literal set<text>,
+    published bigint,
+    raw_text text,
+    title text,
+    PRIMARY KEY (year_month_day_literal, crawled, entry_url)
+) WITH CLUSTERING ORDER BY (crawled DESC, entry_url ASC)
+    AND bloom_filter_fp_chance = 0.01
+    AND caching = '{"keys":"ALL", "rows_per_partition":"NONE"}'
+    AND comment = ''
+    AND compaction = {'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy'}
+    AND compression = {'sstable_compression': 'org.apache.cassandra.io.compress.LZ4Compressor'}
+    AND dclocal_read_repair_chance = 0.1
+    AND default_time_to_live = 0
+    AND gc_grace_seconds = 864000
+    AND max_index_interval = 2048
+    AND memtable_flush_period_in_ms = 0
+    AND min_index_interval = 128
+    AND read_repair_chance = 0.0
+    AND speculative_retry = '99.0PERCENTILE';
+
+
+
+CREATE TABLE bde.news_articles (
+    reversed_host text,
+    entry_url text,
+    clean_text text,
+    crawl_id bigint,
+    crawled bigint,
+    feed_url text,
+    language text,
+    place_literal set<text>,
+    published bigint,
+    raw_text text,
+    title text,
+    PRIMARY KEY (reversed_host, entry_url)
+) WITH CLUSTERING ORDER BY (entry_url ASC)
+    AND bloom_filter_fp_chance = 0.01
+    AND caching = '{"keys":"ALL", "rows_per_partition":"NONE"}'
+    AND comment = ''
+    AND compaction = {'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy'}
+    AND compression = {'sstable_compression': 'org.apache.cassandra.io.compress.LZ4Compressor'}
+    AND dclocal_read_repair_chance = 0.1
+    AND default_time_to_live = 0
+    AND gc_grace_seconds = 864000
+    AND max_index_interval = 2048
+    AND memtable_flush_period_in_ms = 0
+    AND min_index_interval = 128
+    AND read_repair_chance = 0.0
+    AND speculative_retry = '99.0PERCENTILE';
+
+
+
+CREATE TABLE bde.news_crawls (
+    crawl_type text,
+    crawl_id bigint,
+    end bigint,
+    start bigint,
+    PRIMARY KEY (crawl_type, crawl_id)
+) WITH CLUSTERING ORDER BY (crawl_id DESC)
+    AND bloom_filter_fp_chance = 0.01
+    AND caching = '{"keys":"ALL", "rows_per_partition":"NONE"}'
+    AND comment = ''
+    AND compaction = {'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy'}
+    AND compression = {'sstable_compression': 'org.apache.cassandra.io.compress.LZ4Compressor'}
+    AND dclocal_read_repair_chance = 0.1
+    AND default_time_to_live = 0
+    AND gc_grace_seconds = 864000
+    AND max_index_interval = 2048
+    AND memtable_flush_period_in_ms = 0
+    AND min_index_interval = 128
+    AND read_repair_chance = 0.0
+    AND speculative_retry = '99.0PERCENTILE';
+
+
+CREATE TABLE bde.news_articles_per_published_date (
+    year_month_day_literal text,
+    published bigint,
+    entry_url text,
+    clean_text text,
+    crawl_id bigint,
+    crawled bigint,
+    feed_url text,
+    language text,
+    place_literal set<text>,
+    raw_text text,
+    title text,
+    PRIMARY KEY (year_month_day_literal, published, entry_url)
+) WITH CLUSTERING ORDER BY (published DESC, entry_url ASC)
+    AND bloom_filter_fp_chance = 0.01
+    AND caching = '{"keys":"ALL", "rows_per_partition":"NONE"}'
+    AND comment = ''
+    AND compaction = {'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy'}
+    AND compression = {'sstable_compression': 'org.apache.cassandra.io.compress.LZ4Compressor'}
+    AND dclocal_read_repair_chance = 0.1
+    AND default_time_to_live = 0
+    AND gc_grace_seconds = 864000
+    AND max_index_interval = 2048
+    AND memtable_flush_period_in_ms = 0
+    AND min_index_interval = 128
+    AND read_repair_chance = 0.0
+    AND speculative_retry = '99.0PERCENTILE';
+
+
+
+CREATE TABLE bde.news_feeds (
+    feed_url text PRIMARY KEY,
+    etag text,
+    last_modified text
+) WITH bloom_filter_fp_chance = 0.01
+    AND caching = '{"keys":"ALL", "rows_per_partition":"NONE"}'
+    AND comment = ''
+    AND compaction = {'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy'}
+    AND compression = {'sstable_compression': 'org.apache.cassandra.io.compress.LZ4Compressor'}
+    AND dclocal_read_repair_chance = 0.1
+    AND default_time_to_live = 0
+    AND gc_grace_seconds = 864000
+    AND max_index_interval = 2048
+    AND memtable_flush_period_in_ms = 0
+    AND min_index_interval = 128
+    AND read_repair_chance = 0.0
+    AND speculative_retry = '99.0PERCENTILE';
+
+CREATE TABLE bde.news_articles_per_place (
+    place_literal text,
+    entry_url text,
+    bounding_box text,
+    clean_text text,
+    crawl_id bigint,
+    crawled bigint,
+    feed_url text,
+    language text,
+    published bigint,
+    raw_text text,
+    title text,
+    PRIMARY KEY (place_literal, entry_url)
+) WITH CLUSTERING ORDER BY (entry_url ASC)
+    AND bloom_filter_fp_chance = 0.01
+    AND caching = '{"keys":"ALL", "rows_per_partition":"NONE"}'
+    AND comment = ''
+    AND compaction = {'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy'}
+    AND compression = {'sstable_compression': 'org.apache.cassandra.io.compress.LZ4Compressor'}
+    AND dclocal_read_repair_chance = 0.1
+    AND default_time_to_live = 0
+    AND gc_grace_seconds = 864000
+    AND max_index_interval = 2048
+    AND memtable_flush_period_in_ms = 0
+    AND min_index_interval = 128
+    AND read_repair_chance = 0.0
+    AND speculative_retry = '99.0PERCENTILE';
+    
+CREATE INDEX crawlid_idx ON bde.news_articles_per_place (crawl_id);
+CREATE INDEX lang_idx ON bde.news_articles_per_place (language);
+
+
+CREATE INDEX plain_crawlid_idx ON bde.news_articles (crawl_id);
+CREATE INDEX plain_lang_idx ON bde.news_articles (language);
+
+
+CREATE INDEX rss_crawlid_idx ON bde.news_articles_per_published_date (crawl_id);
+CREATE INDEX rss_lang_idx ON bde.news_articles_per_published_date (language);
+
+
+CREATE INDEX rssc_crawlid_idx ON bde.news_articles_per_crawled_date (crawl_id);
+CREATE INDEX rssc_lang_idx ON bde.news_articles_per_crawled_date (language);

@@ -8,12 +8,20 @@ package gr.demokritos.iit.location.factory.conf;
 
 import gr.demokritos.iit.base.conf.BaseConfiguration;
 
+import java.util.ArrayList;
+
 /**
  *
  * @author George K. <gkiom@iit.demokritos.gr>
  */
 public class LocConf extends BaseConfiguration implements ILocConf {
 
+    public static final String RETRIEVAL_MODE_SCHEDULED="scheduled";
+    public static final String RETRIEVAL_MODE_EXPLICIT="explicit";
+    public static String modes()
+    {
+        return RETRIEVAL_MODE_SCHEDULED + "," + RETRIEVAL_MODE_EXPLICIT;
+    }
     public LocConf(String configurationFileName) {
         super(configurationFileName);
     }
@@ -53,13 +61,18 @@ public class LocConf extends BaseConfiguration implements ILocConf {
     }
 
     @Override
-    public String getOperationMode() {
-        return properties.getProperty("operation_mode");
+    public String getDocumentMode() {
+        return properties.getProperty("document_mode");
     }
 
     @Override
     public String getRestClientImpl() {
         return properties.getProperty("rest_client_impl","");
+    }
+
+    @Override
+    public String getDocumentListFile() {
+        return properties.getProperty("document_list_file","");
     }
 
     @Override
@@ -106,6 +119,11 @@ public class LocConf extends BaseConfiguration implements ILocConf {
             if(value.toLowerCase().equals("yes")) return true;
         }
         return false;
+    }
+    @Override
+    public String getDocumentRetrievalMode()
+    {
+        return properties.getProperty("document_retrieval_mode",RETRIEVAL_MODE_SCHEDULED);
     }
 
 

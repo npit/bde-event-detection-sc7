@@ -75,7 +75,7 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
     {
         super(session);
         this.configuration = configuration;
-        IsVerbose = configuration.hasModifier(IClusteringConf.Modifiers.VERBOSE.toString());
+        IsVerbose = configuration.hasModifier(IBaseConf.Modifiers.VERBOSE.toString());
     }
 
     // use this class to save topics for DEMO

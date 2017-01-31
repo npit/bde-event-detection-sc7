@@ -27,34 +27,14 @@ target/
 *.lock
 *.txt.*
 
-#project specific
-/BDETwitterListener/creds.properties
-nb*.xml
-
 # intellij idea
 .idea/
 *.iml
 
-# config-specific
-*.ignore
-*META-INF*
-out/*
-*.csv#
-*/res/*.properties
-*/res/*_urls*
-*/res/*.queries
-*/res/*.accounts
-
-timingParallelSpark.txt
+# sensitive data
 sensitive/*
-BDELocationExtraction/res/local/
-installPOMs/
-*res/locationnames
-BDELocationExtraction/res/location.*
-BDELocationExtraction/res/*.properties
 
-BDERSSCrawler/res/*.urls
-
+# modules configuration
 exec/*
 !exec/cluster
 !exec/news
@@ -62,4 +42,17 @@ exec/*
 !exec/location
 !exec/gencpath
 
+BDELocationExtraction/res/*
+|BDELocationExtraction/res/en-sent.bin
+|BDELocationExtraction/res/ne-models/*
 
+BDERSSCrawler/res/*
+|BDERSSCrawler/res/db/*
+
+BDEClustering/res/*
+|BDEClustering/res/en-sent.bin
+|BDEClustering/res/stopwords_en.txt
+|BDEClustering/res/db/*
+
+BDETwitterListener/res/*
+|BDETwitterListener/res/db/*

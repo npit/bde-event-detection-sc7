@@ -22,7 +22,6 @@ import gr.demokritos.iit.location.mapping.IPolygonExtraction;
 import gr.demokritos.iit.location.mode.OperationMode;
 import gr.demokritos.iit.location.repository.ILocationRepository;
 import gr.demokritos.iit.location.structs.LocSched;
-import gr.demokritos.iit.location.util.GeometryFormatTransformer;
 
 import java.util.*;
 
@@ -45,6 +44,54 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
         this.conf = conf;
     }
 
+    @Override
+    public void executeTargetedUpdate()
+    {
+        // perform LE on a list of documents
+        String documentListFile = conf.getDocumentListFile();
+        if(documentListFile.isEmpty())
+        {
+            System.err.println("Did not supply document list file parameter.");
+            return;
+        }
+        ArrayList<String> documentIDs = Utils.readFileLinesDropComments(documentListFile);
+        if(documentIDs == null)
+        {
+            System.err.println("Failed to read the document ids file.");
+            return;
+        }
+        Collection<Map<String, Object>> items =  new ArrayList<>();
+        if(opMode == OperationMode.ARTICLES) {
+            for (String id : documentIDs)
+                items.add(repos.loadArticle(id));
+        }
+        else if(opMode == OperationMode.ARTICLES)
+        {
+            for (String id : documentIDs)
+                items.add(repos.loadTweet(Long.parseLong(id)));
+        }
+        else if(opMode == OperationMode.TEXT)
+        {
+            for (String id : documentIDs)
+            {
+                Map<String,Object> m = new HashMap<String,Object>();
+                m.put("text",id);
+                items.add(m);
+            }
+
+        }
+        else
+        {
+            System.err.println("Invalid document mode : " + opMode.toString() +  " for retrieval mode " + conf.getDocumentRetrievalMode());
+            System.err.println("Use articles or tweets , but not both");
+            return;
+        }
+        Map<String,Map<String,String>> id_geometries_map = new HashMap<>();
+        extractLocation(items, id_geometries_map);
+        updateKeyspaceEntries(id_geometries_map);
+
+        System.out.println("Targeted location extraction completed.");
+    }
     @Override
     public void executeSchedule() {
         if (opMode == OperationMode.BOTH) {
@@ -89,7 +136,9 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
         }
         ExecRes er;
         // get location
-        er = extractLocation(items, mode);
+        Map<String,Map<String,String>> id_geometries_map = new HashMap<>();
+        er = extractLocation(items, id_geometries_map);
+        updateKeyspaceEntries(id_geometries_map);
         // schedule updated
         sched.setItemsUpdated(er.getItemsFound());
         // update last timestamp parsed
@@ -100,7 +149,7 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
         repos.scheduleFinalized(sched);
     }
 
-    private ExecRes extractLocation(Collection<Map<String, Object>> items, OperationMode mode) {
+    private ExecRes extractLocation(Collection<Map<String, Object>> items, Map<String,Map<String,String>> ids_geometries) {
 
         // keep most recent published for reference
 
@@ -109,20 +158,25 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
         int i = 0;
         int count = 0;
         int noLocationCount = 0;
-        switch (mode) {
+        switch (opMode) {
             case ARTICLES:
                 poly.init();
                 ArrayList<String> permalinks = new ArrayList<>();
-                ArrayList<Map<String,String>> article_geometries = new ArrayList<>();
+
                 // for each article
                 for (Map<String, Object> article : items) {
-
+                    if(article.isEmpty())
+                    {
+                        System.out.println("\tArticle " + ++count +  "/" +  items.size() + " is empty, skipping."); //debugprint
+                        continue;
+                    }
                     ++count;
                     String permalink;
                     long published = (long) article.get(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PUBLISHED.getColumnName());
                     max_published = Math.max(max_published, published);
 
                     permalink = (String) article.get(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName());
+
                     String clean_text = (String) article.get(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CLEAN_TEXT.getColumnName());
                     // extract location entities
                     //System.out.println("Extracting location for article " + permalink);
@@ -154,15 +208,14 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                         // edit geometry
                         places_polygons = poly.postProcessGeometries(places_polygons);
 
-                        repos.updateArticlesWithReferredPlaceMetadata(permalink, places_polygons);
-                        article_geometries.add(places_polygons);
+                        ids_geometries.put(permalink,places_polygons);
                         System.out.println(String.format(" %s", places_polygons.keySet().toString()));
 
                         i++;
                     }
                     else
                     {
-                        article_geometries.add(new HashMap<String,String>());
+                        ids_geometries.put("",new HashMap<String,String>());
                         noLocationCount++;
                         System.out.println("");
 
@@ -177,8 +230,6 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                 break;
             case TWEETS:
                 poly.init();
-                ArrayList<Long> post_ids = new ArrayList<>();
-                ArrayList<Map<String,String>> tweet_geometries = new ArrayList<>();
                 // for each tweet
                 for (Map<String, Object> item : items) {
                     ++count;
@@ -208,28 +259,74 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                     if (!locationsFound.isEmpty()) {
                         Map<String, String> places_polygons = poly.extractPolygon(locationsFound);
                         places_polygons = poly.postProcessGeometries(places_polygons);
-                        // update entry (tweets_per_referred_place)
-                        repos.updateTweetsWithReferredPlaceMetadata(post_id, places_polygons);
-                        tweet_geometries.add(places_polygons);
+
+                        ids_geometries.put(Long.toString(post_id),places_polygons);
+                        if(! places_polygons.keySet().isEmpty())
+                            System.out.println(String.format(" %s", places_polygons.keySet().toString()));
 
                         i++;
                     }
                     else {
                         noLocationCount++;
-                        tweet_geometries.add(new HashMap<String, String>());
-                        System.out.println(" - no location found");
+                        ids_geometries.put("",new HashMap<String,String>());
+                        System.out.println("");
                     }
-                    post_ids.add(post_id);
                 }
                 System.out.println("\tLocation literal found for " + (items.size() - noLocationCount)  + " / " + items.size() + " tweets ");
                 System.out.println("\t\tPolygon fetch failed for locations: " + poly.getFailedExtractionNames());
                 //repos.updateEventsWithAllLocationPolygonPairs(mode, tweet_geometries, post_ids,null, null);
 
                 break;
+            case TEXT:
+                poly.init();
+                if( ! locExtractor.getRequiredResource().equals(ILocationExtractor.LE_RESOURCE_TYPE.CLEAN_TEXT))
+                {
+                    System.err.println("TEXT mode location extraction requires an extractor that deals with text.");
+                    System.err.println("Current extractor is : " + conf.getLocationExtractor());
+                    break;
+                }
+                for (Map<String, Object> item : items) {
+                    String text = (String) item.get("text");
+                    String textid=text.substring(0,30);
+                    Set<String> locationsFound = locExtractor.extractLocation(text);
+                    System.out.print("\tText " + ++count +  "/" +  items.size() + " : "  + textid + "[...] ");
+                    if (!locationsFound.isEmpty()) {
+                        Map<String, String> places_polygons = poly.extractPolygon(locationsFound);
+                        places_polygons = poly.postProcessGeometries(places_polygons);
+                        ids_geometries.put(textid,places_polygons);
+                        i++;
+                        if(! places_polygons.keySet().isEmpty())
+                            System.out.println(String.format(" %s", places_polygons.keySet().toString()));
+
+                    }
+                    else {
+                        noLocationCount++;
+                        ids_geometries.put("",new HashMap<String,String>());
+                        System.out.println("");
+                    }
+
+                }
+                System.out.println("\tLocation literal found for " + (items.size() - noLocationCount)  + " / " + items.size() + " texts ");
+                System.out.println("\t\tPolygon fetch failed for locations: " + poly.getFailedExtractionNames());
+
         }
         return new ExecRes(max_published, i);
     }
 
+    private void updateKeyspaceEntries(Map<String,Map<String,String>> ids_geometries)
+    {
+        switch (opMode) {
+            case ARTICLES:
+                repos.updateArticlesWithReferredPlaceMetadata(ids_geometries);
+
+                break;
+            case TWEETS:
+                // update entry (tweets_per_referred_place)
+                repos.updateTweetsWithReferredPlaceMetadata(ids_geometries);
+                break;
+        }
+
+    }
 
 
     /**

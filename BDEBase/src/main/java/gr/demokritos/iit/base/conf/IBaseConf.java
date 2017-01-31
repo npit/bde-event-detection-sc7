@@ -26,6 +26,19 @@ import java.util.List;
  */
 public interface IBaseConf {
 
+    enum Modifiers
+    {
+        VERBOSE("verbose");
+        private String type;
+        private Modifiers(String type) {
+            this.type = type;
+        }
+        @Override
+        public String toString() {
+            return type;
+        }
+    }
+
     String DATE_FORMAT_ISO_8601 = "yyyy-MM-dd'T'HH:mmZ";
     String TIMEZONE_ID_UTC = "UTC";
     String TIME_WINDOW_NONE="none";

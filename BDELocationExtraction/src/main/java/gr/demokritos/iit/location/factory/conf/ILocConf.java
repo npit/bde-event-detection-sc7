@@ -7,6 +7,8 @@ package gr.demokritos.iit.location.factory.conf;
 
 import gr.demokritos.iit.base.conf.IBaseConf;
 
+import java.util.ArrayList;
+
 /**
  *
  * @author George K. <gkiom@iit.demokritos.gr>
@@ -36,10 +38,12 @@ public interface ILocConf extends IBaseConf {
 
     double getNEConfidenceCutOffThreshold();
 
-    String getOperationMode();
+    String getDocumentMode();
 
     String getRestClientImpl();
 
+    String getDocumentRetrievalMode();
 
+    String getDocumentListFile();
 
 }

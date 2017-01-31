@@ -14,7 +14,6 @@
  */
 package gr.demokritos.iit.location.schedule;
 
-import com.vividsolutions.jts.io.ParseException;
 import gr.demokritos.iit.location.extraction.ILocationExtractor;
 import gr.demokritos.iit.location.factory.ILocFactory;
 import gr.demokritos.iit.location.factory.LocationFactory;
@@ -23,13 +22,9 @@ import gr.demokritos.iit.location.factory.conf.LocConf;
 import gr.demokritos.iit.location.mapping.IPolygonExtraction;
 import gr.demokritos.iit.location.mode.OperationMode;
 import gr.demokritos.iit.location.repository.ILocationRepository;
-import gr.demokritos.iit.location.util.GeometryFormatTransformer;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Level;
 
 import static gr.demokritos.iit.location.factory.ILocFactory.LOG;
@@ -55,8 +50,8 @@ public class LocationExtraction {
         ILocFactory factory = null;
         try {
             // get operation mode
-            String mode = conf.getOperationMode();
-            OperationMode operationMode = OperationMode.valueOf(mode.toUpperCase());
+            String mode = conf.getDocumentMode();
+            OperationMode documentMode = OperationMode.valueOf(mode.toUpperCase());
             // instantiate a new factory
             factory = new LocationFactory(conf);
             // init connection pool to the repository
@@ -86,10 +81,19 @@ public class LocationExtraction {
                 IPolygonExtraction poly = factory.createPolygonExtractionClient();
                 // according to mode, execute location extraction schedule.
                 ILocationExtractionScheduler scheduler = new LocationExtractionScheduler(
-                        operationMode, repos, locExtractor, poly, conf
+                        documentMode, repos, locExtractor, poly, conf
                 );
-
-                scheduler.executeSchedule();
+                String retrieval_mode = conf.getDocumentRetrievalMode();
+                if(retrieval_mode.equals(LocConf.RETRIEVAL_MODE_SCHEDULED))
+                    scheduler.executeSchedule();
+                else if(retrieval_mode.equals(LocConf.RETRIEVAL_MODE_EXPLICIT))
+                    scheduler.executeTargetedUpdate();
+                else
+                {
+                    System.err.println("Undefined document retrieval mode : [" + retrieval_mode + "]");
+                    System.err.println("Available modes are: " + LocConf.modes());
+                    return;
+                }
             }
         } catch (NoSuchMethodException | ClassNotFoundException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             LOG.log(Level.SEVERE, ex.getMessage(), ex);
