@@ -1,0 +1,1878 @@
+Κρετίνγκα / Kretinga
+Κάρλοβο / Karlovo
+Βηθλεέμ / Bethlehem
+Μακάμπα / Makamba
+Οϊτίν / Eutin
+Σαιντ-Ετιέν / Saint-Etienne
+Καρς / Kars
+Βουδαπέστη / Budapest
+Στάργκαρντ / Stargard Szczecinski
+Σπάνις Τάουν / Spanish Town
+Κουόπιο / Kuopio
+Κέμπριτζ / Cambridge
+Μαπούτο / Maputo
+Νόβι Παζάρ / Novi Pazar
+Φεργκάνα / Fergana
+Παρντούμπιτσε / Pardubice
+Κολόμπους / Columbus
+Νέα Σμύρνη / Nea Smyrni + New Smyrna Beach
+Πολοκουάνε / Polokwane
+Χάννο / Hanno
+Φρέντρικτον / Fredericton
+Μεντάν / Medan
+Ανγκουλέμ / Angouleme
+Κίνγκστον / Kingston
+Λιντς / Linz
+Άδανα / Adana
+Σολτ Λέικ Σίτι / Salt Lake City
+Φοσάν / Foshan
+Νάπολη / Naples
+Ικίκε / Iquique
+Αρεκίπα / Arequipa
+Ντέγκου / Daegu
+Κωνστάντζα / Constanta
+Γκόμα / Goma
+Μπέρμπανκ / Burbank
+Οκλαχόμα Σίτι / Oklahoma City
+Αγκάνα / Hagatna
+Ουλμ / Ulm
+Σανταρέμ / Santarem
+Ούμεο / Umea
+Σόπρον / Sopron
+Μπίσοπς Στόρτφορντ / Bishops Stortford
+Μπλαντάιρ / Blantyre
+Μπόχουμ / Bochum
+Ασμάρα / Asmara
+Ντιτρόιτ / Detroit
+Τσελιάμπινσκ / Chelyabinsk
+Μαρακάι / Maracay
+Πλέβεν / Pleven
+Ναντσίνγκ / Nanjing
+Σάντα Φε / Santa Fe
+Οράντεα / Oradea
+Ισφαχάν / Isfahan
+Ράζγκραντ / Razgrad
+Κιρκλαρελί / Kirklareli
+Τεμούκο / Temuco
+Πρόβιντενς / Providence
+Μυλούζ / Mulhouse
+Νεβσεχίρ / Nevsehir
+Άργος / Argos
+Φρίταουν / Freetown
+Αγκνώ / Haguenau
+Σαρλβίλ-Μεζιέρ / Charleville-Mezieres
+Λουάντα / Luanda
+Κόρπους Κρίστι / Corpus Christi
+Οράν / Oran
+Χαϊντεραμπάντ / Hyderabad
+Οράλ / Oral
+Τύμπιγκεν / Tuebingen
+Μπάμπεργκ / Bamberg
+Ομσκ / Omsk
+Σούντσβαλ / Sundsvall
+Ουρούμτσι / UEruemqi
+Νουκουαλόφα / Nuku'alofa
+Εστελί / Esteli
+Ισμαηλία / Ismailia
+Αδριανούπολη / Edirne
+Πένζα / Penza
+Βέλιγκραντ / Velingrad
+Οράνιεστατ / Oranjestad
+Κελιμάνε / Quelimane
+Όουλου / Oulu
+Λα Μανουμπά / Manouba
+Λιουμπλιάνα / Ljubljana
+Κρακοβία / Krakow
+Ατλάντικ Σίτι / Atlantic City
+Αμιάν / Amiens
+Κούσβα / Kushva
+Αργυρούπολη / Argyroupoli + Gumushkhane
+Έρεμπρο / Orebro
+Κοπιαπό / Copiapo
+Λούμπλιν / Lublin
+Πουατιέ / Poitiers
+Μπιάλιστοκ / Bialystok
+Αγκαρτάλα / Agartala
+Μπρατισλάβα / Bratislava
+Βιλλαρροβλέδο / Villarrobledo
+Ντιού / Diu
+Πόρι / Pori
+Σαν Ντιέγκο / San Diego
+Παραναγκουά / Paranagua
+Γιαρέν / Yaren
+Μονρόβια / Monrovia
+Λαβάλ / Laval
+Κιότο / Kyoto
+Πορτ Ελίζαμπεθ / Port Elizabeth
+Μπαγιέ / Bayeux
+Παλάπιε / Palapye
+Αντίμπ / Antibes
+Βράνιε / Vranje
+Σέφιλντ / Sheffield
+Νοβοκουζνέτσκ / Novokuznetsk
+Γιάλοβα / Yalova
+Άουγκσμπουργκ / Augsburg
+Τεγκουσιγκάλπα / Tegucigalpa
+Ντέβα / Deva
+Σόφια / Sofia
+Ραιδεστός / Tekirdag
+Σβινόουστσιε / Swinoujscie
+Φακατατιβά / Facatativa
+Μπαλικεσίρ / Balikesir
+Λάγος / Lagos
+Βίλα ντο Κόντε / Vila do Conde
+Κουκουβάουναι / Metamorfosi
+Τοκάτ / Tokat
+Κεμπέκ / Quebec
+Μπέλεθ-Μάλαγα / Velez-Malaga
+Μπαρ / Bar
+Καγιές / Kayes
+Σιουδάδ Χουάρες / Ciudad Juarez
+Μάντσεστερ / Manchester
+Καγιέν / Cayenne
+Μπαθ / Bath
+Αλγέρι / Algiers
+Ποκάρα / Pokhara
+Κάιρο / Cairo
+Ναχαβάντ / Nahavand
+Τούνχα / Tunja
+Όλνταμ / Oldham
+Μοντερρέι / Monterrey
+Ντουάλα / Douala
+Ιρμπίτ / Irbit
+Γουαδαλαχάρα / Guadalajara
+Κάντιθ / Cadiz
+Μπάντα Άτσεχ / Banda Aceh
+Νταχάου / Dachau
+Ίνσμπρουκ / Innsbruck
+Ταντζουρά / Tadjoura
+Σαλβαδόρ / Salvador
+Καμπέρα / Canberra
+Μακένι / Makeni
+Σαιν-Μπριέκ / Saint-Brieuc
+Βέροια / Veroia
+Ναγκπούρ / Nagpur
+Πλίμουθ / Plymouth
+Γιανγκόν / Yangon
+Τσέστερ / Chester
+Μόσι / Moshi
+Τζαμένα / N'Djamena
+Σπάιερ / Speyer
+Ουσουλουτάν / Usulutan
+Βίντιν / Vidin
+Μαδρίτη / Madrid
+Λος Άντζελες / Los Angeles
+Τζέντα / Jeddah
+Ντονέτσκ / Donetsk
+Κάμπελ Ρίβερ / Campbell River
+Κουιαμπά / Cuiaba
+Τεράσα / Terrassa
+Ορεστιάδα / Orestiada
+Σούβα / Suva
+Ρουσελσχάιμ / Ruesselsheim
+Νόργουιτς / Norwich
+Ουκμεργκέ / Ukmerge
+Λάρισα / Larisa
+Βιρτζίνια Μπιτς / Virginia Beach
+Λευκωσία / Nicosia
+Μοντρεαλ / Montreal
+Ινδιανάπολη / Indianapolis
+Γκιουμουλτζίνα / Komotini
+Ανάνταπουρ / Anantapur
+Κανδελάρια / Candelaria
+Οριουέλα / Orihuela
+Χέρτσογκενρατ / Herzogenrath
+Γουαγιακίλ / Guayaquil
+Λεβερκούζεν / Leverkusen
+Μπατόν Ρουζ / Baton Rouge
+Ονταγουάρα / Odawara
+Μαγκαντάν / Magadan
+Μπιλετσίκ / Bilecik
+Νέα Ερυθραία / Nea Erythraia
+Σαν Χοσέ / San Jose
+Σαφράμπολη / Safranbolu
+Καζαμπλάνκα / Casablanca
+Γόμελ / Gomel
+Αλίτους / Alytus
+Αρλόν / Arlon
+Άγκυρα / Ankara
+Λιέγη / Liege
+Ροζό / Roseau
+Σύρτη / Sirte
+Ταβντά / Tavda
+Μπαμάκο / Bamako
+Χάιφα / Haifa
+Νόβγκοροντ / Velikiy Novgorod
+Λίπσταντ / Lippstadt
+Αλαμήντα / Alameda
+Ρέικιαβικ / Reykjavik
+Μινγκατσεβίρ / Mingelchaur
+Ελίστα / Elista
+Βούλα / Voula
+Βέτσλαρ / Wetzlar
+Τζοντχπούρ / Jodhpur
+Τσάρλεστον / Charleston
+Ταγκανρόγκ / Taganrog
+Λογρόνιο / Logrono
+Βικτώρια Βρετανικής Κολομβίας / Victoria
+Ρέμσαϊντ / Remscheid
+Μιεντζίρζετς Ποντλάσκι / Miedzyrzec Podlaski
+Ατ / Ath
+Ναουκάλπαν / Naucalpan de Juarez
+Μάνχαϊμ / Mannheim
+Μπαντ Χόμπουργκ / Bad Homburg vor der Hoehe
+Μπούντβα / Budva
+Βασιλεία / Basel
+Βασλούι / Vaslui
+Αλμάντα / Almada
+Ραντβιλίσκις / Radviliskis
+Τοπίκα / Topeka
+Βάρνα / Varna
+Νιαμέι / Niamey
+Κάφσα / Gafsa
+Άντεν / Aden
+Γκαζιαντέπ / Gaziantep
+Νεβέρ / Nevers
+Καράτζ / Karaj
+Λιτλ Ροκ / Little Rock
+Αγία Πετρούπολη / Saint Petersburg
+Μπράουνσβαϊχ / Braunschweig
+Μπογκοτά / Bogota
+Ομπερχάουζεν / Oberhausen
+Μεδεγίν / Medellin
+Ορλάντο / Orlando
+Φονταινεμπλώ / Fontainebleau
+Ριζούντα / Rize
+Μπατζά / Beja
+Πεκίνο / Beijing
+Νταρ ες Σαλάμ / Dar es Salaam
+Χερσώνα / Kherson
+Φίλλαχ / Villach
+Σάλτσμπουργκ / Salzburg
+Νόβι Σαντ / Novi Sad
+Γκιταράμα / Gitarama
+Τσανγκσά / Changsha
+Τελ Αβίβ / Tel Aviv
+Μόσχα / Moscow
+Κιουτάχεια / Kutahya
+Οδησσός / Odessa
+Αμούρσκ / Amursk
+Μοσχάτο / Moskhaton
+Σλίβεν / Sliven
+Φορταλέζα / Fortaleza
+Μπραζίλια / Brasilia
+Λομονόσοφ / Lomonosov
+Αμπακάν / Abakan
+Μάρμπουργκ / Marburg an der Lahn
+Λάσα / Lhasa
+Σαπόπαν / Zapopan
+Αρίκα / Arica
+Βάλιεβο / Valjevo
+Αμαρούσιον / Marousi
+Χαράρ / Harar
+Νόβα Ζαγόρα / Nova Zagora
+Λιεπάγια / Liepaja
+Λαττάκεια / Latakia
+Ιρίνγκα / Iringa
+Πασαντίνα / Pasadena
+Σάντα Κρουθ ντε Τενερίφε / Santa Cruz de Tenerife
+Βουρλά / Urla
+Μιντέλο / Mindelo
+Πίλζεν / Pilsen
+Τσέσκε Μπουντεγιόβιτσε / Ceske Budejovice
+Βαϊμάρη / Weimar
+Ζγκιες / Zgierz
+Ρουαμαγκάνα / Rwamagana
+Ρίτσμοντ / Richmond
+Βέρχνιαγια Σαλντά / Verkhnyaya Salda
+Ουτρέχτη / Utrecht
+Αλικαρνασσός / Bodrum
+Τύνιδα / Tunis
+Λαζάρεβατς / Lazarevac
+Κερασούντα / Giresun
+Κενταϊνιάι / Kedainiai
+Ρούσε / Ruse
+Καϊρουάν / Kairouan
+Κάρσον / Carson
+Μπορντό / Bordeaux
+Κασταμονή / Kastamonu
+Βρέμη / Bremen
+Σαντιάγο ντε Κούβα / Santiago de Cuba
+Νέρντλινγκεν / Noerdlingen
+Λυών / Lyon
+Ντάντλεϊ / Dudley
+΄Aκκρα / Accra
+Θίμφου / Thimphu
+Ρουτάνα / Rutana
+Νάρβα / Narva
+Ναζαρέτ / Nazareth
+Γκριν Μπέι / Green Bay
+Κομράτ / Comrat
+Σάο Λουίς / Sao Luis
+Μανζίνι / Manzini
+Πφόρτσχαϊμ / Pforzheim
+Φλάγκσταφ / Flagstaff
+Μολεπολόλε / Molepolole
+Σεούλ / Seoul
+Τζινάν / Jinan
+Μπελέμ / Belem
+Ντούπνιτσα / Dupnitsa
+Τζορτζτάουν / Georgetown
+Σουέζ / Suez
+Μπορ / Bor
+Φρανκφούρτη / Frankfurt am Main
+Τελσιάι / Telsiai
+Χέλενα / Helena
+Πότσδαμ / Potsdam
+Βαντόμ / Vendome
+Τάρπον Σπρινγκς / Tarpon Springs
+Βουκουρέστι / Bucharest
+Παλαιό Φάληρο / Palaio Faliro
+Αρτίγας / Artigas
+Χοντμεζοβάσαρχεϊ / Hodmezovasarhely
+Λόβετς / Lovech
+Στάνλεϋ / Stanley
+Μάκρη / Fethiye
+Γκντανσκ / Gdansk
+Σάρλοτ / Charlotte
+Κίνγκσταουν / Kingstown
+Σιαουλιάι / Siauliai
+Πόρτο Αλέγκρε / Porto Alegre
+Μοντρέ / Montreux
+Ταϊπέι / Taipei
+Χάσκοβο / Haskovo
+Μασάουα / Massawa
+Νετάνια / Netanya
+Κόρδοβα / Cordoba
+Κονσεπσιόν δε Λα Βέγα / Concepcion de La Vega
+Μπεζανσόν / Besancon
+Γουάιτχορς / Whitehorse
+Λονδίνο / London
+Βαλέτα / Valletta
+Κιμπδό / Quibdo
+Καρτάγο / Cartago
+Βικτόρια / Victoria
+Νατζάφ / Najaf
+Πρίζρεν / Prizren
+Φράνκφορτ / Frankfort
+Χονολουλού / Honolulu
+Κερέν / Keren
+Κίκιντα / Kikinda
+Σπλιτ / Split
+Ανκορέιτζ / Anchorage
+Σάο Τομέ / Sao Tome
+Πόζναν / Poznan
+Ντράμεν / Drammen
+Καζάμα / Kasama
+Ταϊγιουάν / Taiyuan
+Τίργκου Ζίου / Targu Jiu
+Σάντος / Santos
+Σούκρε / Sucre
+Πουάντ-α-Πιτρ / Pointe-a-Pitre
+Μπέγιο / Bello
+Άνταμσταουν / Adamstown
+Τούξτλα Γκουτιέρρες / Tuxtla
+Πορτ οφ Σπέιν / Port of Spain
+Γκέτινγκεν / Goettingen
+Ελληνικό / Elliniko
+Μοναστήρι / Bitola
+Κάρντιφ / Cardiff
+Δελχί / Delhi
+Τάλκα / Talca
+Κενέμα / Kenema
+Άαλτερ / Aalter
+Ζρένιανιν / Zrenjanin
+Βόρεια Ακτή / North Shore
+Ανκούδ / Ancud
+Τουρ / Tours
+Σαιν-Μαλό / Saint-Malo
+Σιδώνα / Sidon
+Λισαβώνα / Lisbon
+Ασγκαμπάτ / Ashgabat
+Κιρσεχίρ / Kirsehir
+Βίλα Νόβα ντε Γκάια / Vila Nova de Gaia
+Βανκούβερ / Vancouver
+Ερζερούμ / Erzurum
+Ρουέν / Rouen
+Εστορίλ / Estoril
+Ζόλινγκεν / Solingen
+Λα Πλάτα / La Plata
+Όντενσε / Odense
+Εσκισεχίρ / Eskisehir
+Εϊλάτ / Eilat
+Ωραιόκαστρο / Oraiokastro
+Ρούμα / Ruma
+Λίβινγκστον / Livingstone
+Αχμενταμπάντ / Ahmedabad
+Κανκούν / Cancun
+Αττάλεια / Antalya
+Ρανταούτσι / Radauti
+Γκάο / Gao
+Ντουσάνμπε / Dushanbe
+Γιοχάνεσμπουργκ / Johannesburg
+Ντενπασάρ / Denpasar
+Καρκασσόν / Carcassonne
+Κλίβελαντ / Cleveland
+Μούρμανσκ / Murmansk
+Χίλο / Hilo
+Χαλέπι / Aleppo
+Καχραμανμαράς / Kahramanmaras
+Εσάμπλε / Eixample
+Νιούκασλ / Newcastle upon Tyne
+Βριλήσσια / Vrilissia
+Μπραζαβίλ / Brazzaville
+Σάνα / Sanaa
+Λιντάου / Lindau
+Ορλεάνη / Orleans
+Σερόουε / Serowe
+Τοκοροζάβα / Tokorozawa
+Χάουκιπουντας / Haukipudas
+Σιάτλ / Seattle
+Νάσβιλ / Nashville
+Χιούστον / Houston
+Όλμπανι / Albany
+Αφιόν Καραχισάρ / Afyonkarahisar
+Καλαί / Calais
+Ντάρλινγκτον / Darlington
+Αμμάν / Amman
+Νίγδη / Nigde
+Κίτουε / Kitwe
+Βίγο / Vigo
+Ομπρένοβατς / Obrenovac
+Κιροβγκράντ / Kirovgrad
+Κορυδαλλός / Korydallos
+Χαϊδάρι / Chaidari
+Μαλάτεια / Malatya
+Βάισενμπουργκ ιν Μπάγιερν / Weissenburg in Bayern
+Καρπίνσκ / Karpinsk
+Πέραμα / Perama
+Γενέβη / Geneve
+Άιτορφ / Eitorf
+Σιτζιαζουάγκ / Shijiazhuang
+Άσσελτ / Hasselt
+Ρουγίγκι / Ruyigi
+Σφαξ / Sfax
+Διέππη / Dieppe
+Μπεζιέ / Beziers
+Μοντελιμάρ / Montelimar
+Κερύνεια / Kyrenia
+Ταράζ / Taraz
+Λούντβιγκσμπουργκ / Ludwigsburg
+Ξάνθη / Xanthi
+Σαν Λουίς Ποτοσί / San Luis Potosi
+Κόνκορντ / Concord
+Στράουσμπεργκ / Strausberg
+Γέρακας / Gerakas
+Αγρίνιο / Agrinio
+Βαγδάτη / Baghdad
+Κορυτσά / Korce
+Ντεν Χέλντερ / Den Helder
+Πόλη της Γουατεμάλας / Guatemala City
+Σαιν-Ντενί / Saint-Denis
+Νταμάμ / Dammam
+Τακόμα / Tacoma
+Χετάφε / Getafe
+Άγιος Μαρίνος / San Marino
+Βατερλώ / Waterloo
+Άαχεν / Aachen
+Γουσταβία / Gustavia
+Γουόρναμπουλ / Warrnambool
+Μοντάνα / Montana
+Στρασβούργο / Strasbourg
+Ντε Μόιν / Des Moines
+Μπο / Bo
+Βράτσα / Vratsa
+Αντοφαγάστα / Antofagasta
+Ισλαμαμπάντ / Islamabad
+Φένλο / Venlo
+Ομάχα / Omaha
+Φούλντα / Fulda
+Βίσμπυ / Visby
+Αρμαντιέρ / Armentieres
+Σάλτα / Salta
+Καλλιθέα / Kallithea
+Μπάνγκορ / Bangor
+Ντόρτμουντ / Dortmund
+Πράγια / Praia
+Γκόστιβαρ / Gostivar
+Ντένβερ / Denver
+Ντόρντρεχτ / Dordrecht
+Λοριάν / Lorient
+Μπέρμιγχαμ / Birmingham
+Λομπάτσε / Lobatse
+Έρλαγκεν / Erlangen
+Μεδίνα / Medina
+Ουρουάπαν / Uruapan
+Παρκ Ριτζ / Park Ridge
+Υψιλάντι / Ypsilanti
+Λας Βέγκας / Las Vegas
+Ντιζόν / Dijon
+Τσαττανούγκα / Chattanooga
+Σάκι / Saki
+Ζαγκουάν / Zaghouan
+Κιζίλ / Kyzyl
+Στοκχόλμη / Stockholm
+Άσσεν / Assen
+Μορογκόρο / Morogoro
+Αίγιο / Aigio
+Λάρνακα / Larnaca
+Τουλούζ / Toulouse
+Οντενάρντ / Oudenaarde
+Πουνταρένας / Puntarenas
+Ταρταγάλ / Tartagal
+Γκαλάτσι / Galati
+Ποντγκόριτσα / Podgorica
+Σεβαστούπολη / Sevastopol
+Τιαντζίν / Tianjin
+Φράιζινγκ / Freising
+Πετροζαβόντσκ / Petrozavodsk
+Καρδίτσα / Karditsa
+Ντενιζλί / Denizli
+Κισανγκάνι / Kisangani
+Ροστόφ / Rostov
+Οττομπρούν / Ottobrunn
+Πόρτο Νόβο / Porto-Novo
+Μπαστέρ / Basseterre
+Βερσαλλίες / Versailles
+Λόυρες / Loures
+Έσσεν / Essen
+Μορονί / Moroni
+Ρεβντά / Revda
+Μονπελιέ / Montpellier
+Νταχράν / Dhahran
+Όουκλαντ / Oakland
+Τροντχαιμ / Trondheim
+Μερσίνη / Mercin
+Κάνσας Σίτυ / Kansas City
+Γιάννενα / Ioannina
+Ρίμπνικ / Rybnik
+Σάρλοτταουν / Charlottetown
+Aστάνα / Astana
+Μακάου / Macau
+Σιλίστρα / Silistra
+Μπολού / Bolu
+Κίεβο / Kiev
+Μοπτί / Mopti
+Καισάρεια / Kayseri
+Χίλσμπορο / Hillsboro
+Αμπαντάν / Abadan
+Μαούν / Maun
+Σαππόρο / Sapporo
+Τουρναί / Tournai
+Σουτσόου / Suzhou
+Κουάλα Λουμπούρ / Kuala Lumpur
+Πέμπα / Pemba
+Γκντίνια / Gdynia
+Ζάγκαν / Zagan
+Βομβάη / Mumbai
+Στσέτσιν / Szczecin
+Ντεσάου / Dessau
+Χανίων / Chania
+Μπαρντά / Barda
+Γκέρλιτς / Goerlitz
+Ζλιν / Zlin
+Λιμόζ / Limoges
+Νιου Μάλντεν / New Malden
+Ροζέτα / Rosetta
+Νεγκοτίν / Negotin
+Χάμιλτον / Hamilton
+Καισαριανή / Kaisariani
+Γκρενόμπλ / Grenoble
+Νιούπορτ / Newport
+Οαχάκα ντε Χουάρες / Oaxaca
+Γκελίμπολου / Gelibolu
+Ασμπέστ / Asbest
+Ρόιτλιγκεν / Reutlingen
+Τζακάρτα / Jakarta
+Βορκουτά / Vorkuta
+Αλχεθίρας / Algeciras
+Χέντερσον / Henderson
+Τζάκσον / Jackson
+Φρέντερικσμπεργκ / Frederiksberg
+Μποπάλ / Bhopal
+Τσιταγκόνγκ / Chittagong
+Ντουμπάι / Dubai
+Γκελζενκίρχεν / Gelsenkirchen
+Ανταναναρίβο / Antananarivo
+Λέιντεν / Leiden
+Μπαράρα / Mbarara
+Μπας-Τερ / Basse-Terre
+Βαλπαραΐσο / Valparaiso
+Κλουζ-Ναπόκα / Cluj-Napoca
+Μπέλφαστ / Belfast
+Ρεγγίνα / Regina
+Κοτονού / Cotonou
+Ρόουντ Τάουν / Road Town
+Σεβίλλη / Sevilla
+Μπαρρανκίγια / Barranquilla
+Τζιμπουτί / Djibouti
+Σαλαμίνα / Salamina
+Ράντερς / Randers
+Μπαχρ-Νταρ / Bahir Dar
+Πετρούπολη / Petroupolis
+Μάντισον / Madison
+Βίρτσμπουργκ / Wuerzburg
+Λίτλτον / Littleton
+Τρίκαλα / Trikala
+Ντόρνμπιρν / Dornbirn
+Μπανγκουί / Bangui
+Γκελεντζίκ / Gelendzhik
+Μπόιζι / Boise
+Μελβούρνη / Melbourne
+Λε Ρομπέρ / Le Robert
+Σβιετοχλόβιτσε / Swietochlowice
+Γουχάν / Wuhan
+Βίντχουκ / Windhoek
+Αϊντχόφεν / Eindhoven
+Χάναου / Hanau am Main
+Γιογκιακάρτα / Yogyakarta
+Στουτγκάρδη / Stuttgart
+Λάχτι / Lahti
+Ορκάδες / Orkney
+Ηράκλεια / Eregli
+Κοπεγχάγη / Copenhagen
+Πρέβεζα / Preveza
+Μέριδα / Merida
+Βιέννη / Vienna
+Σαραγόσα / Zaragoza
+Ντούισμπουργκ / Duisburg
+Ηράκλειο / Irakleion + Irakleio
+Μάλαγα / Malaga
+Ριάντ / Riyadh
+Μόσταρ / Mostar
+Χάουντα / Gouda
+Ουλιάνοφσκ / Ulyanovsk
+Ρεν / Rennes
+Ντάκα / Dhaka
+Φορ-ντε-Φρανς / Fort-de-France
+Αζαξιό / Ajaccio
+Άναχαϊμ / Anaheim
+Μπέικερσφιλντ / Bakersfield
+Κίελο / Kiel
+Τσεντσόου / Zhengzhou
+Μπακού / Baku
+Τουρίνσκ / Turinsk
+Νέα Υόρκη / New York City
+Γκρόζνυ / Groznyy
+Κέμνιτς / Chemnitz
+Σαντιάγο δε λος Καμπαγιέρος / Santiago de los Caballeros
+Χόμπαρτ / Hobart
+Μπουένος ΄Aιρες / Buenos Aires
+Χανγκτσόου / Hangzhou
+Τιβεριάδα / Tiberias
+Ζανκτ Πέλτεν / Sankt Poelten
+Ταρμπ / Tarbes
+Πάφος / Paphos
+Μαριγιαμπολέ / Marijampole
+Αβανκάι / Abancay
+Πουέρτο Μοντ / Puerto Montt
+Νυρεμβέργη / Nuernberg
+Άγιος Ιωάννης Ρέντης / Agios Ioannis Rentis
+Γλασκώβη / Glasgow
+Καράτσι / Karachi
+Φορτ Γουόρθ / Fort Worth
+Λέουβεν / Leuven
+Κέιμπριτζ / Cambridge
+Υπρ / Ieper
+Κιρίκαλε / Kirikkale
+Κουμάνοβο / Kumanovo
+Καμάρα ντε Λόμπος / Camara de Lobos
+Βρσατς / Vrsac
+Κολοράντο Σπρινγκς / Colorado Springs
+Ιάσιο / Iasi
+Δράμα / Drama
+Μιλγουόκι / Milwaukee
+Άνω Λιόσια / Ano Liosia
+Μαίηκον / Macon
+Πόλη του Κουβέιτ / Kuwait City
+Ρότερνταμ / Rotterdam
+Σποκέιν / Spokane
+Ρόδος / Rodos
+Σασκατούν / Saskatoon
+Ασντόντ / Ashdod
+Ακσαράι / Aksaray
+Φούτζι / Fuji
+Γκιμαράες / Guimaraes
+Μπατταμπάνγκ / Battambang
+Πορτ Άλμπερνι / Port Alberni
+Κάθερες / Caceres
+Ίισαλμι / Iisalmi
+Γιαμουσσούκρο / Yamoussoukro
+Περιστέρι / Peristeri
+Τζέφερσον Σίτι / Jefferson City
+Τούρκου / Turku
+Σεγκού / Segou
+Καλίνινγκραντ / Kaliningrad
+Καμπούλ / Kabul
+Βενάδο Τουέρτο / Venado Tuerto
+Ρίγα / Riga
+Μζούζου / Mzuzu
+Πόρτσμουθ / Portsmouth
+Μπαμπάνε / Mbabane
+Σεντ Τζόρτζες / Saint George's
+Στάρα Ζαγόρα / Stara Zagora
+Φουτσόου / Fuzhou
+Αϊδίνιο / Aydin
+Ντιγιαρμπακίρ / Diyarbakir
+Όλομουτς / Olomouc
+Σεβάστεια / Sivas
+Μπίλεφελντ / Bielefeld
+Μανάμα / Manama
+Μυτιλήνη / Mytilene
+Μάντοβα / Mantova
+Βερολίνο / Berlin
+Ουζούν Κιοπρού / Uzunkoeprue
+Μπούργος / Burgos
+Βόλγκογκραντ / Volgograd
+Ουαγκαντουγκού / Ouagadougou
+Άκουρεϋρι / Akureyri
+Μαρβέγια / Marbella
+Ρέθυμνο / Rethymno
+Όσλο / Oslo
+Σμεντέρεβο / Smederevo
+Τρίπολη / Tripoli
+Λουντβιχσχάφεν / Ludwigshafen am Rhein
+Μάσιλον / Massillon
+Κιλκίς / Kilkis
+Πόλη του Παναμά / Panama
+Έντμοντον / Edmonton
+Μέτσινγκεν / Metzingen
+Άρτα / Arta
+Κόμπλεντς / Koblenz
+Μοναστίρ / Monastir
+Ανταπαζαρί / Adapazari
+Σαιν-Λο / Saint-Lo
+Μόναχο / Munich
+Αγκαντίρ / Agadir
+Κούφα / Kufa
+Φιλιππούπολη / Plovdiv
+Σιένα / Siena
+Συκιές / Sykies
+Ραμάντι / Ramadi
+Ατακπαμέ / Atakpame
+Σίδνεϋ / Sydney
+Σμύρνη / Izmir
+Σαουθάμπτον / Southampton
+Βόννη / Bonn
+Σάντβικεν / Sandviken
+Πεύκη / Pefki
+Ταμπόρα / Tabora
+Αβέιρο / Aveiro
+Μπιντγκός / Bydgoszcz
+Μοντεβιδέο / Montevideo
+Μαζούρο / Majuro
+Ροβανιέμι / Rovaniemi
+Νίκαια / Nice
+Κρότωνας / Crotone
+Κάλγκαρι / Calgary
+Φρέσνο / Fresno
+Οσιγιέκ / Osijek
+Κολόμπο / Sri Jayewardenepura Kotte + Colombo
+Νουούκ / Nuuk
+Ντελφτ / Delft
+Τζέτζου / Jeju City
+Σαράτοφ / Saratov
+Κουρ / Chur
+Σονσονάτε / Sonsonate
+Σουόνσι / Swansea
+Αγκαντέζ / Agadez
+Κάνιε / Kanye
+Σιντί Μπουζίντ / Sidi Bouzid
+Λεόμπεν / Leoben
+Σεγκόβια / Segovia
+Γιαζντ / Yazd
+Μπάια Μάρε / Baia Mare
+Νίζνιαγια Τουρά / Nizhnyaya Tura
+Αλμπουκέρκη / Albuquerque
+Νιμ / Nimes
+Κορκ / Cork
+Νταλιάν / Dalian
+Νόξβιλ / Knoxville
+Ντόβερ / Dover
+Κόιμπρα / Coimbra
+Άαραου / Aarau
+Σελεστά / Selestat
+Χράντετς Κράλοβε / Hradec Kralove
+Κασκάις / Cascais
+Συρακούσες / Siracusa
+Τρούρο / Truro
+Μινεάπολη / Minneapolis
+Κούσκο / Cusco
+Ρότσεστερ / Rochester
+Πορτο / Porto
+Βελεσά / Veles
+Ζιελόνα Γκόρα / Zielona Gora
+Ανζέ / Angers
+Γαλάτσι / Galatsi
+Κιλίς / Kilis
+Ντόναουβερτ / Donauwoerth
+Σιουδάδ Κεσάδα / Quesada
+Αλαχουέλα / Alajuela
+Άμπεργκ / Amberg
+Χάγη / The Hague
+Κουριτίμπα / Curitiba
+Ντάουγκαβπιλς / Daugavpils
+Μούνστερ / Munster
+Χαλκίδα / Chalkida
+Γελοουνάιφ / Yellowknife
+Οχρίδα / Ohrid
+Βεγγάζη / Benghazi
+Λουξεμβούργο / Luxembourg
+Μπράντφορντ / Bradford
+Τρουά / Troyes
+Μπλουά / Blois
+Λεόν / Leon
+Πουέρτο Αγιακούτσο / Puerto Ayacucho
+Σικασσό / Sikasso
+Βίλα / Port-Vila
+Μαριούπολη / Mariupol
+Αουγκούστα / Augusta
+Τσαλατενάνγκο / Chalatenango
+Λιβόρνο / Livorno
+Μπαντούνγκ / Bandung
+Σεβρ / Sevres
+Σάρι / Sari
+Πτολεμαΐδα / Ptolemaida
+Πετροπάβλοφσκ Καμτσάτσκι / Petropavlovsk-Kamchatsky
+Ζίντελφιγκεν / Sindelfingen
+Χαράρε / Harare
+Λάκναου / Lucknow
+Οστράβα / Ostrava
+Μπρίστολ / Bristol
+Αριηλ / Jerusalem
+Αρυάνα / Ariana
+Τιμπουκτού / Timbuktu
+Βίμποργκ / Viborg + Vyborg
+Γευγελή / Gevgelija
+Βουλώνη / Boulogne-sur-Mer
+Μπαντάρ Σερί Μπεγκαβάν / Bandar Seri Begawan
+Μαλέ / Male
+Ρέγκενσμπουργκ / Regensburg
+Καλκούτα / Kolkata
+Ζαλάου / Zalau
+Μπουρντούρ / Burdur
+Αννόβερο / Hannover
+Αθήνα / Athens
+Τολιάρα / Toliara
+Κόπαβογκουρ / Kopavogur
+Κλάντνο / Kladno
+Λαπεενράντα / Lappeenranta
+Μπαλχ / Balkh
+Πίροτ / Pirot
+Σιράζ / Shiraz
+Σαρτρ / Chartres
+Χάντερσφιλντ / Huddersfield
+Σάτου Μάρε / Satu Mare
+Μπρέγκεντζ / Bregenz
+Νάντι Φίτζι / Nadi
+Νέα Ορλεάνη / New Orleans
+Βόλος / Volos
+Αδελαΐδα / Adelaide
+Αιγάλεω / Aigaleo
+Γιάγκοντινα / Jagodina
+Μπέντιγκο / Bendigo
+Ντάγκλας / Douglas
+Μπουρούρι / Bururi
+Πάλο Άλτο / Palo Alto
+Λομέ / Lome
+Βιεντιάν / Vientiane
+Βάνταα / Vantaa
+Γουίνιπεγκ / Winnipeg
+Πετροπάβλ / Petropavl
+Αλεξανδρέττα / Iskenderun
+Κόσιτσε / Kosice
+Οζουργκέτι / Ozurgeti
+Μετς / Metz
+Τορόντο / Toronto
+Μπεϊσινγκστόουκ / Basingstoke
+Κιουστεντίλ / Kyustendil
+Σικάγο / Chicago
+Φλωρεντία / Florence
+Τούλα / Tula
+Μοτσούντι / Mochudi
+Κράισττσερτς / Christchurch
+Αγία Βαρβάρα / Agia Varvara
+Κίτσεβο / Kicevo
+Ροστόφ επί του Ντον / Rostov-na-Donu
+Άγκνταμ / Agdam
+Μαλάμπο / Malabo
+Μινσκ / Minsk
+Ζαντάρ / Zadar
+Κατμαντού / Kathmandu
+Σάμπατς / Sabac
+Καματερό / Kamateron
+Βυζάντιο / Istanbul
+Χαϊδελβέργη / Heidelberg
+Ερέδια / Heredia
+Κρασνοουφίμσκ / Krasnoufimsk
+Μαγδεβούργο / Magdeburg
+Άλμποργκ / Aalborg
+Χαϊλμπρόν / Heilbronn
+Ραμάτ Γκαν / Ramat Gan
+Σέντα / Senta
+Λουντ / Lund
+Άρλινγκτον / Arlington
+Βιγκάν / Vigan
+Ντόχα / Doha
+Σιμκέντ / Shymkent
+Κιρκούκ / Kirkuk
+Πανεβέζυς / Panevezys
+Ουόρστερ / Worcester
+Λος Τέκες / Los Teques
+Μεντόσα / Mendoza
+Κάλιαρι / Cagliari
+Ομπόκ / Obock
+Μίντελμπουρχ / Middelburg
+Τορρεμολίνος / Torremolinos
+Λινκόπινγκ / Linkoping
+Νουακσότ / Nouakchott
+Αμάσεια / Amasya
+Λαχόρη / Lahore
+Βέρχνιαγια Πησμά / Verkhnyaya Pyshma
+Ράαχε / Raahe
+Μιλχάιμ / Muelheim
+Πέρνικ / Pernik
+Καλάμαι / Kalamata
+Λίμπερετς / Liberec
+Λεμεσός / Limassol
+Γκίσεν / Giessen
+Κράλιεβο / Kraljevo
+Κιγκάλι / Kigali
+Κεκρωπία / Koropi
+Οσέρ / Auxerre
+Γουόλτον-ον-Τέιμς / Walton-on-Thames
+Άιχαχ / Aichach
+Μέιντστοουν / Maidstone
+Μέμφις / Memphis
+Ανόι / Hanoi
+Αμπερντήν / Aberdeen
+Χολαργός / Cholargos
+Βίλνα / Vilnius
+Σενγιάνγκ / Shenyang
+Ζοάο Πεσόα / Joao Pessoa
+Μπαϊρόιτ / Bayreuth
+Νουμεά / Noumea
+Εδιμβούργο / Edinburgh
+Κουλικορό / Koulikoro
+Αμπιτζάν / Abidjan
+Γκαντζά / Ganja
+Κιρκάλντυ / Kirkcaldy
+Άλιμος / Alimos
+Πέτερχοφ / Peterhof
+Πουσκάρ / Pushkar
+Σοβέτο / Soweto
+Ισπάρτα / Isparta
+Βαλδίβια / Valdivia
+Τραπεζούντα / Trabzon
+Ουλάν Μπατόρ / Ulan Bator
+Χίλντεσχαϊμ / Hildesheim
+Λβιβ / Lviv
+Κέιπ Τάουν / Cape Town
+Δαμασκός / Damascus
+Μασσαλία / Marseille + Marseille 10
+Καζάν / Kazan
+Πανόραμα / Panorama
+Χεφέι / Hefei
+Χάβρη / Le Havre
+Χρόνινγκεν / Groningen
+Μεντενίν / Medenine
+Φράιμπουργκ / Freiburg
+Μπράντον / Brandon
+Taγerdayt / Ghardaia
+Νέα Κοκκινιά / Nikaia
+Ναμπούλα / Nampula
+Αρτβίν / Artvin
+Σεμλίνο / Zemun
+Λιμπέρια / Liberia
+Νορθάμπτον / Northampton
+Αβάνα / Havana
+Ιεριχώ / Jericho
+Λέστερ / Leicester
+Σάντα Άνα / Santa Ana
+Κηφισιά / Kifisia
+Τσάτσακ / Cacak
+Τζέιμσταουν / Jamestown
+Καραμπούκ / Karabuk
+Αλ Μαντίγια / Mahdia
+Ιταγουί / Itaguei
+Κοστανάι / Kostanay
+Κολόνια ντελ Σακραμέντο / Colonia del Sacramento
+Άαλεν / Aalen
+Φοίνιξ / Phoenix
+Σαν Μιγκέλ ντε Τουκουμάν / San Miguel de Tucuman
+Κρέφελντ / Krefeld
+΄Aπια / Apia
+Μάτα-Ούτου / Mata-Utu
+Βόλφσμπουργκ / Wolfsburg
+Ουσουάια / Ushuaia
+Ζονγκουλντάκ / Zonguldak
+Ατλάντα / Atlanta
+Ρίνο / Reno
+Χαφναρφιόρδουρ / Hafnarfjoerdur
+Κιζιλορντά / Kyzylorda
+Καρμπάλα / Karbala
+Γάνδη / Gent
+Μοντερέι / Monterey
+Τρηρ / Trier
+Χάρτφορντ / Hartford
+Μπαφουσάμ / Bafoussam
+Άιζεναχ / Eisenach
+Γιοζγκάτ / Yozgat
+Κάρλοβι Βάρι / Karlovy Vary
+Μπανζούλ / Banjul
+Γιβραλτάρ / Gibraltar
+Ραμάλα / Ramallah
+Μπανγκόκ / Bangkok
+Πετρίτσι / Petrich
+Σιου Φολς / Sioux Falls
+Μπανγκαλόρ / Bengaluru
+Μεξικάλι / Mexicali
+Άαρσχοτ / Aarschot
+Αιξ-αν-Προβάνς / Aix-en-Provence
+Νιούαρκ / Newark
+Πέγια / Peje
+Κουανγκτσόου / Guangzhou
+Βούπερταλ / Wuppertal
+Μπλουμφοντέιν / Bloemfontein
+Νγκόζι / Ngozi
+Λίνκολν / Lincoln
+Έδεσσα / Edessa
+Αλμπί / Albi
+Ρίο Μπράνκο / Rio Branco
+Αδραμύττιο / Edremit
+Σιγκαπούρη / Singapore
+Μέσα / Mesa
+Λίμπεκ / Luebeck
+Χόλυγουντ / Hollywood
+Τάνγκα / Tanga
+Σαρλότ Αμαλί / Charlotte Amalie
+Σίντρα / Sintra
+Σινώπη / Sinop
+Γιαουντέ / Yaounde
+Αβινιόν / Avignon
+Μπιζέρτα / Bizerte
+Ρέζεκνε / Rezekne
+Ρίμνικου Βίλτσεα / Ramnicu Valcea
+Κολμάρ / Colmar
+Κινσάσα / Kinshasa
+Κάννες / Cannes
+Ρόστοκ / Rostock
+Μπολτζάνο / Bolzano
+Πόρτλαντ / Portland
+Κροταλίας / Cascavel
+Ρόμαν / Roman
+Πάλμα δελ Ρίο / Palma del Rio
+Βενετία / Venice
+Σρεντνεουράλσκ / Sredneuralsk
+Τσεννάι / Chennai
+Σαν Χουάν / San Juan
+Μερσέδες / Mercedes
+Ντογκουάν / Dongguan
+Αντιόχεια / Nusaybin + Antakya + Sanliurfa + Antioch
+Βάρη / Vari
+Βαλένθια / Valencia
+Ρέξαμ / Wrexham
+Σάλεμ / Salem
+Χονγκ Κονγκ / Hong Kong
+Θήβα / Thivai
+Μπουχάρα / Bukhara
+Παρανά / Parana
+Αμβούργο / Hamburg
+Κοζάνη / Kozani
+Πάζαρτζικ / Pazardzhik
+Αντίς Αμπέμπα / Addis Ababa
+Μοσούλη / Mosul
+Βεβέ / Vevey
+Μπιλμπάο / Bilbao
+Γουαϊάλλα / Whyalla
+Σαιντ Λούις / St. Louis
+Μονκό-λε-Μιν / Montceau-les-Mines
+Σακαβέμ / Sacavem
+Τσέλσι / Chelsea
+Χόρινχεμ / Gorinchem
+Μπούφτεα / Buftea
+Κράμπι / Krabi
+Ντίλι / Dili
+Βέλενιε / Velenje
+Άινμπεκ / Einbeck
+Καρθαγένη / Cartagena
+Χοφγκάισμαρ / Hofgeismar
+Ασπρόπυργος / Aspropyrgos
+Σαμάρα / Samara
+Τσεσμέ / Cesme
+Οττάβα / Ottawa
+Σεντ Τζονς / Saint John's
+Ντιμίτροβγκραντ / Dimitrovgrad
+Κισινάου / Chisinau
+Παλιρίκ / Palikir - National Government Center
+Σάντα Μόνικα / Santa Monica
+Παραμαρίμπο / Paramaribo
+Μπαρναούλ / Barnaul
+Ναμύρ / Namur
+Αλ Κασράυν / Kasserine
+Μπατούμι / Batumi
+Κάρτζαλι / Kardzhali
+Τόρσχαβν / Torshavn
+Ζάγκρεμπ / Zagreb
+Χαμπάροφσκ / Khabarovsk
+Δουβλίνο / Dublin
+Βίντερτουρ / Winterthur
+Καπ-Αϊτιέν / Okap
+Μπούσαν / Busan
+Νταντί / Dundee
+Σαντιάγο ντε Κομποστέλα / Santiago de Compostela
+Πετς / Pecs
+Γκλέντεϊλ / Glendale
+Μπίσμαρκ / Bismarck
+Ροσάριο / Rosario
+Ικόνιο / Konya
+Ρέντσμπουργκ / Rendsburg
+Άρτεμη / Artemida
+Σαντιάγο ντε Κερέταρο / Santiago de Queretaro
+Σιμπίου / Sibiu
+Πόλη του Μεξικού / Mexico City
+Γιαροσλάβλ / Yaroslavl
+Κράλεντικ / Kralendijk
+Ποζάρεβατς / Pozarevac
+Ταρσός / Tarsus
+Ουέλλιγκτον / Wellington
+Μπελμοπάν / Belmopan
+Τύρος / Tyre
+Φορτ Γουέιν / Fort Wayne
+Χάαρλεμ / Haarlem
+Ύτερζεν / Uetersen
+Πρετόρια / Pretoria
+Αιξ-λε-Μπαιν / Aix-les-Bains
+Μπίλιγχαμ / Billingham
+Μπουζουμπούρα / Bujumbura
+Κίτο / Quito
+Καραμάν / Karaman
+Άρνεμ / Arnhem
+Γουλβερχάμπτον / Wolverhampton
+Μπέιρα / Beira
+Μύνστερ / Muenster
+Σίτι του Λονδίνου / City of London
+Κάουνας / Kaunas
+Αραμίλ / Aramil
+Λωζάνη / Lausanne
+Μονακό / Monaco
+Φουναφούτι / Funafuti
+Ντίσελντορφ / Duesseldorf
+Λοτζ / Lodz
+Περμ / Perm
+Τσέλιε / Celje
+Πενζάνς / Penzance
+Μπρίσμπεϊν / Brisbane
+Μαζέρου / Maseru
+Σακραμέντο / Sacramento
+Δρέσδη / Dresden
+Περθ / Perth
+Καβάνταρτσι / Kavadarci
+Μοντωμπάν / Montauban
+Αρλ / Arles
+Τοαμασίνα / Toamasina
+Πούνο / Puno
+Ελευσίνα / Elefsina
+Μπαλαράτ / Ballarat
+Πούνε / Pune
+Μαρ ντελ Πλάτα / Mar del Plata
+Βαρκελώνη / Barcelona
+Τονόν-λε-Μπαιν / Thonon-les-Bains
+Γκισένι / Gisenyi
+Μπάνια Λούκα / Banja Luka
+Ράλεϊ / Raleigh
+Μπάφαλο / Buffalo
+Νόβο Μέστο / Novo Mesto
+Παρτίζανσκε / Partizanske
+Τζίντζα / Jinja
+Σαράγεβο / Sarajevo
+Λουγκάνο / Lugano
+Κάσσελ / Kassel
+Μαγκνιτογκόρσκ / Magnitogorsk
+Τομσκ / Tomsk
+Λοντ / Lod
+Βιέδμα / Viedma
+Σάντο Ντομίνγκο / Santo Domingo
+Νέα Φιλαδέλφεια / Nea Filadelfeia
+Τετουάν / Tetouan
+Τόκιο / Tokyo
+Άγιος Γεώργιος Κερατσινίου / Keratsini
+Μπαστιά / Bastia
+Πούλα / Pula
+Σερόφ / Serov
+Λίβερπουλ / Liverpool
+Ναϊρόμπι / Nairobi
+Βιτσέμπσκ / Vitebsk
+Κραγκούγιεβατς / Kragujevac
+Φλώρινα / Florina
+Δουιτάμα / Duitama
+Ντρούσκινινκαϊ / Druskininkai
+Παρναΐμπα / Parnaiba
+Γιορκ / York
+Πιονγιάνγκ / Pyongyang
+Τζούνο / Juneau
+Ταμπρίζ / Tabriz
+Άλμπα Ιούλια / Alba Iulia
+Φουντσάλ / Funchal
+Χουργκάντα / Hurghada
+Λιμπρβίλ / Libreville
+Αγία Παρασκευή / Agia Paraskevi
+Πίτσμπεργκ / Pittsburgh
+Κόβεντρι / Coventry
+Γκάτσινα / Gatchina
+Σαιντ Πωλ / Saint Paul
+Κατερίνη / Katerini
+Σάντα Μπάρμπαρα / Santa Barbara
+Κολωνία / Koeln
+Μπρέντα / Breda
+Φράνσισταουν / Francistown
+Τσιτάου / Zittau
+Φλένσμπουργκ / Flensburg
+Δυρράχιο / Durres
+Ασσουάν / Aswan
+Καρλσρούη / Karlsruhe
+Σβερίν / Schwerin
+Μάιντς / Mainz
+Σόμα / Soma
+Ζάμοστς / Zamosc
+Κάντερμπερι / Canterbury
+Καρλάιλ / Carlisle
+Σαντιάγκο / Santiago
+Βύρων / Vyronas
+Αντίγουα Γουατεμάλα / Antigua Guatemala
+Μπαρίνας / Barinas
+Μόνκτον / Moncton
+Πουέρτο Λιμόν / Limon
+Μελίσσια / Melissia
+Τσιουάουα / Chihuahua
+Άμστερνταμ / Amsterdam
+Κόκμπερν Τάουν / Cockburn Town
+Βρυξέλλες / Brussels
+Τομπρούκ / Tobruk
+Πνομ Πενχ / Phnom Penh
+Γκρατς / Graz
+Μπάντεν-Μπάντεν / Baden-Baden
+Μασάντ / Mashhad
+Πορτ-ο-Πρενς / Port-au-Prince
+Κάστρο / Chios
+Σεμέι / Semey
+Μπρούκλαϊν / Brookline
+Καλαμαριά / Kalamaria
+Άλκμααρ / Alkmaar
+Λίμα / Lima
+Ντέμπρετσεν / Debrecen
+Μπρνο / Brno
+Τάμπερε / Tampere
+Λέσκοβατς / Leskovac
+Βλαδιβοστόκ / Vladivostok
+Κωνσταντία / Konstanz
+Δάφνη / Dhafni
+Πορτ Μόρεσμπι / Port Moresby
+Ουλάν Ουντέ / Ulan-Ude
+Γκάρφορθ / Garforth
+Σιαμέν / Xiamen
+Αμπούζα / Abuja
+Μπέλο Οριζόντε / Belo Horizonte
+Τόρουν / Torun
+Λίντι / Lindi
+Ταργκόβιστε / Targovishte
+Ιένα / Jena
+Γκουλού / Gulu
+Ουτενά / Utena
+Μοντγκόμερι / Montgomery
+Σάι-Σάι / Xai-Xai
+Βαλανσιέν / Valenciennes
+Ουψάλα / Uppsala
+Σοκοντέ / Sokode
+Τσούπρια / Cuprija
+Δουνκέρκη / Dunkerque
+Ποτοσί / Potosi
+Περπινιάν / Perpignan
+Βαντούζ / Vaduz
+Ενβιγάδο / Envigado
+Εσκιλστούνα / Eskilstuna
+Σελέμπι-Φίκουε / Selebi-Phikwe
+Όμπερν Χιλς / Auburn Hills
+Τσάρλστον / Charleston
+Ζωγράφος / Zografos
+Μπαντάρ Αμπάς / Bandar Abbas
+Λύνεμπουργκ / Lueneburg
+Τολέδο / Toledo
+Λεβάδεια / Livadeia
+Βλαντικαβκάζ / Vladikavkaz
+Λακεδαιμων / Sparti
+Άγιος Ιωάννης Νέας Γης / St. John's
+Γυβάσκυλα / Jyvaeskylae
+Βεστερός / Vasteras
+Σαρλερουά / Charleroi
+Φλύα / Khalandrion
+Βελιγράδι / Belgrade
+Λα Ροσέλ / La Rochelle
+Σίερατζ / Sieradz
+Μαρουά / Maroua
+Βισύ / Vichy
+Στίλγουοτερ / Stillwater
+Ώστιν / Austin
+Αμαλιάδα / Amaliada
+Οσβιέτσιμ / Oswiecim
+Σάντα Τέκλα / Santa Tecla
+Βαγιαδολίδ / Valladolid
+Πάντσεβο / Pancevo
+Ντίνσλακεν / Dinslaken
+Σουρακάρτα / Surakarta
+Ανν Άρμπορ / Ann Arbor
+Τζαϊσαλμέρ / Jaisalmer
+Μπρέιντς / Brades
+Μαζατλάν / Mazatlan
+Νέα Ιωνία / Nea Ionia
+Ιζέβσκ / Izhevsk
+Παβλοντάρ / Pavlodar
+Τσιπάτα / Chipata
+Σταραχοβίτσε / Starachowice
+Μομπάσα / Mombasa
+Ντέιρ αλ-Ζορ / Deir ez-Zor
+Μπατμάν / Batman
+Τασκένδη / Tashkent
+Ίντσον / Incheon
+Σάντα Κρουζ / Santa Cruz
+Χάτινγκεν / Hattingen
+Λουσάκα / Lusaka
+Καβασάκι / Kawasaki
+Σετούμπαλ / Setubal
+Μάινταλ / Maintal
+Ντακάρ / Dakar
+Οσμανίγιε / Osmaniye
+Ασουνθιόν / Asuncion
+Γκέτεμποργκ / Goeteborg
+Δε Βάλεϊ / The Valley
+Νέο Δελχί / New Delhi
+Μπλαγκόεβγκραντ / Blagoevgrad
+Σαμπάβα / Sambava
+Άστραχαν / Astrakhan
+Λα Πας / La Paz
+Νάουσα / Naousa
+Χαρμπίν / Harbin
+Ντέρμπαν / Durban
+Μπελφόρ / Belfort
+Σόλσμπερι / Salisbury
+Χεβρώνα / Hebron
+Τουρκμένμπασι / Turkmenbasy
+Λιλεχάμερ / Lillehammer
+Σουτσεάβα / Suceava
+Καμπάλα / Kampala
+Τσορούμ / Corum
+Βηρυτός / Beirut
+Παρίσι / Paris
+Βαν / Van
+Λουχάνσκ / Luhansk
+Τζωρτζ Τάουν / George Town
+Μπισκέκ / Bishkek
+Ρώμη / Rome
+Βίλλεμσταντ / Willemstad
+Βαβρ / Wavre
+Συμφερόπολη / Simferopol
+Τρέντο / Trento
+Μπαδαλόνα / Badalona
+Βαρσοβία / Warsaw
+Μενχενγκλάντμπαχ / Moenchengladbach
+Ρανκάγουα / Rancagua
+Κούουσαμο / Kuusamo
+Τουσόν / Tucson
+Τορρεόν / Torreon
+Νοβορωσίσκ / Novorossiysk
+Μαζεϊκιάι / Mazeikiai
+Αλμάτι / Almaty
+Άλσφελτ / Alsfeld
+Κουένκα / Cuenca
+Βορμς / Worms
+Ντέρμπι / Derby
+Ρίο ντε Τζανέιρο / Rio de Janeiro
+Χάρρισμπεργκ / Harrisburg
+Μπρυζ / Brugge
+Τεργέστη / Trieste
+Βλαντίμιρ / Vladimir
+Τιφλίδα / Tbilisi
+Βαλτιμόρη / Baltimore
+Δαμιέτη / Damietta
+Ντάλας / Dallas
+Ντνιπροπετρόφσκ / Dnipro
+Ακαπούλκο / Acapulco de Juarez
+Τιχουάνα / Tijuana
+Αϊλέου / Aileu
+Αχαρνές / Acharnes
+Ρατσίμπορζ / Raciborz
+Σόμπορ / Sombor
+Μπισσάου / Bissau
+Σλοβιάνσκ / Sloviansk
+Βιλχελμσχάφεν / Wilhelmshaven
+Άκρα / `Akko
+Μπαρτίν / Bartin
+Ζυρίχη / Zurich
+Οξφόρδη / Oxford
+Σίσακ / Sisak
+Μπεράτ / Berat
+Μπερτουά / Bertoua
+Πουέμπλα / Puebla
+Κότκα / Kotka
+Κουνμίγκ / Kunming
+Σαν Φρανσίσκο / San Francisco
+Κετσαλτενάνγκο / Quetzaltenango
+Πουέρτο Μάδριν / Puerto Madryn
+Οτβάιλερ / Ottweiler
+Ρουαγιάν / Royan
+Νοβοσιμπίρσκ / Novosibirsk
+Γκρας / Grasse
+Ινβερνές / Inverness
+Μπουζάου / Buzau
+Άγιοι Σαράντα / Sarande
+Ίλιον / Ilion
+Γκαμπές / Gabes
+Ιρκούτσκ / Irkutsk
+ΠΟΡΤΣΑΪΝΤ / Port Said
+Μάαστριχτ / Maastricht
+Μουσκάτ / Muscat
+Βάκαβιλ / Vacaville
+Ταουραγκέ / Taurage
+Αννάπολις / Annapolis
+Λάνσινγκ / Lansing
+Κέρκυρα / Corfu
+Καβάλα / Kavala
+Βαντοβίτσε / Wadowice
+Κραϊόβα / Craiova
+Ελσίνκι / Helsinki
+Ουάσιγκτον / Washington, D.C.
+Μανίλα / Manila
+Αλκαλά ντε Ενάρες / Alcala de Henares
+Μπράιτον / Brighton
+Πάτνα / Patna
+Ουσάκ / Usak
+Μπουργκάς / Burgas
+Σααρμπρύκεν / Saarbruecken
+Γλυφάδα / Glyfada
+Koνσεπσιόν / Concepcion
+Φιλαδέλφεια / Alasehir + Philadelphia
+Περαία / Peraia
+Σέρρα / Serres
+Λε Λαμεντέν / Le Lamentin
+Χους / Goes
+Τάμπα / Tampa
+Ριβερσάιντ / Riverside
+Λούισβιλ / Louisville
+Κάρσον Σίτι / Carson City
+Βιζμπάντεν / Wiesbaden
+Σινσινάτι / Cincinnati
+Μούγλα / Mugla
+Ούζιτσε / Uzice
+Αρζαντάν / Argentan
+Ταλίν / Tallinn
+Χουέ / Hue
+Άγιος Δημήτριος / Agios Dimitrios
+Λονγκ Μπιτς / Long Beach
+Κως / Kos
+Σάο Πάολο / Sao Paulo
+Μπάρι / Bari
+Ναμπλούς / Nablus
+Αργυρόκαστρο / Gjirokaster
+Αλικάντε / Alicante
+Λόουελ / Lowell
+Φιαναραντσόα / Fianarantsoa
+Ντόλα / Ndola
+Όρμι / Qormi
+Αμαδόρα / Amadora
+Αλμερία / Almeria
+Άγιοι Ανάργυροι / Agioi Anargyroi
+Σεμαράνγκ / Semarang
+Κρούσεβατς / Krusevac
+Πρίστινα / Pristina
+Προύσα / Bursa
+Γκόνταιρ / Gondar
+Θεσσαλονίκη / Thessaloniki
+Ντόμπριτς / Dobrich
+Ζάγετσαρ / Zajecar
+Μαρακάιμπο / Maracaibo
+Τσενγκντού / Chengdu
+Αμβέρσα / Antwerpen
+Ηλιούπολη / Ilioupoli
+Σκόπια / Skopje
+Πεσαβάρ / Peshawar
+Μπέλγκοροντ / Belgorod
+Μενεμένη / Menemeni
+Τζάκσονβιλ / Jacksonville
+Πόλη της Ζανζιβάρης / Zanzibar
+Βίνερ Νόιστατ / Wiener Neustadt
+Ζάχλε / Zahle
+Καμισλόφ / Kamyshlov
+Μαγιαγουές / Mayagueez
+Σλάτινα / Slatina
+Άμπου Ντάμπι / Abu Dhabi
+Μαριγκό / Marigot
+Βρότσλαβ / Wroclaw
+Αρνταχάν / Ardahan
+Κάστρις / Castries
+Παπεέτε / Papeete
+Μαρντίν / Mardin
+Στάγιερ / Steyr
+Αβαρούα / Avarua
+Λουκέρνη / Luzern
+Σάντα Κλάρα / Santa Clara
+Κολούμπια / Columbia
+Άνω Νευροκόπι / Gotse Delchev
+Ράντομ / Radom
+Όρνσκολντσβικ / Ornskoldsvik
+Μπιν Αρούς / Ben Arous
+Αυλώνας / Vlore
+Μανάγκουα / Managua
+Ντρομπέτα-Τούρνου Σεβερίν / Drobeta-Turnu Severin
+Χάιντενχαϊμ / Heidenheim an der Brenz
+Αμισός / Samsun
+Τούλτσεα / Tulcea
+Πούντα Αρένας / Punta Arenas
+Σαιν-Ναζαίρ / Saint-Nazaire
+Κερτς / Kerch
+Τίρανα / Tirana
+Μπερ Σεβά / Beersheba
+Κατάνη / Catania
+Πάρχιμ / Parchim
+Ολύμπια / Olympia
+Μάινινγκεν / Meiningen
+Γιαννιτσά / Giannitsa
+Κάτοβιτσε / Katowice
+Λειψία / Leipzig
+Γκαμπορόνε / Gaborone
+Αλεξανδρούπολη / Alexandroupoli
+Μπράγκα / Braga
+Ανάπα / Anapa
+Μίντλεσμπρο / Middlesbrough
+βύβλος / Jbail
+Ώκλαντ / Auckland
+Σουραμπάγια / Surabaya
+Τολούκα / Toluca
+Ναϊμέχεν / Nijmegen
+Λεϊρία / Leiria
+Εκερνφέρντε / Eckernfoerde
+Πάγκο Πάγκο / Pago Pago
+Μοντέγκο Μπέυ / Montego Bay
+Βέρνη / Bern
+Δίβρη / Debar
+Καράκας / Caracas
+Λέτσε / Lecce
+Καέν / Caen
+Αλόφι / Alofi
+Φίλιπσμπουργκ / Philipsburg
+Σαν Αντόνιο / San Antonio
+Πορ Λουί / Port Louis
+Λιλόνγκουε / Lilongwe
+Αμμόχωστος / Famagusta
+Έσποο / Espoo
+Πάσσαου / Passau
+Βιτρέ / Vitre
+Πόβοα ντε Βαρζίμ / Povoa de Varzim
+Μπαϊμπούρτ / Bayburt
+Ντε Μπιλτ / De Bilt
+Τέτε / Tete
+Μαχατζάνγκα / Mahajanga
+Παλεμπάνγκ / Palembang
+Σαν Σαλβαδόρ / San Salvador
+Κλερμόν-Φεράν / Clermont-Ferrand
+Γρανάδα / Granada
+Χάβιροβ / Havirov
+Ονιάρα / Honiara
+Ντάρμστατ / Darmstadt
+Λούξορ / Luxor
+Βάασα / Vaasa
+Πυλαία / Pylaia
+Άρχους / Arhus
+Χέλσινγκμποργκ / Helsingborg
+Ανδόρρα / Andorra la Vella
+Μπισκ / Biysk
+Σαϊέν / Cheyenne
+Μονς / Mons
+Μπουρζ / Bourges
+Ες-συρ-Αλζέτ / Esch-sur-Alzette
+Ραμπάτ / Rabat
+Σπρίνγκφιλντ / Springfield
+Αλεξάνδρεια / Alexandria
+Κόνακρι / Conakry
+Κάλδας / Caldas
+Ριονέγρο / Rionegro
+Ελ Πάσο / El Paso
+Γιερεβάν / Yerevan
+Τουλόν / Toulon
+Νικόγια / Nicoya
+Γάζα / Gaza
+Τσινγκτάο / Qingdao
+Ρεσίφε / Recife
+Μπάαλμπεκ / Baalbek
+Ρενς / Reims
+Ληντς / Leeds
+Κόμπε / Kobe
+Σερμπούρ-Οκτβίλ / Cherbourg-Octeville
+Τζαϊπούρ / Jaipur
+Ντάνστεϊμπλ / Dunstable
+Σριναγκάρ / Srinagar
+Σανγκάη / Shanghai
+Πάτρα / Patra
+Λαντσόου / Lanzhou
+Αντιγιαμάν / Adiyaman
+Πράγα / Prague
+Πειραιάς / Piraeus
+Ουιτσίτα / Wichita
+Γκάρμις-Παρτενκίρχεν / Garmisch-Partenkirchen
+Σουρ / Sur
+Μπέρνλεϊ / Burnley
+Οστένδη / Ostend
+Μέγαρα / Megara
+Τορίνο / Turin
+Γκάμπροβο / Gabrovo
+Χιροσίμα / Hiroshima
+Μαϊάμι / Miami
+Νασσάου / Nassau
+Χαρτούμ / Khartoum
+Πύργος / Pyrgos
+Χομς / Homs
+Έστερσουντ / OEstersund
+Ασάφενμπουργκ / Aschaffenburg
+Στόουκ ον Τρεντ / Stoke-on-Trent
+Τσανάκκαλε / Canakkale
+Νεϊγί-συρ-Σεν / Neuilly-sur-Seine
+Βαρντχά / Wardha
+Μέκκα / Mecca
+Μπέργκεν / Bergen
+Ερφούρτη / Erfurt
+Τεχεράνη / Tehran
+Σάντερλαντ / Sunderland
+Τάλιτσα / Talitsa
+Λάντσχουτ / Landshut
+Λαμία / Lamia
+Βίλα Ρεάλ / Vila Real
+Ντοντόμα / Dodoma
+Τέτοβο / Tetovo
+Πόλη του Μπελίζ / Belize City
+Βιέλουν / Wielun
+Νέα Μάκρη / Nea Makri
+Χρζάνοβ / Chrzanow
+Ταλαχάσι / Tallahassee
+Κλαϊπέντα / Klaipeda
+Βοστωνη / Boston
+Τρέντον / Trenton
+Λιλ / Lille
+Σμολένσκ / Smolensk
+Κόρινθος / Korinthos
+Ντάργουιν / Darwin + Darwen
+Μογκαντίσου / Mogadishu
+Αφγανιστάν / Afghanistan
+Αλβανία / Albania
+Αλγερία / Algeria
+Ανδόρρα / Andorra
+Ανγκόλα / Angola
+Aργεντινή / Argentina
+Αρμενία / Armenia
+Aυστραλία / Australia
+Αυστρία / Austria
+Αζερμπαϊτζάν / Azerbaijan
+Μπαχάμες / Bahamas
+Μπαχρέιν / Bahrain
+Μπανγκλαντές / Bangladesh
+Μπαρμπάντος / Barbados
+Λευκορωσία / Belarus
+Βέλγιο / Belgium
+Μπελίζ / Belize
+Μπενίν / Benin
+Μπουτάν / Bhutan
+Βολιβία / Bolivia
+Βοσνία και Ερζεγοβίνη / Bosnia and Herzegovina
+Μποτσουάνα / Botswana
+Βραζιλία / Brazil
+Μπρουνέι / Brunei
+Βουλγαρία / Bulgaria
+Μπουρκίνα Φάσο / Burkina Faso
+Μπουρούντι / Burundi
+Καμπότζη / Cambodia
+Καμερούν / Cameroon
+Καναδάς / Canada
+Πράσινο Ακρωτήριο / Cape Verde
+Κεντροαφρικανική Δημοκρατία / Central African Republic
+Τσαντ / Chad
+Χιλή / Chile
+Κίνα / China
+Κολομβία / Colombia
+Κομόρες / Comoros
+Κονγκό / Congo
+Κόστα Ρίκα / Costa Rica
+Ακτή Ελεφαντοστού / Ivory Coast (Côte ďIvoire)
+Κροατία / Croatia
+Κούβα / Cuba
+Κύπρος / Cyprus
+Τσεχία / Czech Republic
+Δανία / Denmark
+Τζιμπουτί / Djibouti
+Ντομίνικα / Dominica
+Δομινικανή Δημοκρατία / Dominican Republic
+Ανατολικό Τιμόρ / East Timor
+Ισημερινός / Ecuador
+Αίγυπτος / Egypt
+Ελ Σαλβαδόρ / El Salvador
+Ισημερινή Γουινέα / Equatorial Guinea
+Ερυθραία / Eritrea
+Εσθονία / Estonia
+Αιθιοπία / Ethiopia
+Νήσοι Φερόες / Faroe Islands
+Φίτζι / Fiji
+Φινλανδία / Finland
+Γαλλία / France
+Γαλλικά νότια και ανταρκτικά εδάφη / French Southern and Antarctic Lands
+Γκαμπόν / Gabon
+Γεωργία / Georgia
+Γερμανία / Germany
+Γκάνα / Ghana
+Ελλάδα / Greece
+Γροιλανδία / Greenland
+Γρανάδα / Grenada
+Γκουάμ / Guam
+Γουατεμάλα / Guatemala
+Γουινέα / Guinea
+Μπισάου / Guinea-Bissau
+Γουιάνα / Guyana
+Αϊτή / Haiti
+Ολλανδία / Holland + Netherlands
+Αγία Έδρα / Holy See
+Ονδούρα / Honduras
+Χονγκ Κονγκ / Hong Kong
+Ουγγαρία / Hungary
+Ισλανδία / Iceland
+Ινδία / India
+Ινδονησία / Indonesia
+Ιράν / Iran
+Ιράκ / Iraq
+Ιρλανδία / Ireland
+Ισραήλ / Israel
+Ιταλία / Italy
+Ιαμαϊκή / Jamaica
+Ιαπωνία / Japan
+Ιορδανία / Jordan
+Καζακστάν / Kazakhstan
+Κένυα / Kenya
+Κιριμπάτι / Kiribati
+Κορέα / Korea
+Κουβέιτ / Kuwait
+Κιργιζιστάν / Kyrgyzstan
+Λάος / Laos
+Λεττονία / Latvia
+Λίβανος / Lebanon
+Λεσόθο / Lesotho
+Λιβερία / Liberia
+Λιβύη / Libya
+Λίχτενσταϊν / Liechtenstein
+Λιθουανία / Lithuania
+Λουξεμβούργο / Luxembourg
+Μακάου / Macau
+Πρώην Γιουγκοσλαβική Δημοκρατία της Μακεδονίας / Macedonia
+Μαδαγασκάρη / Madagascar
+Μαλάουι / Malawi
+Μαλαισία / Malaysia
+Μαλδίβες / Maldives
+Μαλί / Mali
+Μάλτα / Malta
+Νήσοι Μάρσαλ / Marshall Islands
+Μαρτινίκα / Martinique
+Μαυριτανία / Mauritania
+Μαυρίκιος / Mauritius
+Μαγιότ / Mayotte
+Μεξικό / Mexico
+Μικρονησία / Micronesia
+Μολδαβία / Moldova
+Μονακό / Monaco
+Μογγολία / Mongolia
+Μαυροβούνιο / Montenegro
+Μοντσερράτ / Montserrat
+Μαρόκο / Morocco
+Μοζαμβίκη / Mozambique
+Μυανμάρ / Myanmar
+Ναμίμπια / Namibia
+Ναουρού / Nauru
+Νεπάλ / Nepal
+Ολλανδικές Αντίλλες / Netherlands Antilles
+Νέα Καληδονία / New Caledonia
+Νέα Ζηλανδία / New Zealand
+Νικαράγουα / Nicaragua
+Νίγηρας / Niger
+Νιγηρία / Nigeria
+Νιούε / Niue
+Νήσοι Νόρφολκ / Norfolk Island
+Βόρεια Κορέα / North Korea
+Βόρειες Μαριάνες Νήσοι / Northern Mariana Islands
+Νορβηγία / Norway
+Ομάν / Oman
+Πακιστάν / Pakistan
+Παλάου / Palau
+Παλαιστίνη / Palestine
+Παναμάς / Panama
+Παπούα Νέα Γουινέα / Papua New Guinea
+Παραγουάη / Paraguay
+Περού / Peru
+Φιλιππίνες / Philippines
+Νήσοι Πίτκαιρν / Pitcairn Islands
+Πολωνία / Poland
+Πορτογαλία / Portugal
+Πριγκηπάτο του Μονακό / Principality of Monaco
+Πουέρτο Ρίκο / Puerto Rico
+Κατάρ / Qatar
+Ρουμανία / Romania
+Ρωσία / Russia
+Ρουάντα / Rwanda
+Άγιος Κίττις και Νάβις / Saint Kitts and Nevis
+Αγία Λουκία / Saint Lucia
+Άγιος Βικέντιος και Γρεναδίνες / Saint Vincent and the Grenadines
+Σαμόα / Samoa
+Άγιος Μαρίνος / San Marino
+Άγιος Θωμάς και Πρίγκιπας / São Tomé and Príncipe
+Σαουδική Αραβία / Saudi Arabia
+Σκοτία; Σκωτία / Scotland
+Σενεγάλη / Senegal
+Σερβία / Serbia
+Σεϋχέλλες / Seychelles
+Σιέρα Λεόνε / Sierra Leone
+Σιγκαπούρη / Singapore
+Σλοβακία / Slovakia
+Σλοβενία / Slovenia
+Νήσοι Σολομώντα / Solomon Islands
+Σομαλία / Somalia
+Νότιος Αφρική / South Africa
+Νότια Κορέα / South Korea
+Ισπανία / Spain
+Σρι Λάνκα / Sri Lanka
+Σουδάν / Sudan
+Σουρινάμ / Suriname
+Σουαζιλάνδη / Swaziland
+Σουηδία / Sweden
+Ελβετία / Switzerland
+Συρία / Syria
+Ταϊβάν / Taiwan (officially Republic of China)
+Τατζικιστάν / Tajikistan
+Τανζανία / Tanzania
+Ταϊλάνδη / Thailand
+Γκάμπια / Gambia
+Τόγκο / Togo
+Τόγκα / Tonga
+Τρινιδάδ και Τομπάγκο / Trinidad and Tobago
+Τυνησία / Tunisia
+Τουρκία / Turkey
+Τουρκμενιστάν / Turkmenistan
+Τουβαλού / Tuvalu
+Ουγκάντα / Uganda
+Ουκρανία / Ukraine
+Ηνωμένα Αραβικά Εμιράτα / United Arab Emirates
+Ηνωμένο Βασίλειο / United Kingdom
+Ηνωμένο Βασίλειο της Μεγάλης Βρεταννίας και Βορείου Ιρλανδίας / United Kingdom of Great Britain and Northern Ireland
+Ηνωμένες Πολιτείες της Αμερικής / United States of America
+Ουρουγουάη / Uruguay
+Ουζμπεκιστάν / Uzbekistan
+Βανουάτου / Vanuatu
+Πόλη του Βατικανού / Vatican City
+Βενεζουέλα / Venezuela
+Βιετνάμ / Vietnam
+Ουαλία / Wales
+Δυτική Σαχάρα / Western Sahara
+Υεμένη / Yemen
+Ζάμπια / Zambia
+Ζιμπάμπουε / Zimbabwe

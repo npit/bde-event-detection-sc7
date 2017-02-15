@@ -32,7 +32,7 @@ public class BaseConfiguration implements IBaseConf {
 
     protected final Properties properties;
     private static final String [] trueArray = {"yes","true"};
-    protected static boolean isTrue(String arg)
+    public static boolean isTrue(String arg)
     {
         for(String elem : trueArray)
         {

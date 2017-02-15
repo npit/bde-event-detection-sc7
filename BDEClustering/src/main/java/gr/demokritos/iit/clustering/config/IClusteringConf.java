@@ -33,18 +33,10 @@ public interface IClusteringConf extends IBaseConf {
 
     enum Modifiers
     {
-        VERBOSE("verbose"), PRECOMPUTE_GRAPHS("precompute_graphs");
+        PRECOMPUTE_GRAPHS("precompute_graphs");
         private String type;
         private Modifiers(String type) {
             this.type = type;
-        }
-        public static boolean supports(String candidate)
-        {
-            for(OperationMode elem : OperationMode.values())
-            {
-                if(elem.toString().equals(candidate)) return true;
-            }
-            return false;
         }
         @Override
         public String toString() {

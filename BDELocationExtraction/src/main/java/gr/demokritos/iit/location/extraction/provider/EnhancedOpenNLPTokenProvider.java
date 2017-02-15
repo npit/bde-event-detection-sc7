@@ -15,20 +15,24 @@
 package gr.demokritos.iit.location.extraction.provider;
 
 
+import gr.demokritos.iit.base.conf.BaseConfiguration;
+import gr.demokritos.iit.base.conf.IBaseConf;
 import gr.demokritos.iit.base.util.Utils;
 
 import gr.demokritos.iit.location.factory.conf.ILocConf;
+
 import gr.demokritos.iit.location.sentsplit.ISentenceSplitter;
 import gr.demokritos.iit.location.sentsplit.OpenNLPSentenceSplitter;
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.namefind.TokenNameFinderModel;
-import opennlp.tools.util.HashList;
 import opennlp.tools.util.Span;
+import org.opengis.filter.expression.Add;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.charset.Charset;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /**
@@ -53,11 +57,13 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
         DEFAULT_SENT_SPLIT_MODEL_PATH = splitterPath;
     }
 
-
-    private HashMap<String,String> extraNames;
+    // extra location names
+    private HashSet<String> extraNames;
+    // additional location names per (original) extra name
     private HashMap<String,ArrayList<String>> extraNamesAssociation;
+    // overriding location names per (original) extra name
     private HashMap<String,String> extraNamesOverride;
-    private Set<String> associationCache;
+    private Set<String> immutableNames;
     /**
      *
      * @param basePath the path where the models are located
@@ -88,112 +94,138 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
 
     }
 
-   
-    
 
-    private void readLocationsFile(String extrapath)
-    {
-        // special optional format:
-        // name1***name2***name3 ...
-        // In that scenario, if name1 exists in the text, then name2,name3 ...  will (also) be added as a location name.
-        // this is helpful if name1 is too specific for a geometry to exist, so we manually add superegions for which
-        // we know that a geometry is availabe
-        System.out.println("Reading default LE token provider extra locations file: ["+ extrapath+"]");
-        ArrayList<String> lines = Utils.readFileLinesDropComments(extrapath);
-        if(lines.isEmpty())
-        {
-            System.err.println("Nothing read out of extra locations file ["+extrapath+"]");
-            return;
-        }
-        String delimiter = "[*]{3}";
-        String overrideDelimiter = "[/]{3}";
-
-        String line="";
-        int linecount=0, skipcount=0;
-        for(String l : lines)        {
-        // read newline delimited source names file
-
-
-
-            ++linecount;
-            line = line.trim();
-
-            String[] parts = line.split(delimiter);
-            String[] overrParts = parts[0].split(overrideDelimiter);
-            String locationBaseName="", locationOverrideName;
-            if(overrParts.length > 1)
-            {
-                if(overrParts.length > 2)
-                {
-                    System.err.printf("Location name override should be like name1%sname2",overrideDelimiter); ++skipcount;
-                    continue;
-                }
-                locationBaseName = overrParts[0];
-                locationOverrideName = overrParts[1];
-                extraNamesOverride.put(locationBaseName,locationOverrideName);
-            }
-            else
-                locationBaseName = parts[0];
-
-            if(!extraNames.keySet().contains(locationBaseName))
-            {
-                extraNames.put(locationBaseName,locationBaseName.toLowerCase());
-                //System.out.println(extraNames.size() + ":" + locationBaseName);
-            }
-            else
-            {
-                ++skipcount;
-                System.out.println("\tSkipping duplicate entry [" + locationBaseName + "].");
-            }
-
-
-            if(parts.length > 1)
-            {
-                extraNamesAssociation.put(locationBaseName, new ArrayList());
-
-                // add the associated places
-                for (int i = 1; i < parts.length; ++i) {
-                    if (!extraNamesAssociation.get(locationBaseName).contains(parts[i]))
-                        extraNamesAssociation.get(locationBaseName).add(parts[i]);
-                }
-            }
-        }
-
-        System.out.println("Skipped " + skipcount + " extra location name entries.");
-
-
-
-    }
     public boolean configure(ILocConf conf)
     {
-        if(! conf.useAdditionalExternalNames()) return true;
-        // naive additions from GPapadakis' dataset
-        // get extra names
+        String extractorConf = conf.getLocationExtractorConfig();
+        Properties props = new Properties();
+        try {
+            FileInputStream instream = new FileInputStream(new File(extractorConf));
+            props.load(new InputStreamReader(instream, Charset.forName("UTF-8")));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if( ! BaseConfiguration.isTrue(props.getProperty("use_extras",""))) return true;
 
-        extraNames = new HashMap<>();
+        extraNames = new HashSet<>();
         extraNamesAssociation = new HashMap<>();
-        associationCache = new HashSet<>();
+
         extraNamesOverride = new HashMap<>();
-        String extrapath=conf.getLocationExtractionSourceFile();
-       if(extrapath.isEmpty())
-       {
-               System.out.print("Did not provide extra locations file.");
-               return false;
-       }
+        String [] extraLocations = null;
+        String value = props.getProperty("extra_locations","");
+        if(value.isEmpty())
+        {
+            value = props.getProperty("extra_locations_file","");
+            ArrayList<String> lines = Utils.readFileLinesDropComments(value);
+            if(lines == null) return true;
+            extraLocations = lines.toArray(new String[lines.size()]);
+        }
+        else
+        {
+            extraLocations = value.split(",");
+        }
+        if(value.isEmpty()) return true;
 
 
-        readLocationsFile(extrapath);
-        System.out.print("Reading extra names file [" + extrapath + "].");
+        for(String extraloc : extraLocations)
+        {
+            parseExtraLocationClause(extraloc,conf);
+        }
 
-        System.out.println("done.\n\t Read " + extraNames.size() + " additional location names.");
+        System.out.println("done.\n\tRead " + extraNames.size() + " additional location names.");
         System.out.println("\tRead " + extraNamesAssociation.size() + " location associations.");
         System.out.println("\tRead " + extraNamesOverride.size() + " location overrides.");
 
 
         useAdditionalSources = true;
-        if(conf.onlyUseAdditionalExternalNames())
+        if(BaseConfiguration.isTrue(props.getProperty("only_use_extras","")))
             onlyUseAdditionalSources = true;
-	return true;
+
+        // the default location extractor post-processes discovered names (for close duplicates, etc.). Disable it by
+        // providing a list of immutable names
+        immutableNames = new HashSet();
+        for(String name : extraNames)
+        {
+
+            if(extraNamesOverride.containsKey(name)) name = (extraNamesOverride.get(name));
+            immutableNames.add(name);
+            if(extraNamesAssociation.containsKey(name)) immutableNames.addAll(extraNamesAssociation.get(name));
+        }
+    return true;
+    }
+
+    void parseExtraLocationClause(String extraloc, ILocConf conf)
+    {
+        String baseName="";
+        String override="";
+        ArrayList<String> additionals = new ArrayList<>();
+        String metaData="";
+
+        String [] nameAndMeta = extraloc.split("/"); // check for overrides
+
+        // parse override
+        if(nameAndMeta.length == 1)
+        {
+            //no override
+            metaData = nameAndMeta[0];
+        }
+        else if(nameAndMeta.length == 2)
+        {
+            baseName = nameAndMeta[0].trim();
+            metaData = nameAndMeta[1];
+        }
+        else
+        {
+            System.err.println("Skipping extra location clause [" + extraloc + "] : Encountered more than 2  overrides (slashes) ");
+            System.err.println("Can have at most 1.");
+            return;
+        }
+        // parse metadata : check additionals
+        nameAndMeta = metaData.split("\\+");
+        if(nameAndMeta.length == 1)
+        {
+            // no additionals
+            if(baseName.isEmpty())
+            {
+                // no metadata at all
+                baseName = metaData.trim();
+            }
+            else
+            {
+                // meta data is only an override
+                override = metaData.trim();
+            }
+        }
+        else
+        {
+            // additionals exist
+            if(baseName.isEmpty())
+            {
+                // no overrides were encountered, so 1st token is the base name
+                baseName = nameAndMeta[0].trim();
+            }
+            else
+                override = (nameAndMeta[0]).trim();
+            // all the rest are additionals
+            for(int i=1;i<nameAndMeta.length;++i) additionals.add(nameAndMeta[i].trim());
+        }
+        if(conf.hasModifier(ILocConf.Modifiers.VERBOSE.toString()))
+            System.out.println(baseName);
+        boolean inserted = extraNames.add(baseName);
+
+        if(! inserted) System.err.println("Duplicate location: " + baseName);
+        if(! additionals.isEmpty())
+        {
+            for(String a : additionals)
+                extraNames.add(a);
+            extraNamesAssociation.put(override, additionals);
+        }
+        if(! override.isEmpty())
+        {
+            extraNames.add(override);           // add it to the directly matched
+            extraNamesOverride.put(baseName, override);
+        }
+
     }
     /**
      *
@@ -238,6 +270,7 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
                 }
             }
             Iterator<String> iter = getTokenMap(sentence).keySet().iterator();
+
             while (iter.hasNext()) {
                 String nameEntity = iter.next();
                 ret.add(nameEntity);
@@ -247,15 +280,42 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
         return ret;
     }
 
+
+    private Set<String> AdditionalResultsPerArticle;
+    public Set<String> getImmutableNames()
+    {
+        if(immutableNames==null) return new HashSet<>();
+        return immutableNames;
+    }
+
+    private String processGreek(String word)
+    {
+        word = word.replaceAll("Α","A");
+
+        return word;
+    }
     @Override
     public Set<String> getLocationTokens(String text) {
-        if(useAdditionalSources)
-            associationCache.clear();
 
+
+        if(useAdditionalSources) {
+            // compute extras
+            AdditionalResultsPerArticle = new HashSet<>();
+            searchForAdditionalLocations(text);
+
+            if(onlyUseAdditionalSources)
+            {
+                AdditionalResultsPerArticle = applyOverrides(AdditionalResultsPerArticle);
+                AdditionalResultsPerArticle = addAssociations(AdditionalResultsPerArticle);
+                return AdditionalResultsPerArticle;
+            }
+        }
+
+        Set<String> ret = new HashSet();
         if (text == null || text.trim().isEmpty()) {
             return Collections.EMPTY_SET;
         }
-        Set<String> ret = new HashSet();
+
         String[] sentences = sentenceSplitter.splitToSentences(text);
         for (String sentence : sentences) {
             sentence = sentence.replaceAll("([^Α-Ωα-ωa-zA-Z0-9άέίόώήύΐΪΊΆΈΏΌΉΎ. ])", " $1 ");
@@ -275,8 +335,77 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
                 }
             }
         }
+
+        if(useAdditionalSources)
+        {
+            ret.addAll(AdditionalResultsPerArticle);
+            ret = applyOverrides(ret);
+            ret = addAssociations(ret);
+        }
+
         return ret;
     }
+
+
+    void searchForAdditionalLocations(String text)
+    {
+        for(String extraName : extraNames) {
+
+            // already processed
+            if (AdditionalResultsPerArticle.contains(extraName)) continue;
+            if(! validOccurence(extraName, text)) continue;
+            AdditionalResultsPerArticle.add(extraName);
+        }
+    }
+    Set<String> applyOverrides(Set<String> names)
+    {
+        Set<String> overridenNames = new HashSet<>();
+        for(String name : names)
+        {
+            if(extraNamesOverride.containsKey(name)) overridenNames.add(extraNamesOverride.get(name));
+            else overridenNames.add(name);
+        }
+        return overridenNames;
+    }
+    Set<String> addAssociations(Set<String> names)
+    {
+        Set<String> augmentedNames = new HashSet<>();
+
+        for(String name : names)
+        {
+            augmentedNames.add(name);
+            if(extraNamesAssociation.containsKey(name))
+            {
+                augmentedNames.addAll(extraNamesAssociation.get(name));
+            }
+        }
+        return augmentedNames;
+    }
+
+    boolean validOccurence(String extraName, String text)
+    {
+        if(text.contains(extraName))
+        {
+            // if the extra name is space-delimited it will never be matched in a tokenization.
+            // Search with contains, with restrictions before and after the word
+
+            // check characters before and after
+            int idx = text.indexOf(extraName);
+
+            if(idx > 0) // word is NOT at the start of a sentence
+                if(Character.isAlphabetic(text.charAt(idx-1)))
+                    return false; // pre-word character is a letter : fail
+            if(idx + extraName.length() < text.length() - 1) // word is not at the end of the sentence
+                if(Character.isAlphabetic(text.charAt(idx + extraName.length())))
+                    return false; // post-word  character is a letter : fail
+            // if flow reaches this, all's good: add it
+            return true;
+        }
+        else return false;
+    }
+
+
+
     private static final String TYPE_LOCATION = "location";
 
     protected Map<String, String> getTokenMap(String text) {
@@ -285,7 +414,6 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
         if (text == null || text.isEmpty()) {
             return Collections.EMPTY_MAP;
         }
-        Map<String,String> additional_res = new HashMap<>();
         Map<String, String> res = new HashMap();
         String[] ss = text.split("\\s+");
 
@@ -309,105 +437,7 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
                 }
             }
         }
-        // check for existence of manually supplied location names
-        //System.out.println("Checkign text "  + text_lowercase);
-        if( useAdditionalSources )
-        {
-            //checkExtraSources(text,additional_res);
-            checkExtraSources(ss,text,additional_res);
-        }
-
-
-        if( useAdditionalSources )
-        {
-            res.putAll(additional_res);
-        }
-
         return res;
     }
 
-    private void checkExtraSources(String [] tokens, String text, Map<String,String> additional_res)
-    {
-        for(String extraName : extraNames.keySet()) {
-            if (additional_res.containsKey(extraName)) continue;
-
-            //checkPerToken(tokens,additional_res);
-            checkWholeText(text, extraName, additional_res);
-        }
-    }
-    private boolean checkPerToken(String [] tokens, String extraName, Map<String,String> additional_res)
-    {
-
-            // check if token exists
-            for(String tok : tokens)
-            {
-                if (tok.equals(extraName))
-                //                        if (text.contains(extraNames.get(extraName))) // searches lowercase
-                {
-                    //System.out.println("***FOUND " + extraNames.get(extraName));
-                    addToAdditionalResult(extraName, additional_res);
-                    applyLocationAssociations(extraName, additional_res);
-                    return true;
-
-                }
-                //else System.out.println("Does not contain " + extraNames.get(extraName));
-            } // for each token
-        return false;
-    }
-
-    private void checkWholeText(String text, String extraName, Map<String,String> additional_res)
-    {
-
-        if(text.contains(extraName))
-        {
-            // if the extra name is space-delimited it will never be matched in a tokenization.
-            // Search with contains, with restrictions before and after the word
-
-            // check characters before and after
-            int idx = text.indexOf(extraName);
-
-            if(idx > 0) // word is NOT at the start of a sentence
-                if(Character.isAlphabetic(text.charAt(idx-1)))
-                    return; // pre-word character is a letter : fail
-            if(idx + extraName.length() < text.length() - 1) // word is not at the end of the sentence
-                if(Character.isAlphabetic(text.charAt(idx + extraName.length())))
-                    return; // post-word  character is a letter : fail
-            // if flow reaches this, all's good: add it
-            addToAdditionalResult(extraName, additional_res);
-            applyLocationAssociations(extraName, additional_res);
-        }
-    }
-    private void applyLocationAssociations(String location, Map<String,String> additionalRes)
-    {
-        // the location argument was just added to the additional results set.
-
-        // if there's no association for the location, done
-        if( ! extraNamesAssociation.keySet().contains(location)) return;
-
-        // if we've already processed this location, done
-        // this is done to avoid cycles, if the user was dum - not careful enough to declare such
-        if(associationCache.contains(location)) return;
-        associationCache.add(location);
-        // get associated locations
-        ArrayList<String> assoc_locations = extraNamesAssociation.get(location);
-        for(String loc : assoc_locations)
-        {
-
-            if (!additionalRes.containsKey(loc))
-            {
-                // add it if not already there
-                addToAdditionalResult(loc,additionalRes);
-                System.out.printf("\tAdded location association %s -> %s\n",location,loc);
-            }
-            // continue traversing the association chain
-            applyLocationAssociations(loc,additionalRes);
-        }
-
-    }
-
-    void addToAdditionalResult(String basename, Map<String,String> additionalRes)
-    {
-        if(extraNamesOverride.containsKey(basename))additionalRes.put(extraNamesOverride.get(basename), TYPE_LOCATION);
-        else additionalRes.put(basename, TYPE_LOCATION);
-    }
 }

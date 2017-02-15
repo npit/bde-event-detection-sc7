@@ -21,5 +21,6 @@ package gr.demokritos.iit.location.schedule;
 public interface ILocationExtractionScheduler {
 
     void executeSchedule();
+    void executeTargetedUpdate();
 
 }

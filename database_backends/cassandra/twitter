@@ -1,0 +1,294 @@
+
+CREATE TYPE bde.geolocation (
+    latitude double,
+    longitude double
+);
+
+CREATE TYPE bde.tplace (
+    id text,
+    full_name text,
+    name text,
+    street_address text,
+    country_code text,
+    country text,
+    place_type text,
+    url text,
+    bounding_box_type text,
+    geometry_type text,
+    bounding_box text
+);
+
+CREATE TABLE bde.twitter_posts_per_place (
+    place_literal text,
+    created_at bigint,
+    post_id bigint,
+    account_name text,
+    language text,
+    place frozen<tplace>,
+    tweet text,
+    url text,
+    PRIMARY KEY (place_literal, created_at, post_id)
+) WITH CLUSTERING ORDER BY (created_at DESC, post_id DESC)
+    AND bloom_filter_fp_chance = 0.01
+    AND caching = '{"keys":"ALL", "rows_per_partition":"NONE"}'
+    AND comment = ''
+    AND compaction = {'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy'}
+    AND compression = {'sstable_compression': 'org.apache.cassandra.io.compress.LZ4Compressor'}
+    AND dclocal_read_repair_chance = 0.1
+    AND default_time_to_live = 0
+    AND gc_grace_seconds = 864000
+    AND max_index_interval = 2048
+    AND memtable_flush_period_in_ms = 0
+    AND min_index_interval = 128
+    AND read_repair_chance = 0.0
+    AND speculative_retry = '99.0PERCENTILE';
+
+
+
+CREATE TABLE bde.twitter_log (
+    engine_type text,
+    engine_id bigint,
+    ended bigint,
+    started bigint,
+    PRIMARY KEY (engine_type, engine_id)
+) WITH CLUSTERING ORDER BY (engine_id DESC)
+    AND bloom_filter_fp_chance = 0.01
+    AND caching = '{"keys":"ALL", "rows_per_partition":"NONE"}'
+    AND comment = ''
+    AND compaction = {'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy'}
+    AND compression = {'sstable_compression': 'org.apache.cassandra.io.compress.LZ4Compressor'}
+    AND dclocal_read_repair_chance = 0.1
+    AND default_time_to_live = 0
+    AND gc_grace_seconds = 864000
+    AND max_index_interval = 2048
+    AND memtable_flush_period_in_ms = 0
+    AND min_index_interval = 128
+    AND read_repair_chance = 0.0
+    AND speculative_retry = '99.0PERCENTILE';
+
+
+CREATE TABLE bde.twitter_post (
+    post_id bigint,
+    language text,
+    account_name text,
+    coordinates text,
+    created_at bigint,
+    external_links set<text>,
+    followers_when_published bigint,
+    place text,
+    retweet_count bigint,
+    tweet text,
+    url text,
+    PRIMARY KEY (post_id, language)
+) WITH CLUSTERING ORDER BY (language ASC)
+    AND bloom_filter_fp_chance = 0.01
+    AND caching = '{"keys":"ALL", "rows_per_partition":"NONE"}'
+    AND comment = ''
+    AND compaction = {'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy'}
+    AND compression = {'sstable_compression': 'org.apache.cassandra.io.compress.LZ4Compressor'}
+    AND dclocal_read_repair_chance = 0.1
+    AND default_time_to_live = 0
+    AND gc_grace_seconds = 864000
+    AND max_index_interval = 2048
+    AND memtable_flush_period_in_ms = 0
+    AND min_index_interval = 128
+    AND read_repair_chance = 0.0
+    AND speculative_retry = '99.0PERCENTILE';
+
+
+
+CREATE TABLE bde.twitter_posts_per_coordinates (
+    geo_bucket text,
+    created_at bigint,
+    geolocation frozen<geolocation>,
+    post_id bigint,
+    account_name text,
+    language text,
+    tweet text,
+    url text,
+    PRIMARY KEY (geo_bucket, created_at, geolocation, post_id)
+) WITH CLUSTERING ORDER BY (created_at DESC, geolocation DESC, post_id DESC)
+    AND bloom_filter_fp_chance = 0.01
+    AND caching = '{"keys":"ALL", "rows_per_partition":"NONE"}'
+    AND comment = ''
+    AND compaction = {'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy'}
+    AND compression = {'sstable_compression': 'org.apache.cassandra.io.compress.LZ4Compressor'}
+    AND dclocal_read_repair_chance = 0.1
+    AND default_time_to_live = 0
+    AND gc_grace_seconds = 864000
+    AND max_index_interval = 2048
+    AND memtable_flush_period_in_ms = 0
+    AND min_index_interval = 128
+    AND read_repair_chance = 0.0
+    AND speculative_retry = '99.0PERCENTILE';
+
+CREATE TABLE bde.twitter_source (
+    account_name text PRIMARY KEY,
+    active boolean
+) WITH bloom_filter_fp_chance = 0.01
+    AND caching = '{"keys":"ALL", "rows_per_partition":"NONE"}'
+    AND comment = ''
+    AND compaction = {'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy'}
+    AND compression = {'sstable_compression': 'org.apache.cassandra.io.compress.LZ4Compressor'}
+    AND dclocal_read_repair_chance = 0.1
+    AND default_time_to_live = 0
+    AND gc_grace_seconds = 864000
+    AND max_index_interval = 2048
+    AND memtable_flush_period_in_ms = 0
+    AND min_index_interval = 128
+    AND read_repair_chance = 0.0
+    AND speculative_retry = '99.0PERCENTILE';
+
+CREATE TABLE bde.twitter_posts_per_hashtag (
+    hashtag text,
+    created_at bigint,
+    post_id bigint,
+    account_name text,
+    language text,
+    tweet text,
+    url text,
+    PRIMARY KEY (hashtag, created_at, post_id)
+) WITH CLUSTERING ORDER BY (created_at DESC, post_id DESC)
+    AND bloom_filter_fp_chance = 0.01
+    AND caching = '{"keys":"ALL", "rows_per_partition":"NONE"}'
+    AND comment = ''
+    AND compaction = {'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy'}
+    AND compression = {'sstable_compression': 'org.apache.cassandra.io.compress.LZ4Compressor'}
+    AND dclocal_read_repair_chance = 0.1
+    AND default_time_to_live = 0
+    AND gc_grace_seconds = 864000
+    AND max_index_interval = 2048
+    AND memtable_flush_period_in_ms = 0
+    AND min_index_interval = 128
+    AND read_repair_chance = 0.0
+    AND speculative_retry = '99.0PERCENTILE';
+
+CREATE TABLE bde.twitter_user (
+    user_id bigint PRIMARY KEY,
+    account_name text,
+    followers_count bigint,
+    friends_count bigint,
+    listed_count bigint,
+    location text,
+    name text,
+    statuses_count bigint,
+    timezone text
+) WITH bloom_filter_fp_chance = 0.01
+    AND caching = '{"keys":"ALL", "rows_per_partition":"NONE"}'
+    AND comment = ''
+    AND compaction = {'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy'}
+    AND compression = {'sstable_compression': 'org.apache.cassandra.io.compress.LZ4Compressor'}
+    AND dclocal_read_repair_chance = 0.1
+    AND default_time_to_live = 0
+    AND gc_grace_seconds = 864000
+    AND max_index_interval = 2048
+    AND memtable_flush_period_in_ms = 0
+    AND min_index_interval = 128
+    AND read_repair_chance = 0.0
+    AND speculative_retry = '99.0PERCENTILE';
+
+CREATE TABLE bde.twitter_posts_per_external_url (
+    external_url text,
+    created_at bigint,
+    post_id bigint,
+    account_name text,
+    language text,
+    tweet text,
+    url text,
+    PRIMARY KEY (external_url, created_at, post_id)
+) WITH CLUSTERING ORDER BY (created_at DESC, post_id DESC)
+    AND bloom_filter_fp_chance = 0.01
+    AND caching = '{"keys":"ALL", "rows_per_partition":"NONE"}'
+    AND comment = ''
+    AND compaction = {'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy'}
+    AND compression = {'sstable_compression': 'org.apache.cassandra.io.compress.LZ4Compressor'}
+    AND dclocal_read_repair_chance = 0.1
+    AND default_time_to_live = 0
+    AND gc_grace_seconds = 864000
+    AND max_index_interval = 2048
+    AND memtable_flush_period_in_ms = 0
+    AND min_index_interval = 128
+    AND read_repair_chance = 0.0
+    AND speculative_retry = '99.0PERCENTILE';
+
+CREATE TABLE bde.twitter_posts_per_referred_place (
+    place_literal text,
+    created_at bigint,
+    post_id bigint,
+    account_name text,
+    language text,
+    location text,
+    tweet text,
+    url text,
+    PRIMARY KEY (place_literal, created_at, post_id)
+) WITH CLUSTERING ORDER BY (created_at DESC, post_id DESC)
+    AND bloom_filter_fp_chance = 0.01
+    AND caching = '{"keys":"ALL", "rows_per_partition":"NONE"}'
+    AND comment = ''
+    AND compaction = {'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy'}
+    AND compression = {'sstable_compression': 'org.apache.cassandra.io.compress.LZ4Compressor'}
+    AND dclocal_read_repair_chance = 0.1
+    AND default_time_to_live = 0
+    AND gc_grace_seconds = 864000
+    AND max_index_interval = 2048
+    AND memtable_flush_period_in_ms = 0
+    AND min_index_interval = 128
+    AND read_repair_chance = 0.0
+    AND speculative_retry = '99.0PERCENTILE';
+
+CREATE TABLE bde.twitter_posts_per_engine (
+    engine_type text,
+    engine_id bigint,
+    post_id bigint,
+    PRIMARY KEY (engine_type, engine_id, post_id)
+) WITH CLUSTERING ORDER BY (engine_id DESC, post_id DESC)
+    AND bloom_filter_fp_chance = 0.01
+    AND caching = '{"keys":"ALL", "rows_per_partition":"NONE"}'
+    AND comment = ''
+    AND compaction = {'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy'}
+    AND compression = {'sstable_compression': 'org.apache.cassandra.io.compress.LZ4Compressor'}
+    AND dclocal_read_repair_chance = 0.1
+    AND default_time_to_live = 0
+    AND gc_grace_seconds = 864000
+    AND max_index_interval = 2048
+    AND memtable_flush_period_in_ms = 0
+    AND min_index_interval = 128
+    AND read_repair_chance = 0.0
+    AND speculative_retry = '99.0PERCENTILE';
+
+
+CREATE TABLE bde.twitter_posts_per_date (
+    year_month_day_bucket text,
+    created_at bigint,
+    post_id bigint,
+    account_name text,
+    language text,
+    tweet text,
+    url text,
+    PRIMARY KEY (year_month_day_bucket, created_at, post_id)
+) WITH CLUSTERING ORDER BY (created_at DESC, post_id DESC)
+    AND bloom_filter_fp_chance = 0.01
+    AND caching = '{"keys":"ALL", "rows_per_partition":"NONE"}'
+    AND comment = ''
+    AND compaction = {'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy'}
+    AND compression = {'sstable_compression': 'org.apache.cassandra.io.compress.LZ4Compressor'}
+    AND dclocal_read_repair_chance = 0.1
+    AND default_time_to_live = 0
+    AND gc_grace_seconds = 864000
+    AND max_index_interval = 2048
+    AND memtable_flush_period_in_ms = 0
+    AND min_index_interval = 128
+    AND read_repair_chance = 0.0
+    AND speculative_retry = '99.0PERCENTILE';
+
+CREATE INDEX post_account_name_idx ON bde.twitter_post (account_name);
+
+CREATE INDEX source_active_idx ON bde.twitter_source (active);
+
+CREATE INDEX user_account_name_idx ON bde.twitter_user (account_name);
+
+CREATE INDEX language_created_at_idx ON bde.twitter_posts_per_date (language);
+
+
+
+

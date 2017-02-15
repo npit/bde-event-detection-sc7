@@ -6,7 +6,7 @@ package gr.demokritos.iit.location.mode;
  */
 public enum OperationMode {
 
-    TWEETS("tweets"), ARTICLES("articles"), BOTH("both");
+    TWEETS("tweets"), ARTICLES("articles"), BOTH("both"), TEXT("text");
 
     private final String mode;
 

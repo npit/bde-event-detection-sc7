@@ -135,16 +135,14 @@ public class DefaultPolygonExtraction implements IPolygonExtraction {
         Map<String, String> res = new HashMap();
 
         for (String loc : locationEntities) {
+            if(polyWarnCache.contains(loc)) continue;
             String poly = extractPolygon(loc);
             if (poly != null && !poly.isEmpty()) {
                 res.put(loc, poly);
             }
             else
             {
-                if( ! polyWarnCache.contains(loc)) {
-                    polyWarnCache.add(loc);
-                    Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "Polygon extraction failed for [" + loc + "]");
-                }
+                polyWarnCache.add(loc);
             }
         }
         return res;

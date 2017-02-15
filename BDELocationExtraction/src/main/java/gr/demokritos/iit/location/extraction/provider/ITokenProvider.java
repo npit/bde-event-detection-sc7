@@ -42,5 +42,6 @@ public interface ITokenProvider {
      * @return
      */
     Set<String> getLocationTokens(String text);
+    Set<String> getImmutableNames();
     boolean configure(ILocConf conf);
 }

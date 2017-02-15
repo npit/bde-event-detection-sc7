@@ -49,6 +49,7 @@ public class DefaultLocationExtractor implements ILocationExtractor {
         this.token_provider = token_provider;
     }
 
+
     private Set<String> clean(Set<String> s) {
         Set<String> ret = new HashSet();
         Iterator<String> iter = s.iterator();
@@ -174,6 +175,7 @@ public class DefaultLocationExtractor implements ILocationExtractor {
         }
     }
 
+
     @Override
     public LE_RESOURCE_TYPE getRequiredResource() {
         return LE_RESOURCE_TYPE.CLEAN_TEXT;
@@ -185,7 +187,21 @@ public class DefaultLocationExtractor implements ILocationExtractor {
         if (document == null || document.trim().isEmpty()) {
             return Collections.EMPTY_SET;
         }
-        return clean(token_provider.getLocationTokens(document));
+        Set<String> res =  token_provider.getLocationTokens(document);
+        if(res.isEmpty()) return res;
+
+        // only post-process tokens found by the NLP model, not the ones explicitly supplied by the user
+        Set<String>  allImmutables = token_provider.getImmutableNames();
+
+        Set<String> toClean = new HashSet<>(res);
+        toClean.removeAll(allImmutables);
+
+        Set<String> immutables = res;
+        immutables.retainAll(allImmutables);
+
+        toClean = clean(toClean);
+        toClean.addAll(immutables);
+        return toClean;
     }
 
     /**
