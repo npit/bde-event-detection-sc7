@@ -29,6 +29,19 @@ import java.util.*;
  * @author George K. <gkiom@scify.org>
  */
 public class Utils {
+    public static String concatStringCollection(Collection<String> coll, String delim)
+    {
+        String ret="";
+        for(String elem : coll)
+        {
+            ret += elem + delim;
+        }
+        return ret;
+    }
+    public static <T> boolean  arrayContains(T arr[], T value)
+    {
+        return Arrays.asList(arr).contains(value);
+    }
     public static ArrayList<String> readFileLinesDropComments(String path)
     {
 

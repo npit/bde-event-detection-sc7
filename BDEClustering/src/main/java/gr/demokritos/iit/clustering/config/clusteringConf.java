@@ -84,10 +84,15 @@ public class clusteringConf extends BaseConfiguration implements IClusteringConf
     @Override
     public int getMaxNumberOfArticles()
     {
-        int value = 500;
+        int value = -1;
         String readValue = properties.getProperty("max_articles","");
         if(! readValue.isEmpty())
+        {
+            if(readValue.equals(BaseConfiguration.TIME_WINDOW_NONE.toString()))
+                return -1;
             value = Integer.parseInt(readValue);
+        }
+
         return value;
     }
     @Override

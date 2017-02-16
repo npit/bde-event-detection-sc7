@@ -204,6 +204,11 @@ public class DefaultLocationExtractor implements ILocationExtractor {
         return toClean;
     }
 
+    @Override
+    public Set<String> extractGenericEntities(String resource) {
+        return new HashSet<String>();
+    }
+
     /**
      *  for testing purposes alone
      * @param args

@@ -1363,5 +1363,79 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
         return Collections.unmodifiableCollection(out);
     }
 
+    public void updateArticlesWithEntities(Map<String,Set<String>> idsEntities)
+    {
+        for(String permalink : idsEntities.keySet()) {
+            Set<String> entities = idsEntities.get(permalink);
+            if (entities == null) continue;
+            if (entities.isEmpty()) continue;
+            // load metadata
+            Map<String, Object> article = loadArticle(permalink);
+            long published = (long) article.get(Cassandra.RSS.TBL_ARTICLES.FLD_PUBLISHED.getColumnName());
+            String ymdl = Utils.extractYearMonthDayLiteral(published);
+            String reversed_host = (String) article.get(Cassandra.RSS.TBL_ARTICLES.FLD_REVERSED_HOST.getColumnName());
+
+            // update news_articles
+            Statement upsert = QueryBuilder
+                    .update(session.getLoggedKeyspace(), Cassandra.RSS.Tables.NEWS_ARTICLES.getTableName())
+                    .with(set(Cassandra.RSS.TBL_ARTICLES.FLD_ENTITY.getColumnName(), entities))
+                    .where(eq(Cassandra.RSS.TBL_ARTICLES.FLD_ENTRY_URL.getColumnName(), permalink))
+                    .and(eq(Cassandra.RSS.TBL_ARTICLES.FLD_REVERSED_HOST.getColumnName(), reversed_host));
+            session.execute(upsert);
+            // update news_articles_per_published_date
+            upsert = QueryBuilder
+                    .update(session.getLoggedKeyspace(), Cassandra.RSS.Tables.NEWS_ARTICLES_PER_PUBLISHED_DATE.getTableName())
+                    .with(set(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTITY.getColumnName(), entities))
+                    .where(eq(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName(), permalink))
+                    .and(eq(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.getColumnName(), ymdl))
+                    .and(eq(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PUBLISHED.getColumnName(), published));
+            session.execute(upsert);
+            // update news_articles_per_crawled_date
+//            long crawled = (long) article.get(Cassandra.RSS.TBL_ARTICLES.FLD_CRAWLED.getColumnName());
+//            upsert = QueryBuilder
+//                    .update(session.getLoggedKeyspace(), Cassandra.RSS.Tables.NEWS_ARTICLES_PER_CRAWLED_DATE.getTableName())
+//                    .with(set(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTITY.getColumnName(), entities))
+//                    .where(eq(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName(), permalink))
+//                    .and(eq(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.getColumnName(),
+//                            Utils.extractYearMonthDayLiteral(crawled)))
+//                    .and(eq(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CRAWLED.getColumnName(), crawled));
+//            System.out.println(upsert.toString());
+//            session.execute(upsert);
+
+            // this populates existing events table with locations/polygons pairs from news.
+//            if (shouldUpdateEvents)
+//                updateEventsWithArticleLocationPolygonPairs(places_polygons, permalink);
+        }
+    }
+
+    public void updateTweetsWithEntities(Map<String,Set<String>> idsEntities)
+    {
+        for(String strPostID : idsEntities.keySet()) {
+
+            long post_id = Long.parseLong(strPostID);
+            Set<String> entities = idsEntities.get(strPostID);
+            if (entities == null) continue;
+            if (entities.isEmpty()) continue;
+            // load tweet from repository
+            Map<String, Object> tweet = loadTweet(post_id);
+            String lang = (String)tweet.get(Cassandra.Twitter.TBL_TWITTER_POST.FLD_LANGUAGE.getColumnName());
+            // update twitter post with referred place
+            Statement update;
+            update = QueryBuilder
+                    .update(session.getLoggedKeyspace(), Cassandra.Twitter.Tables.TWITTER_POST.getTableName())
+                    .with(set(Cassandra.Twitter.TBL_TWITTER_POST.FLD_ENTITY.getColumnName(),entities))
+                    .where(eq(Cassandra.Twitter.TBL_TWITTER_POST.FLD_POST_ID.getColumnName(),post_id))
+                    .and(eq(Cassandra.Twitter.TBL_TWITTER_POST.FLD_LANGUAGE.getColumnName(),lang));
+
+            session.execute(update);
+            }
+            // this populates existing events table with locations/polygons pairs from tweets.
+//            if (shouldUpdateEvents)
+//                updateEventsWithTweetLocationPolygonPairs(places_polygons, post_id);
+
+    }
+
+
 }
+
 // test only

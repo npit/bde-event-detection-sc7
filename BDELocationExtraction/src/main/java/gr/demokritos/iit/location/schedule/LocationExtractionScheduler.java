@@ -87,9 +87,10 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
             return;
         }
         Map<String,Map<String,String>> id_geometries_map = new HashMap<>();
-        extractLocation(items, id_geometries_map);
-        updateKeyspaceEntries(id_geometries_map);
-
+        Map<String,Set<String>> ids_entities = new HashMap<>();
+        extractLocation(opMode, items, id_geometries_map,ids_entities);
+        insertLocationData(opMode, id_geometries_map);
+        insertEntityData(opMode, ids_entities);
         System.out.println("Targeted location extraction completed.");
     }
     @Override
@@ -137,8 +138,10 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
         ExecRes er;
         // get location
         Map<String,Map<String,String>> id_geometries_map = new HashMap<>();
-        er = extractLocation(items, id_geometries_map);
-        updateKeyspaceEntries(id_geometries_map);
+        Map<String,Set<String>> ids_entities = new HashMap<>();
+        er = extractLocation(mode, items, id_geometries_map,ids_entities);
+        insertLocationData(mode,id_geometries_map);
+        insertEntityData(mode,ids_entities);
         // schedule updated
         sched.setItemsUpdated(er.getItemsFound());
         // update last timestamp parsed
@@ -149,16 +152,15 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
         repos.scheduleFinalized(sched);
     }
 
-    private ExecRes extractLocation(Collection<Map<String, Object>> items, Map<String,Map<String,String>> ids_geometries) {
+    private ExecRes extractLocation(OperationMode mode,Collection<Map<String, Object>> items, Map<String,Map<String,String>> ids_geometries, Map<String,Set<String>> ids_entities) {
 
         // keep most recent published for reference
-
         long max_published = Long.MIN_VALUE;
         System.out.println("Initial max published: " + max_published);
         int i = 0;
         int count = 0;
         int noLocationCount = 0;
-        switch (opMode) {
+        switch (mode) {
             case ARTICLES:
                 poly.init();
                 ArrayList<String> permalinks = new ArrayList<>();
@@ -200,7 +202,8 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                         break;
                     }
                     Set<String> locationsFound = locExtractor.extractLocation(RequiredResource);
-
+                    Set<String> entitiesFound =  locExtractor.extractGenericEntities(RequiredResource);
+                    ids_entities.put(permalink,new HashSet(entitiesFound));
                     if (!locationsFound.isEmpty()) {
                         Map<String, String> places_polygons = poly.extractPolygon(locationsFound);
 
@@ -210,8 +213,8 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
 
                         ids_geometries.put(permalink,places_polygons);
                         System.out.println(String.format(" %s", places_polygons.keySet().toString()));
-
                         i++;
+
                     }
                     else
                     {
@@ -251,8 +254,10 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                         System.err.println("Current LE resource is : " + locExtractor.getRequiredResource().toString());
                         break;
                     }
-
+                    String post_id_str = Long.toString(post_id);
                     Set<String> locationsFound = locExtractor.extractLocation(clean_tweet);
+                    Set<String> entitiesFound =  locExtractor.extractGenericEntities(clean_tweet);
+                    ids_entities.put(post_id_str ,new HashSet(entitiesFound));
                     // extract coordinates for each entity
                     System.out.print("\tTweet " + count +  "/" +  items.size() + " : "  + post_id); //debugprint
 
@@ -260,7 +265,7 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                         Map<String, String> places_polygons = poly.extractPolygon(locationsFound);
                         places_polygons = poly.postProcessGeometries(places_polygons);
 
-                        ids_geometries.put(Long.toString(post_id),places_polygons);
+                        ids_geometries.put(post_id_str ,places_polygons);
                         if(! places_polygons.keySet().isEmpty())
                             System.out.println(String.format(" %s", places_polygons.keySet().toString()));
 
@@ -268,7 +273,7 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                     }
                     else {
                         noLocationCount++;
-                        ids_geometries.put("",new HashMap<String,String>());
+                        ids_geometries.put(post_id_str ,new HashMap<String,String>());
                         System.out.println("");
                     }
                 }
@@ -313,21 +318,34 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
         return new ExecRes(max_published, i);
     }
 
-    private void updateKeyspaceEntries(Map<String,Map<String,String>> ids_geometries)
+    private void insertLocationData(OperationMode mode,Map<String,Map<String,String>> ids_geometries_entities)
     {
-        switch (opMode) {
+        switch (mode) {
             case ARTICLES:
-                repos.updateArticlesWithReferredPlaceMetadata(ids_geometries);
+                repos.updateArticlesWithReferredPlaceMetadata(ids_geometries_entities);
 
                 break;
             case TWEETS:
                 // update entry (tweets_per_referred_place)
-                repos.updateTweetsWithReferredPlaceMetadata(ids_geometries);
+                repos.updateTweetsWithReferredPlaceMetadata(ids_geometries_entities);
                 break;
         }
 
     }
+    private void insertEntityData(OperationMode mode,Map<String,Set<String>> ids_entities)
+    {
+        switch (mode) {
+            case ARTICLES:
+                repos.updateArticlesWithEntities(ids_entities);
 
+                break;
+            case TWEETS:
+                // update entry (tweets_per_referred_place)
+                repos.updateTweetsWithEntities(ids_entities);
+                break;
+        }
+
+    }
 
     /**
      * holds the last_updated timestamp, and items_parsed values

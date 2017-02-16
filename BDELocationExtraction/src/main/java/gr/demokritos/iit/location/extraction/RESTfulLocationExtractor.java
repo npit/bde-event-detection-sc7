@@ -1,5 +1,7 @@
 package gr.demokritos.iit.location.extraction;
 
+import gr.demokritos.iit.base.conf.BaseConfiguration;
+import gr.demokritos.iit.base.conf.IBaseConf;
 import gr.demokritos.iit.base.util.Utils;
 import gr.demokritos.iit.location.factory.conf.ILocConf;
 import gr.demokritos.iit.location.factory.conf.LocConf;
@@ -9,6 +11,8 @@ import org.json.simple.parser.JSONParser;
 import org.apache.commons.codec.binary.Base64;
 import org.json.simple.parser.ParseException;
 
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.text.Normalizer;
@@ -21,23 +25,44 @@ import java.util.regex.Pattern;
 
 // implements location extraction by querying an online RESTful service
 public class RESTfulLocationExtractor implements ILocationExtractor {
+
+
+    IRestfulFilter Filter;
+    // property param names
+    private final String API = "api";
+    private final String ARG = "argument";
+    private final String IN_FORMAT = "input_format";
+    private final String OUT_FORMAT = "output_format";
+    private final String OUT_SPEC = "output_filter";
+    private final String NAME_VAL = "name_value_pairs";
+    private final String AUTH = "auth";
+
+
+
     private ArrayList<String> urlParamNames, urlParamValues;    // param. names and values of the request
     String baseURL, authEncoded;    // base url of the request, encoded authentication info
     // you can run the extractor with the below main parameters for each article / tweet
-    private final String[] SupportedModes = {"url", "text"};
+    private final String[] SupportedArgModes = {"url", "text"};
     private final String[] SupportedOutputModes = {"json"};
+    private final int JSON=0;
+
+
     private final LE_RESOURCE_TYPE[] SupportedModesRequire = {LE_RESOURCE_TYPE.URL, LE_RESOURCE_TYPE.CLEAN_TEXT};
-    private String outputMode, outputSPecifier;
+    private String inputMode, outputMode;
+    boolean Verbosity, Debug;
     public RESTfulLocationExtractor() {
         this.urlParamNames = new ArrayList<>();
         this.urlParamValues = new ArrayList<>();
         authEncoded="";
+        Verbosity = false;
+        Debug = false;
 
     }
 
+    // return requested type
     @Override
     public LE_RESOURCE_TYPE getRequiredResource() {
-        return SupportedModesRequire[Arrays.asList(SupportedModes).indexOf(urlParamNames.get(0))];
+        return SupportedModesRequire[Arrays.asList(SupportedArgModes).indexOf(inputMode)];
     }
 
     // if the text is too large to fit in a URI, split it as many times as needed and perform separate calls
@@ -72,7 +97,6 @@ public class RESTfulLocationExtractor implements ILocationExtractor {
             if(!accumulatedStr.isEmpty())
                 parts.add(accumulatedStr);
             // try the GET
-            String response;
             try {
                 for (String part : parts) {
                     String payload = formPayload(part);
@@ -93,7 +117,7 @@ public class RESTfulLocationExtractor implements ILocationExtractor {
             return res;
         }
     }
-
+    // send the request
     private String contactAPI(String url, String auth) throws IOException
     {
         String response = null;
@@ -132,8 +156,14 @@ public class RESTfulLocationExtractor implements ILocationExtractor {
         } catch (IOException e) {
             if(e.getMessage().contains("HTTP response code: 414"))
             {
-                //System.out.println("\n\tBreaking up text due to too large URI.");
+                if(Verbosity)
+                    System.out.println("\n\tBreaking up text due to too large URI.");
                 response = splitTextAPICall(document);
+            }
+            System.out.println();
+            if(Debug) {
+                e.printStackTrace();
+                System.err.flush();
             }
         }
         if(response == null)
@@ -143,42 +173,35 @@ public class RESTfulLocationExtractor implements ILocationExtractor {
         return parse(response);
     }
 
-    Set<String> parseJSON(ArrayList<String> data)
-    {
-        Set<String> res = new HashSet<>();
-        JSONParser parser = new JSONParser();
+    @Override
+    public Set<String> extractGenericEntities(String resource) {
 
-        for(String datum : data) {
-            try {
-
-                JSONObject obj = (JSONObject) parser.parse(new StringReader(datum));
-
-                JSONArray locations = (JSONArray) obj.get(outputSPecifier);
-                if (locations != null) {
-                    for (Object o : locations) {
-                        String rawName = (String) ((JSONObject) o).get("name");
-                        res.add(removeAccents(rawName));
-                    }
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
-        }
-        return res;
+        return Filter.getEntityType(IRestfulFilter.EntityType.GENERIC);
     }
 
     Set<String> parse(ArrayList<String> data)
     {
         if(outputMode.equals("json"))
-            return parseJSON(data);
+        {
+            Filter.filter(data);
+            return removeAccents(Filter.getEntityType(IRestfulFilter.EntityType.LOCATION));
+        }
         else
         {
-            System.err.println("Restful LE reached parse phase with no valid output mode!");
+            System.err.println("Restful LE reached parse phase with no valid output mode:" + outputMode);
+
             return null;
         }
 
+    }
+    private static Set<String> removeAccents(Set<String> setstr)
+    {
+        Set<String> res = new HashSet<>();
+        for(String s : setstr)
+        {
+            res.add(removeAccents(s));
+        }
+        return res;
     }
 
     private static String removeAccents(String str) {
@@ -200,68 +223,89 @@ public class RESTfulLocationExtractor implements ILocationExtractor {
         }
         System.out.println("Reading RESTful LE configuration file: ["+ confFile+"]");
 
-        ArrayList<String> contents = Utils.readFileLinesDropComments(confFile);
-        int contentIdx=0;
-
-        if(contents == null)
-        {
-            System.err.println("RESTful LE config file parse error.");
-            return false;
-        }
-        if(contents.size() < 4)
-        {
-            System.err.println("RESTful LE config needs at least 4 params:");
-            System.err.println("the base API URL,\n the param to assign the article url/text to\nthe output format,\nthe output specifier.");
-            System.err.println("Instead found params:{" + contents + "}");
-            return false;
-        }
-        baseURL = contents.get(contentIdx++);
-        // article-url parameter or article-text is the first after the base api url
-        String articleParameter = contents.get(contentIdx++);
-        if(!Arrays.asList(SupportedModes).contains(articleParameter))
-        {
-            System.err.println("Unsupported article parameter : " + articleParameter + "]. Supported parameter modes are:");
-            System.err.println(SupportedModes);
-            return false;
-        }
-        urlParamNames.add(articleParameter);
-
-        outputMode = contents.get(contentIdx++);
-        if(!Arrays.asList(SupportedOutputModes).contains(outputMode))
-        {
-            System.err.println("Unsupported article parameter : " + outputMode + "]. Supported parameter modes are:");
-            System.err.println(SupportedOutputModes);
+        Properties props = new Properties();
+        try {
+            props.load(new FileReader(new File(confFile)));
+        } catch (IOException e) {
+            e.printStackTrace();
             return false;
         }
 
-        outputSPecifier = contents.get(contentIdx++);
+        try {
+            Verbosity = conf.hasModifier(BaseConfiguration.Modifiers.VERBOSE.toString());
+            Debug = conf.hasModifier(BaseConfiguration.Modifiers.DEBUG.toString());
+            String str;
+            // base api url
+            // read property
+            baseURL = props.getProperty(API, ""); if(baseURL.isEmpty()) throw new Exception("Empty " + API +  " parameter");
 
-        urlParamValues.add("");
-        if(contents.size() == contentIdx) return true; // no params specfied
-
-        String delimiter = contents.get(contentIdx++);
-        for(String p : contents.subList(contentIdx,contents.size()))
-        {
-
-            String [] nameval = p.split(delimiter);
-            if(nameval[0].equals("authentication"))
+            str = props.getProperty(ARG,""); if(str.isEmpty()) throw new Exception("Empty " + ARG +  " parameter");
+            // sanity check
+            if(!Utils.arrayContains(SupportedArgModes,str))
             {
-                Base64 enc = new Base64();
-                authEncoded = nameval[1];
-                authEncoded =  enc.encodeToString( (authEncoded).getBytes() );
-                authEncoded = authEncoded.replaceAll("\n","");
-                continue;
+                System.err.println(SupportedArgModes);
+                throw new Exception("Unsupported " + ARG + " parameter.");
             }
-            urlParamNames.add(nameval[0].trim());
-            urlParamValues.add(nameval[1].trim());
+            urlParamNames.add(str); urlParamValues.add("");
+            // out format
+            str = props.getProperty(OUT_FORMAT,""); if(str.isEmpty()) throw new Exception("Empty " + OUT_FORMAT +  " parameter");
+            if(!Utils.arrayContains(SupportedOutputModes,str))
+            {
+                System.err.println(SupportedOutputModes);
+                throw new Exception("Unsupported " + OUT_FORMAT + " parameter.");
+            }
+            outputMode = str;
+            // in format
+            str = props.getProperty(IN_FORMAT,""); if(str.isEmpty()) throw new Exception("Empty " + IN_FORMAT +  " parameter");
+            if(!Utils.arrayContains(SupportedArgModes,str))
+            {
+                System.err.println(SupportedArgModes);
+                throw new Exception("Unsupported " + ARG + " parameter.");
+            }
+            inputMode = str;
+            // out filter
+            str = props.getProperty(OUT_SPEC,"");
+            if( str.isEmpty())
+            {
+                System.out.println("Warning : No output specifier specified for RESTful LE. All results will be kept.");
+            }
+            // json out filter. Format : category:fieldToGet
+            if(outputMode.equals(SupportedOutputModes[JSON])) {
+                Filter = new RESTfulResultJSONFilter();
+                if( ! Filter.initialize(str,this.Debug) ) throw new Exception("Failed to initialize REST LE JSON filter.");
+            }
+            // name-value
+            str = props.getProperty(NAME_VAL, "");
+            if (!str.isEmpty()) {
+                // name - value
+
+                String[] parts = str.split(",");
+                for (String part : parts) {
+                    String[] nameval = part.split("=");
+                    if (nameval.length != 2) throw new Exception("Error @ reading name-value: " + part);
+                    urlParamNames.add(nameval[0].trim());
+                    urlParamValues.add(nameval[1].trim());
+                }
+            }
+
+            // auth
+            str = props.getProperty(AUTH,"");
+            if(str.isEmpty())
+            {
+                System.out.println("Warning : No authentication specified for RESTful LE.");
+                return true;
+            }
+            Base64 enc = new Base64();
+            authEncoded =  enc.encodeToString( (str).getBytes() );
+            authEncoded = authEncoded.replaceAll("\n","");
+            tellStatus();
+
         }
-//      Not mandatory in all restful LEs, isn't it now?
-//        if(authEncoded.isEmpty())
-//        {
-//            System.err.println("No username, password fields were provided in configuration file [" + confFile + "].");
-//            return false;
-//        }
-        tellStatus();
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+            return false;
+        }
         return true;
     }
 
@@ -274,6 +318,7 @@ public class RESTfulLocationExtractor implements ILocationExtractor {
         {
             System.out.println(urlParamNames.get(i) + ":[" + urlParamValues.get(i) +"]");
         }
+        System.out.println("filter" + ":[" + Filter +"]");
         System.out.println("----------------------------");
     }
     public static void main(String [] args)

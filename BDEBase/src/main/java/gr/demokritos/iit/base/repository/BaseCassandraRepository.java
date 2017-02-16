@@ -133,6 +133,8 @@ public class BaseCassandraRepository implements IBaseRepository {
             res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_LANGUAGE.getColumnName(), lang);
             String title = row.getString(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_TITLE.getColumnName());
             res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_TITLE.getColumnName(), title);
+            Set<String> entities = row.getSet(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTITY.getColumnName(),String.class);
+            res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTITY.getColumnName(), entities);
             // append
             //assert (published >= from) : String.format("query totally wrong: published=%d < from=%d", published, from);
             out.add(res);

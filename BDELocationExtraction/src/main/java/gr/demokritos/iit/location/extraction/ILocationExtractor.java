@@ -52,5 +52,6 @@ public interface ILocationExtractor {
         }
     }
     Set<String> extractLocation(String document);
+    Set<String> extractGenericEntities(String resource);
     boolean configure(ILocConf conf);
 }

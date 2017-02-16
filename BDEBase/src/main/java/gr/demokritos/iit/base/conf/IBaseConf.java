@@ -28,7 +28,7 @@ public interface IBaseConf {
 
     enum Modifiers
     {
-        VERBOSE("verbose");
+        VERBOSE("verbose"),DEBUG("debug");
         private String type;
         private Modifiers(String type) {
             this.type = type;

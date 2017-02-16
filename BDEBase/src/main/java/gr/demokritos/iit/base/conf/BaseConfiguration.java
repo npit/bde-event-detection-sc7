@@ -171,7 +171,11 @@ public class BaseConfiguration implements IBaseConf {
     @Override
     public boolean hasModifier(String modifierName) {
         if(Modifiers == null)
-            Modifiers = Arrays.asList(properties.getProperty("modifiers","").split(","));
+        {
+            String [] modif = properties.getProperty("modifiers","").split(",");
+            for(int i=0;i<modif.length;++i) modif[i] = modif[i].trim();
+            Modifiers = Arrays.asList(modif);
+        }
         return Modifiers.contains(modifierName);
     }
 

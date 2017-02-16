@@ -41,6 +41,7 @@ CREATE TABLE bde.news_articles (
     published bigint,
     raw_text text,
     title text,
+    entity set<text>,
     PRIMARY KEY (reversed_host, entry_url)
 ) WITH CLUSTERING ORDER BY (entry_url ASC)
     AND bloom_filter_fp_chance = 0.01
@@ -93,6 +94,7 @@ CREATE TABLE bde.news_articles_per_published_date (
     place_literal set<text>,
     raw_text text,
     title text,
+    entity set<text>,
     PRIMARY KEY (year_month_day_literal, published, entry_url)
 ) WITH CLUSTERING ORDER BY (published DESC, entry_url ASC)
     AND bloom_filter_fp_chance = 0.01

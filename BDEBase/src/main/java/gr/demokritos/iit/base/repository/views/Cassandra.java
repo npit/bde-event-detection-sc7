@@ -97,7 +97,8 @@ public class Cassandra {
             FLD_LANGUAGE("language"),
             FLD_PERMALINK("url"),
             FLD_EXTERNAL_LINKS("external_links"),
-            FLD_ACCOUNT_NAME("account_name");
+            FLD_ACCOUNT_NAME("account_name"),
+            FLD_ENTITY("entity");
             private final String column;
 
             private TBL_TWITTER_POST(String columnn) {
@@ -312,7 +313,8 @@ public class Cassandra {
             FLD_CLEAN_TEXT("clean_text"),
             FLD_CRAWLED("crawled"),
             FLD_LANGUAGE("language"),
-            FLD_TITLE("title");
+            FLD_TITLE("title"),
+            FLD_ENTITY("entity");
 
             private final String columnn;
 
@@ -337,7 +339,8 @@ public class Cassandra {
             FLD_CLEAN_TEXT("clean_text"),
             FLD_CRAWLED("crawled"),
             FLD_LANGUAGE("language"),
-            FLD_TITLE("title");
+            FLD_TITLE("title"),
+            FLD_ENTITY("entity");
 
             private final String columnn;
 
@@ -362,7 +365,8 @@ public class Cassandra {
             FLD_CLEAN_TEXT("clean_text"),
             FLD_CRAWLED("crawled"),
             FLD_LANGUAGE("language"),
-            FLD_TITLE("title");
+            FLD_TITLE("title"),
+            FLD_ENTITY("entity");
 
             private final String columnn;
 
@@ -473,7 +477,8 @@ public class Cassandra {
             FLD_DATE_LITERAL("event_date"),
             FLD_PLACE_MAPPINGS("place_mappings"),
             FLD_TWEET_IDS("tweet_post_ids"),
-            FLD_EVENT_SOURCE_URLS("event_source_urls");
+            FLD_EVENT_SOURCE_URLS("event_source_urls"),
+            FLD_ENTITY("entities");
 
             private String column;
 
@@ -495,7 +500,9 @@ public class Cassandra {
             FLD_DATE_LITERAL("event_date"),
             FLD_PLACE_POLYGON("place_polygon"),
             FLD_TWEET_IDS("tweet_post_ids"),
-            FLD_EVENT_SOURCE_URLS("event_source_urls");
+            FLD_EVENT_SOURCE_URLS("event_source_urls"),
+            FLD_ENTITY("related_entities");
+
 
             private String column;
 

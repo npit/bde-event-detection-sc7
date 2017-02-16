@@ -79,6 +79,7 @@ CREATE TABLE bde.twitter_post (
     retweet_count bigint,
     tweet text,
     url text,
+    entity set<text>,
     PRIMARY KEY (post_id, language)
 ) WITH CLUSTERING ORDER BY (language ASC)
     AND bloom_filter_fp_chance = 0.01

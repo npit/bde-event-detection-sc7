@@ -6,6 +6,7 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.vividsolutions.jts.io.ParseException;
+import gr.demokritos.iit.base.conf.BaseConfiguration;
 import gr.demokritos.iit.base.conf.IBaseConf;
 import gr.demokritos.iit.base.repository.views.Cassandra;
 import gr.demokritos.iit.base.util.Utils;
@@ -56,6 +57,29 @@ import static gr.demokritos.iit.base.util.Utils.toc;
  */
 public class ClusteringCassandraRepository extends LocationCassandraRepository implements IClusteringRepository{
 
+    // title, descr, date, tweets, sources, id, placemappings
+    private class event
+    {
+        String title;
+        String descr;
+        String date;
+        String id;
+        Map<String,String> placeMappings;
+        Map<String,String> sourcesTitles;
+        Map<Long,String> tweetPostUser;
+        Set<String> entities;
+
+        public event(String title, String descr, String date, String id,Map<String,String> sourcesTitles, Map<String, String> placeMappings, Set<String> entities,Map<Long,String> tweetPostUser) {
+            this.title = title;
+            this.descr = descr;
+            this.date = date;
+            this.id = id;
+            this.placeMappings = placeMappings;
+            this.sourcesTitles = sourcesTitles;
+            this.tweetPostUser = tweetPostUser;
+            this.entities = entities;
+        }
+    }
     protected IClusteringConf configuration;
     protected boolean status, IsVerbose;
     protected List<BDEArticle> articles;
@@ -64,10 +88,11 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
     protected HashMap<String, Topic> ArticlesPerCluster;
     Collection<TwitterResult> tweets;
     Map<String, Summary> summaries;
-    ArrayList<ArrayList<Object>> SavedEvents;
+    ArrayList<event> SavedEvents;
 
     Map<Topic, List<String>> RelatedTweets;
     Map<String, Map<String, String>> place_mappings;
+    Map<String, Set<String>> entities;
     Map<String, Long> tweetURLtoPostIDMapping;
     Map<String, String> tweetURLtoUserIDMapping;
 
@@ -82,30 +107,39 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
     // event_size_cuttof: do not save topics with size less than this value
     @Override
     public void localStoreEvents() {
-
+        entities = getEntities(articles, ArticlesPerCluster);
         place_mappings = getPlaceMappings(articles, ArticlesPerCluster);
         int event_size_cuttof = configuration.getEventSizeCutoffThreshold();
         System.out.println("saving events...");
 
         SavedEvents = new ArrayList<>();
-
+        int count=0;
         for (Map.Entry<String, Topic> entry  : ArticlesPerCluster.entrySet()) {
+            ++count;
             String id = entry.getKey();
             Topic t = entry.getValue();
             if (t.size() >= event_size_cuttof) {
-                ArrayList<Object> ev = saveEvent(id, t, summaries.get(id), RelatedTweets, place_mappings, tweetURLtoPostIDMapping,tweetURLtoUserIDMapping);
-                if(! ev.isEmpty())
+                event ev = saveEvent(id, t, summaries.get(id), RelatedTweets, place_mappings,entities,
+                        tweetURLtoPostIDMapping,tweetURLtoUserIDMapping);
+                if(ev != null )
                     SavedEvents.add(ev);
+            }
+            else
+            {
+                if(configuration.hasModifier(BaseConfiguration.Modifiers.VERBOSE.toString()))
+                    System.out.println("\t - Skipping event " +count + "/" + ArticlesPerCluster.entrySet().size() + " : "
+                            +  entry.getKey() + " with " + t.size() + " articles due to cutoff : " + event_size_cuttof);
             }
         }
 
     }
 
-    public ArrayList<Object> saveEvent(String topicID,
+    public event saveEvent(String topicID,
                           Topic t,
                           Summary s,
                           Map<Topic, List<String>> relatedTweets,
                           Map<String, Map<String, String>> places_polygons_per_id,
+                                       Map<String,Set<String>> entities_per_id,
                           Map<String, Long> tweetURLtoPostIDMapping,
                           Map<String, String> tweetURLtoUserIDMapping
 
@@ -114,7 +148,7 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
 
         // event container , to return event for change detection
         // title, descr, date, tweets, sources, id, placemappings
-        ArrayList<Object> event = new ArrayList<>();
+        //ArrayList<Object> event = new ArrayList<>();
 
 
 
@@ -125,7 +159,7 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
         if(sentences.isEmpty())
         {
             System.out.println("Sentences list for event is empty. Skipping.");
-            return event;
+            return null;
         }
         String description = sentences.get(0).getSnippet();
         Calendar cDate = t.getDate();
@@ -133,15 +167,14 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
         String sUTCEventDate = Utils.toTimezoneFormattedStr(cDate, TIMEZONE_ID_UTC, DATE_FORMAT_ISO_8601);
         // get place mappings of the underlying articles
         Map<String, String> place_mappings = places_polygons_per_id.get(topicID);
+        Set<String> event_entities = this.entities.get(topicID);
         // get tweet IDs related to the event
         Map<String, Set<Long>> tweetIDsPerTopicID = extractRelatedTweetIDs(relatedTweets, tweetURLtoPostIDMapping);
         // get all tweet IDs for the topic related
-        //Set<Long> tweetIDs = tweetIDsPerTopicID.get(topicID);
         Map<Long,String> tweetIDsUsers = extractRelatedTweetIDsTitlesPerTopicID(topicID,relatedTweets,
                 tweetURLtoPostIDMapping,tweetURLtoUserIDMapping);
         if(tweetIDsUsers == null) System.out.println("> The event has no assigned tweets.");
         // news : updated to extract URL + title pairs
-        //Set<String> topicSourceURLs = extractSourceURLs(t);
         Map<String,String> topicSourceURL_Titles = extractSourceURLTitlePairs(t);
         // update events
         Statement upsert = QueryBuilder
@@ -154,18 +187,20 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
                  tweetIDsUsers == null ? Collections.EMPTY_SET : tweetIDsUsers))
                // .and(set(Cassandra.Event.TBL_EVENTS.FLD_EVENT_SOURCE_URLS.getColumnName(), topicSourceURLs))
                 .and(set(Cassandra.Event.TBL_EVENTS.FLD_EVENT_SOURCE_URLS.getColumnName(), topicSourceURL_Titles))
+                .and(set(Cassandra.Event.TBL_EVENTS.FLD_ENTITY.getColumnName(),event_entities))
                 .where(eq(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName(), topicID));
         //System.out.println(upsert.toString());
         session.execute(upsert);
 
 
-        event.add(title);
-        event.add(description);
-        event.add(sUTCEventDate);
-        event.add(tweetIDsUsers);
-        event.add(topicSourceURL_Titles);
-        event.add(topicID);
-        event.add(place_mappings);
+        event ret = new event(title,description,sUTCEventDate,topicID,topicSourceURL_Titles,place_mappings,event_entities,tweetIDsUsers);
+//        event.add(title);
+//        event.add(description);
+//        event.add(sUTCEventDate);
+//        event.add(tweetIDsUsers);
+//        event.add(topicSourceURL_Titles);
+//        event.add(topicID);
+//        event.add(place_mappings);
 
 
         for (Map.Entry<String, String> entry : place_mappings.entrySet()) {
@@ -197,7 +232,7 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
 
         }
 
-        return event;
+        return ret;
     }
 
     private Map<Long,String> extractRelatedTweetIDsTitlesPerTopicID(
@@ -286,6 +321,7 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
             String title = (String) eachItem.get(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_TITLE.getColumnName());
             String clean_text = (String) eachItem.get(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CLEAN_TEXT.getColumnName());
             String feed_url = (String) eachItem.get(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_FEED_URL.getColumnName());
+            Set<String> entities = (Set<String>) eachItem.get(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_FEED_URL.getColumnName());
             long published = (long) eachItem.get(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PUBLISHED.getColumnName());
             Date d = new Date();
             d.setTime(published);
@@ -295,7 +331,7 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
                 Map<String, Object> article = loadArticlePerPlace(eachPlace, source_url);
                 places_to_polygons.put(eachPlace, (String) article.get(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_BOUNDING_BOX.getColumnName()));
             }
-            res.add(new BDEArticle(source_url, title, clean_text, "Europe", feed_url, null, d, places_to_polygons));
+            res.add(new BDEArticle(source_url, title, clean_text, "Europe", feed_url, null, d, places_to_polygons,entities));
         }
         return res;
     }
@@ -319,6 +355,7 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
         if(timeWindow.equals(IBaseConf.TIME_WINDOW_NONE))
         {
             items = loadAllArticles(maxNumber);
+            if(maxNumber < 0) maxNumber = items.size();
         }
         else
         {
@@ -336,6 +373,8 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
             String title = (String) eachItem.get(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_TITLE.getColumnName());
             String clean_text = (String) eachItem.get(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CLEAN_TEXT.getColumnName());
             String feed_url = (String) eachItem.get(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_FEED_URL.getColumnName());
+            Set<String> entities = (Set<String>) eachItem.get(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTITY.getColumnName());
+
             long published = (long) eachItem.get(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PUBLISHED.getColumnName());
             long crawled = (long) eachItem.get(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CRAWLED.getColumnName());
             Date d = new Date();
@@ -346,7 +385,8 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
                 Map<String, Object> article = loadArticlePerPlace(eachPlace, source_url);
                 places_to_polygons.put(eachPlace, (String) article.get(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_BOUNDING_BOX.getColumnName()));
             }
-            articlesUnfiltered.add(new BDEArticle(source_url, title, clean_text, "Europe", feed_url, null, d, places_to_polygons));
+            articlesUnfiltered.add(new BDEArticle(source_url, title, clean_text, "Europe", feed_url,
+                    null, d, places_to_polygons, entities));
 
             if( ! crawledDatesToArtIdx.keySet().contains(crawled)) {
                 crawledDatesToArtIdx.put(crawled, new ArrayList<Integer>());
@@ -434,16 +474,25 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
     @Override
     public void loadTweetsToCluster() {
 
-        Calendar cal = Utils.getCalendarFromStringTimeWindow(configuration.getDocumentRetrievalTimeWindow());
-        System.out.println("calendar retrieval setting: " + cal.getTime());
-        long timestamp = cal.getTimeInMillis();
+        String timeWindow = configuration.getDocumentRetrievalTimeWindow();
+        Collection<Map<String, Object>> items = null;
+        if(timeWindow.equals(BaseConfiguration.TIME_WINDOW_NONE.toString()))
+        {
+            System.out.println("calendar retrieval setting: no window.");
+            items = loadAllTweets(-1);
+        }
+        else
+        {
+            Calendar cal = Utils.getCalendarFromStringTimeWindow(timeWindow);
+            System.out.println("calendar retrieval setting: " + cal.getTime());
+            long timestamp = cal.getTimeInMillis();
+            items = loadTweets(timestamp);
+        }
 
-         tweets = new ArrayList();
 
-        Collection<Map<String, Object>> items = loadTweets(timestamp);
-        //Collection<Map<String, Object>> items = loadAllTweets(-1);
+        tweets = new ArrayList();
 
-        // wrap to Article instances
+        // wrap to tweet instances
         for (Map<String, Object> eachItem : items) {
             long post_id = (long) eachItem.get(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_POST_ID.getColumnName());
             String permalink = (String) eachItem.get(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_PERMALINK.getColumnName());
@@ -452,7 +501,6 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
             String lang = (String) eachItem.get(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_LANGUAGE.getColumnName());
             // add extra entries to use twitter_results's constructor with the username field
             String user_name = (String) eachItem.get(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_ACCOUNT_NAME.getColumnName());
-	    //System.out.println("created-at : " + created_at);
             tweets.add(new TwitterResult(post_id, 0l, permalink, tweet, new Timestamp(created_at).toString(), lang,new ArrayList<String>(),user_name,""));
         }
     }
@@ -806,6 +854,29 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
         return res;
     }
 
+    private static Map<String, Set<String>> getEntities(List<BDEArticle> articles, Map<String, Topic> clusters) {
+
+        Map<String, BDEArticle> mapped_articles = getMappingPerSourceURL(articles);
+
+        Map<String, Set<String>> res = new HashMap();
+
+        for (Map.Entry<String, Topic> entry : clusters.entrySet()) {
+            String topic_id = entry.getKey();
+            Topic topic = entry.getValue();
+            Set< String> entities = new HashSet();
+
+            for (Article each : topic) {
+                BDEArticle tmp = mapped_articles.get(each.getSource());
+                if (tmp != null) {
+                    entities.addAll(tmp.getEntities());
+                }
+            }
+            res.put(topic_id, entities);
+        }
+        return res;
+    }
+
+
     private static Map<String, BDEArticle> getMappingPerSourceURL(List<BDEArticle> articles) {
         Map<String, BDEArticle> res = new HashMap();
         for (BDEArticle each : articles) {
@@ -831,15 +902,15 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
         {
             // event container , to return event for change detection
             // title, descr, date, tweets, sources, id, placemappings
-            ArrayList<Object> currEvent = SavedEvents.get(ev);
-            String eventid = (String) currEvent.get(5);
+            event currEvent = SavedEvents.get(ev);
+            String eventid = (String) currEvent.id;
             // skip the ones with no location data
-            if( ((Map<String,String>)currEvent.get(6)).isEmpty())
+            if( (currEvent.placeMappings).isEmpty())
             {
                 System.out.println("Skipping event " + eventid + " due to no assigned geometries");
                 continue;
             }
-            int numArticlesOfEvent = ((Map<String,String>)currEvent.get(4)).size();
+            int numArticlesOfEvent = ((Map<String,String>)currEvent.sourcesTitles).size();
             if( numArticlesOfEvent >= threshold)
             {
                 System.out.println(String.format(
@@ -847,8 +918,8 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
                         eventid, numArticlesOfEvent, threshold));
                 // get the smallest place (area)
 
-                String eventDate = (String) currEvent.get(2);
-                HashMap<String,String> places = (HashMap<String,String>)currEvent.get(6);
+                String eventDate = (String) currEvent.date;
+                HashMap<String,String> places = (HashMap<String,String>)currEvent.placeMappings;
                 double minArea = Double.MAX_VALUE;
                 int minIdx=0;
                 String minLoc="";
