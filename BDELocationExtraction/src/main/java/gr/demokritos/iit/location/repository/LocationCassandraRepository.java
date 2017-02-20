@@ -124,6 +124,8 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
 
         for(String permalink : ids_geometries.keySet()) {
             Map<String,String> places_polygons = ids_geometries.get(permalink);
+            if(places_polygons.isEmpty()) continue;
+            if(places_polygons == null) continue;
             // load metadata
             Map<String, Object> article = loadArticle(permalink);
             long published = (long) article.get(Cassandra.RSS.TBL_ARTICLES.FLD_PUBLISHED.getColumnName());

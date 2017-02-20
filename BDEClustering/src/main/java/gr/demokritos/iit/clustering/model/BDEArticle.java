@@ -4,6 +4,7 @@ import org.scify.newsum.server.model.structures.Article;
 import org.scify.newsum.server.model.structures.URLImage;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -21,7 +22,10 @@ public class BDEArticle extends Article {
                       Date date, Map<String, String> placesMap, Set<String> entities) {
         super(sSource, Title, Text, Category, Feed, imageUrl, date);
         this.places_to_polygons = placesMap;
-        this.Entities = entities;
+        if(entities != null)
+            this.Entities = entities;
+        else
+            this.Entities = new HashSet<>();
     }
 
     public Map<String, String> getPlaces_to_polygons() {

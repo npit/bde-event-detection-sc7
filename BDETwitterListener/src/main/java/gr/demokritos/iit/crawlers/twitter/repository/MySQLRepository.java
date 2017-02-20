@@ -166,8 +166,9 @@ public class MySQLRepository extends AbstractRepository implements IRepository {
         Connection dbConnection = null;
         PreparedStatement prepStmt = null;
         ResultSet generatedKeysSet = null;
+        String sTweet = "";
         try {
-            String sTweet = post.getText();
+            sTweet = post.getText();
             // if nothing there (not really likely)
             if (sTweet == null || sTweet.trim().isEmpty()) {
                 return;
@@ -176,11 +177,11 @@ public class MySQLRepository extends AbstractRepository implements IRepository {
             if (tweet_identified_lang == null || tweet_identified_lang.equalsIgnoreCase(TWEET_UNDEFINED_LANG)) {
                 tweet_identified_lang = CybozuLangDetect.getInstance().identifyLanguage(cleanTweetFromURLs(post), TWEET_UNDEFINED_LANG);
             }
-    	    System.out.println("Language indentified as: " + tweet_identified_lang);
             Long postID = post.getId();
             dbConnection = dataSource.getConnection();
 		
 	java.sql.Statement stmt = (java.sql.Statement) dbConnection.createStatement();
+
         stmt.executeQuery("SET NAMES 'UTF8'");
         stmt.executeQuery("SET CHARACTER SET 'UTF8'");
 
@@ -234,6 +235,7 @@ public class MySQLRepository extends AbstractRepository implements IRepository {
             // insert them in the DB
             insertExternalURLs(post.getId(), lsURLs);
         } catch (SQLException e) {
+            System.err.println("Exception at insertion of post:" + sTweet);
             e.printStackTrace();
         } finally {
             SQLUtils.release(dbConnection, prepStmt, generatedKeysSet);
@@ -296,7 +298,7 @@ public class MySQLRepository extends AbstractRepository implements IRepository {
     /**
      * insert external URLs that were provided as links in a tweet.
      *
-     * @param generatedID
+     * @param post_id
      * @param lsURLs
      */
     private void insertExternalURLs(long post_id, List<String> lsURLs) {

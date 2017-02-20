@@ -68,9 +68,10 @@ public class RESTfulResultJSONFilter implements IRestfulFilter{
             }
             catch (Exception ex)
             {
-                ex.printStackTrace();
+
                 System.err.println("JSON output format expected: category" + delimiter +"fieldname" + delimiter + "scoreThreshold"+ delimiter + "type");
                 System.err.println("Provided: " + catstr);
+                ex.printStackTrace();
                 return false;
             }
         }

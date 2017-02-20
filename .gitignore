@@ -42,6 +42,8 @@ exec/*
 !exec/location
 !exec/gencpath
 
+*/src/main/java/META-INF/
+
 BDELocationExtraction/res/*
 |BDELocationExtraction/res/en-sent.bin
 |BDELocationExtraction/res/ne-models/*

@@ -1,0 +1,19 @@
+
+-- Delete all content
+delete from active_sources;
+delete from blog_articles;
+delete from blog_crawls;
+delete from blog_feeds;
+delete from news_articles;
+delete from news_crawls;
+delete from news_feeds;
+
+
+delete from twitter_external_link;
+delete from twitter_log;
+delete from twitter_post_has_hashtag;
+delete from twitter_source;
+
+delete from twitter_hashtag;
+delete from twitter_post;
+delete from twitter_user;
