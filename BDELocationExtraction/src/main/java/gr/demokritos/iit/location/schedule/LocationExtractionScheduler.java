@@ -23,6 +23,7 @@ import gr.demokritos.iit.location.mode.OperationMode;
 import gr.demokritos.iit.location.repository.ILocationRepository;
 import gr.demokritos.iit.location.structs.LocSched;
 
+import java.security.InvalidParameterException;
 import java.util.*;
 
 /**
@@ -212,17 +213,17 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                         places_polygons = poly.postProcessGeometries(places_polygons);
 
                         ids_geometries.put(permalink,places_polygons);
-                        System.out.println(String.format(" %s", places_polygons.keySet().toString()));
+                        System.out.print(String.format(" %s", places_polygons.keySet().toString()));
                         i++;
 
                     }
                     else
                     {
-                        ids_geometries.put("",new HashMap<String,String>());
+                        ids_geometries.put(permalink,new HashMap<String,String>());
                         noLocationCount++;
-                        System.out.println("");
-
                     }
+                    if(! entitiesFound.isEmpty()) System.out.print(" \t" +entitiesFound);
+                    System.out.println();
                     permalinks.add(permalink);
 
                 }
@@ -252,14 +253,15 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                     {
                         System.err.println("Location extractor for tweets must deal with clean text only.");
                         System.err.println("Current LE resource is : " + locExtractor.getRequiredResource().toString());
-                        break;
+                        System.err.println("Aborting location extraction for tweets!");
+                        throw new InvalidParameterException();
                     }
                     String post_id_str = Long.toString(post_id);
                     Set<String> locationsFound = locExtractor.extractLocation(clean_tweet);
                     Set<String> entitiesFound =  locExtractor.extractGenericEntities(clean_tweet);
                     ids_entities.put(post_id_str ,new HashSet(entitiesFound));
                     // extract coordinates for each entity
-                    System.out.print("\tTweet " + count +  "/" +  items.size() + " : "  + post_id); //debugprint
+                    System.out.print("\n\tTweet " + count +  "/" +  items.size() + " : "  + post_id); //debugprint
 
                     if (!locationsFound.isEmpty()) {
                         Map<String, String> places_polygons = poly.extractPolygon(locationsFound);
@@ -267,15 +269,15 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
 
                         ids_geometries.put(post_id_str ,places_polygons);
                         if(! places_polygons.keySet().isEmpty())
-                            System.out.println(String.format(" %s", places_polygons.keySet().toString()));
+                            System.out.print(String.format(" %s", places_polygons.keySet().toString()));
 
                         i++;
                     }
                     else {
                         noLocationCount++;
                         ids_geometries.put(post_id_str ,new HashMap<String,String>());
-                        System.out.println("");
                     }
+                    if(! entitiesFound.isEmpty()) System.out.print(" \t" +entitiesFound);
                 }
                 System.out.println("\tLocation literal found for " + (items.size() - noLocationCount)  + " / " + items.size() + " tweets ");
                 System.out.println("\t\tPolygon fetch failed for locations: " + poly.getFailedExtractionNames());

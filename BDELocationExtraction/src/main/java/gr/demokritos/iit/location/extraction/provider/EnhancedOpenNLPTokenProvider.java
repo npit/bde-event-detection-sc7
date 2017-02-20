@@ -103,7 +103,9 @@ public class EnhancedOpenNLPTokenProvider implements ITokenProvider {
             FileInputStream instream = new FileInputStream(new File(extractorConf));
             props.load(new InputStreamReader(instream, Charset.forName("UTF-8")));
         } catch (IOException e) {
+            System.err.println("Locextractor file error: [" + extractorConf +"]");
             e.printStackTrace();
+            return false;
         }
         if( ! BaseConfiguration.isTrue(props.getProperty("use_extras",""))) return true;
 

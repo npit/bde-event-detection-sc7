@@ -129,6 +129,8 @@ public class RESTfulLocationExtractor implements ILocationExtractor {
             response = Utils.sendGET(url);
         else
             response = Utils.sendGETAuth(url, authEncoded);
+        if(Debug)
+            System.out.println("\nAPI response:\n" + response + "\n");
         return response;
 
     }
