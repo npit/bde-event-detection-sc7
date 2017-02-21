@@ -87,7 +87,6 @@ public class RESTfulResultJSONFilter implements IRestfulFilter{
             Entities.get(key).clear();
         }
         ArrayList<String> data = (ArrayList<String>) input;
-        Set<String> res = new HashSet<>();
         JSONParser parser = new JSONParser();
 
         for(String datum : data) {

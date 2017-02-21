@@ -37,7 +37,7 @@ public class RESTfulLocationExtractor implements ILocationExtractor {
     private final String NAME_VAL = "name_value_pairs";
     private final String AUTH = "auth";
 
-
+    boolean DoExtractLocations, DoExtractEntities;
 
     private ArrayList<String> urlParamNames, urlParamValues;    // param. names and values of the request
     String baseURL, authEncoded;    // base url of the request, encoded authentication info
@@ -56,7 +56,8 @@ public class RESTfulLocationExtractor implements ILocationExtractor {
         authEncoded="";
         Verbosity = false;
         Debug = false;
-
+        DoExtractLocations=false;
+        DoExtractEntities=false;
     }
 
     // return requested type
@@ -142,6 +143,8 @@ public class RESTfulLocationExtractor implements ILocationExtractor {
     }
     @Override
     public Set<String> extractLocation(String document) {
+
+        Set<String> res;
         if (document == null || document.trim().isEmpty()) {
             return Collections.EMPTY_SET;
         }
@@ -169,15 +172,19 @@ public class RESTfulLocationExtractor implements ILocationExtractor {
             }
         }
         if(response == null)
-            return Collections.EMPTY_SET;
+            res =  Collections.EMPTY_SET;
         if(response.isEmpty())
-            return Collections.EMPTY_SET;
-        return parse(response);
+            res = Collections.EMPTY_SET;
+        else
+            res = parse(response);
+
+        if(!DoExtractLocations) return new HashSet<>();
+        return res;
     }
 
     @Override
     public Set<String> extractGenericEntities(String resource) {
-
+        if(!DoExtractEntities) return new HashSet<>();
         return Filter.getEntityType(IRestfulFilter.EntityType.GENERIC);
     }
 
@@ -217,6 +224,26 @@ public class RESTfulLocationExtractor implements ILocationExtractor {
 
     @Override
     public boolean configure(ILocConf conf) {
+
+        String objective = conf.getExtractionObjective();
+        if(objective.equals("locations"))
+        {
+            DoExtractLocations = true;
+        }
+        else if(objective.equals("entities"))
+        {
+            DoExtractEntities = true;
+        }
+        else if(objective.equals("all"))
+        {
+            DoExtractLocations = true;
+            DoExtractEntities= true;
+        }
+        else
+        {
+            System.err.println("Undefined value for extraction objective: " + objective);
+            return false;
+        }
 
         String confFile = conf.getLocationExtractorConfig();
         if(confFile.isEmpty()) {
