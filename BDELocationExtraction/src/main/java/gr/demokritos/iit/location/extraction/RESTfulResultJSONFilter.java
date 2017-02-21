@@ -17,6 +17,7 @@ import java.util.*;
 public class RESTfulResultJSONFilter implements IRestfulFilter{
     private final String delimiter = "/";
     private final String scoreField = "score";
+    private final String projectField = "project";
 
     List<String> Categories;
     Map<String,Double> ThreshPerCategory;
@@ -122,7 +123,8 @@ public class RESTfulResultJSONFilter implements IRestfulFilter{
                         if(CategoriesPerType.get(EntityType.GENERIC.toString()).contains(category))
                         {
                             if(Verbosity) System.out.println("\t >>> Adding " + rawName + " to entities");
-                            Entities.get(EntityType.GENERIC.toString()).add(rawName);
+                            String projectField = (String) jarrayMember.get(this.projectField);
+                            Entities.get(EntityType.GENERIC.toString()).add(projectField + "," + rawName);
                         }
                         else if(CategoriesPerType.get(EntityType.LOCATION.toString()).contains(category))
                         {
