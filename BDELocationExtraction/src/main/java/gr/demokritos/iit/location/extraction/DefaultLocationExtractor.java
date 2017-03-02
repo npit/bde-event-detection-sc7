@@ -34,6 +34,23 @@ public class DefaultLocationExtractor implements ILocationExtractor {
 
     public boolean configure(ILocConf conf)
     {
+        String objective = conf.getExtractionObjective();
+        if(objective.equals("entities"))
+        {
+            System.err.println("The default location extraction does not support entity extraction.");
+            return false;
+
+        }
+        else if(objective.equals("all"))
+        {
+            System.err.println("Warning: The default location extraction does not support entity extraction.");
+        }
+        else
+        {
+            System.err.println("Undefined value for extraction objective: " + objective);
+            return false;
+        }
+
         return token_provider.configure(conf);
     }
     /**

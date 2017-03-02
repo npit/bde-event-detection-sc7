@@ -46,4 +46,7 @@ public interface ILocConf extends IBaseConf {
 
     String getDocumentListFile();
 
+    String getExtractionObjective();
+
+
 }

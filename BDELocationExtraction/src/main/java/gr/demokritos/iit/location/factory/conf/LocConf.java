@@ -126,5 +126,11 @@ public class LocConf extends BaseConfiguration implements ILocConf {
         return properties.getProperty("document_retrieval_mode",RETRIEVAL_MODE_SCHEDULED);
     }
 
+    @Override
+    public String getExtractionObjective()
+    {
+        return properties.getProperty("extraction_objective","all");
+    }
+
 
 }
