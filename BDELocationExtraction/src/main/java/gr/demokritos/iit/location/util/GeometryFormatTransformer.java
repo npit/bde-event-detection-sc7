@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Map;
+import java.util.Set;
 
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -34,25 +35,6 @@ import org.json.simple.JSONObject;
 public class GeometryFormatTransformer {
 
 
-
-
-
-    /**
-     *
-     * @param input a string with a WKT geometry, i.e.
-     *              MULTIPOLYGON (((8.13125038146978 40.8618049621583, 8.17569065094 40.8618049621583, 8.17569065094 40.9723625183105,
-     *              8.20874977111828 40.9723625183105, 8.20874977111828 41.1209716796876, 8.45872211456293 41.1209716796876,
-     *              8.45872211456293 40.8618049621583, 8.46539497375488 40.8618049621583, 8.46539497375488 40.8794746398926,
-     *               ...
-     *              8.21875000000006 39.1965293884278)))
-     * @return the geojson representation of the geometry
-     * @throws ParseException
-     * @throws IOException
-     *
-     *  used to convert the WKT geometries from the events table to geoJSON, so as to send
-     *  them to strabon
-
-     */
     public static double calculateArea(String wktGeometry) throws ParseException {
 
         WKTReader reader = new WKTReader();
@@ -159,7 +141,7 @@ public class GeometryFormatTransformer {
      */
 
     // popeye, meaning strabon
-    public static String EventRowToStrabonJSON(String id, String title, String date, Map<String,String> locpoly) throws IOException, ParseException {
+    public static String EventRowToStrabonJSON(String id, String title, String date, Map<String,String> locpoly, Set<String> entities) throws IOException, ParseException {
         JSONObject obj = new JSONObject();
         // date format  in the repository is like:
         // 2016-09-28T08:32+0000
@@ -182,7 +164,16 @@ public class GeometryFormatTransformer {
         obj.put("id",id);
         obj.put("title",title);
         obj.put("eventDate",date);
-        obj.put("referenceDate",date);
+        JSONArray arr = new JSONArray();
+        for (String entitypair : entities)
+        {
+            String [] parts = entitypair.split(",");
+            JSONObject jo = new JSONObject();
+            jo.put("thesaurus_uuid",parts[0]);
+            jo.put("concept_uri",parts[1]);
+            arr.add(jo);
+        }
+        obj.put("poolparties",arr);
 
         JSONArray array = new JSONArray();
         for(String location : locpoly.keySet())

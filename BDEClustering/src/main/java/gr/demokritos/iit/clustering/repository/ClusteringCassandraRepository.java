@@ -641,7 +641,8 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
                 .select(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName(),
                         Cassandra.Event.TBL_EVENTS.FLD_TITLE.getColumnName(),
                         Cassandra.Event.TBL_EVENTS.FLD_DATE_LITERAL.getColumnName(),
-                        Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName())
+                        Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName(),
+                        Cassandra.Event.TBL_EVENTS.FLD_ENTITY.getColumnName())
                 .from(session.getLoggedKeyspace(),Cassandra.Event.Tables.EVENTS.getTableName());
         ResultSet results = session.execute(query);
         int count = 1;
@@ -663,12 +664,15 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
             String title = (row.getString(Cassandra.Event.TBL_EVENTS.FLD_TITLE.getColumnName()));
             // get date
             String date = (row.getString(Cassandra.Event.TBL_EVENTS.FLD_DATE_LITERAL.getColumnName()));
-
+            // get entities
+            Set<String> entities = (row.getSet(Cassandra.Event.TBL_EVENTS.FLD_ENTITY.getColumnName(),String.class));
             // reconstruct the entries in the format expected by strabon
             String payload="";
             try
             {
-                payload = GeometryFormatTransformer.EventRowToStrabonJSON(id,title,date,locpoly);
+                payload = GeometryFormatTransformer.EventRowToStrabonJSON(id,title,date,locpoly, entities);
+                if(IsVerbose)
+                    System.out.println("Payload is:\n[" + payload + "]");
 
             }
             catch (ParseException e)
@@ -681,8 +685,7 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
             }
 
             //System.out.println("payload is:<" + payload + ">"); // debugprint
-            if(payload.isEmpty())
-            {
+            if(payload.isEmpty()) {
                 System.out.println("Empty payload, won't send anything.");
                 return;
             }
