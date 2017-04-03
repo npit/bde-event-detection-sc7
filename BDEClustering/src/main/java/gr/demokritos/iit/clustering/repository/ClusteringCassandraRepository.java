@@ -671,8 +671,9 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
             try
             {
                 payload = GeometryFormatTransformer.EventRowToStrabonJSON(id,title,date,locpoly, entities);
-                if(IsVerbose)
+                if(IsVerbose) {
                     System.out.println("Payload is:\n[" + payload + "]");
+                    System.out.flush();                }
 
             }
             catch (ParseException e)
@@ -692,7 +693,7 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
             System.out.println("Sending event  [" + id + "].");
 
             String resp = gr.demokritos.iit.base.util.Utils.sendPOST(payload,strabonURL);
-            Utils.checkResponse(resp);
+            Utils.checkResponse(resp,this.IsVerbose);
 
         }
 
@@ -959,7 +960,7 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                if(Utils.checkResponse(resp))
+                if(Utils.checkResponse(resp,this.IsVerbose))
                     System.err.println("Change detection trigger for event " + eventid + " failed.");
 
 

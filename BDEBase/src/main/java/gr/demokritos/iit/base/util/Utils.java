@@ -101,13 +101,18 @@ public class Utils {
 
         return result;
     }
-    public static boolean checkResponse(String resp)
+    public static boolean checkResponse(String resp, boolean isVerbose)
     {
         if (resp.equals("{\"code\":400,\"message\":\"exception\"}") || resp.isEmpty())
         {
             System.err.println("Server request failed.");
             return false;
         }
+        if(isVerbose)
+        {
+            System.out.println(resp);
+        }
+
         return true;
     }
 
