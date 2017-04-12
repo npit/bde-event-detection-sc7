@@ -16,6 +16,7 @@ package gr.demokritos.iit.crawlers.twitter.impl;
 
 import java.util.*;
 
+import gr.demokritos.iit.base.conf.IBaseConf;
 import gr.demokritos.iit.crawlers.twitter.factory.conf.ITwitterConf;
 import gr.demokritos.iit.crawlers.twitter.factory.conf.TConfig;
 import static gr.demokritos.iit.crawlers.twitter.factory.TwitterListenerFactory.LOGGER;
@@ -146,6 +147,7 @@ public class BaseTwitterRestConsumer extends AbstractTwitterRestConsumer impleme
             for (SearchQuery query : queries) {
                 // query twitter API 
                 Query q = new Query(query.getSearchQuery());
+
                 // set lang
                 q.setLang(query.getLang());
                 // set max possible results
@@ -172,7 +174,8 @@ public class BaseTwitterRestConsumer extends AbstractTwitterRestConsumer impleme
         List<Status> statuses = new ArrayList<>();
         try {
             for (Long tweetID : tweetIDs) {
-
+                if(config.hasModifier(IBaseConf.Modifiers.VERBOSE.toString()))
+                    System.out.println("Fetching tweet with id :[" + tweetID + "]");
                 Status status = twitter.showStatus(tweetID);
                 if (status == null) { //
                     // don't know if needed - T4J docs are very bad

@@ -14,6 +14,7 @@ delete from twitter_log;
 delete from twitter_post_has_hashtag;
 delete from twitter_source;
 
+delete from twitter_post_has_hashtag;
 delete from twitter_hashtag;
 delete from twitter_post;
 delete from twitter_user;

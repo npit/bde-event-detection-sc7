@@ -85,7 +85,7 @@ public class ScheduledTwitterRestConsumer extends AbstractTwitterRestConsumer im
     @Override
     public void fetch(Collection<Long> tweetID)
     {
-
+        throw new UnsupportedOperationException();
     }
 
     @Override

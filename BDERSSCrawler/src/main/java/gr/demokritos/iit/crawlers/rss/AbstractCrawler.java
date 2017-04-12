@@ -17,6 +17,7 @@ package gr.demokritos.iit.crawlers.rss;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import de.l3s.boilerpipe.BoilerpipeProcessingException;
+import gr.demokritos.iit.base.util.Utils;
 import gr.demokritos.iit.crawlers.rss.extractors.DateExtractor;
 import gr.demokritos.iit.crawlers.rss.model.Content;
 import gr.demokritos.iit.crawlers.rss.model.CrawlId;
@@ -119,21 +120,11 @@ public abstract class AbstractCrawler {
                 configuration.applyHTTPFetchRestrictions());
 
         String filename = configuration.getUrlsFileName();
-        File urlsFile = new File(filename);
+
         DefaultCrawlIdGenerator idgen = new DefaultCrawlIdGenerator(repository);
         CrawlId CrawlID = idgen.createNewCrawlId();
 
-        ArrayList<String> urls = new ArrayList<>();
-        try {
-            for (String line : Files.readLines(urlsFile, Charsets.UTF_8)) {
-                line = line.trim();
-                if (line.isEmpty()) continue;
-                if (line.startsWith("#")) continue; // comments
-                urls.add(line);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        ArrayList<String> urls = Utils.readFileLinesDropComments(filename);
 
         boolean retry = false;
         for (int s =0; s< urls.size(); s++) {
@@ -177,12 +168,17 @@ public abstract class AbstractCrawler {
                 }
 
                 repository.savePage(item, title, htmlContent, articleDate);
+                System.out.println("Saved fetched page " + url);
 
             }
 
              catch(IOException e){
                 e.printStackTrace();
             } catch(BoilerpipeProcessingException e){
+                e.printStackTrace();
+            }
+            catch(Exception e)
+            {
                 e.printStackTrace();
             }
     }

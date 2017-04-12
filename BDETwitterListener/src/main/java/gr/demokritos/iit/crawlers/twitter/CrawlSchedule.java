@@ -135,8 +135,51 @@ public class CrawlSchedule {
         ArrayList<Long> twitterIDs = new ArrayList<>();
         for(String datum : data)
         {
+            long id;
+            try
+            {
+                id = Long.parseLong(datum);
+            }
+            catch(NumberFormatException ex)
+            {
+                // specified url instead of numeric id, (hopefully)
+                // parse it
+                int i; // index of post id start
+                if(datum.indexOf("status/") != -1) {
+                    i = datum.indexOf("status/") + 7;
+                }
+                else if(datum.indexOf("statuses/") != -1) {
+                    i = datum.indexOf("status/") + 9;
+                }
+                else
+                {
+                    System.err.println("Unparsable twitter post id / url : [" + datum +"]");
+                    System.err.println("Need:\n\t<postID> or\n\thttps://twitter.com/<use>/status/<postID> or \n\thttps://twitter.com/statuses/<postID> ");
+                    continue;
+                }
+
+                if(i >= datum.length())
+                {
+                    System.err.println("Unparsable twitter post id / url :[" + datum +"]");
+                    continue;
+                }
+                String postid = "";
+                while(i < datum.length() && Character.isDigit(datum.charAt(i))) postid += datum.charAt(i++);
+                try {
+                    id = Long.parseLong(postid);
+                }
+                catch (Exception exx)
+                {
+                    System.err.println("Unparsable twitter post id / url :[" + datum +"]");
+                    continue;
+                }
+
+            }
+
+
+            twitterIDs.add(id);
             System.out.println("Specified twitter id to fetch: [" + datum + "]");
-            twitterIDs.add(Long.parseLong(datum));
+
         }
 
         CybozuLangDetect.setProfiles(config.getLangDetectionProfiles());

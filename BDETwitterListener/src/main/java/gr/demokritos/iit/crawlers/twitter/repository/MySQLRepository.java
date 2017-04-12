@@ -20,6 +20,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.text.Normalizer;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -178,6 +179,8 @@ public class MySQLRepository extends AbstractRepository implements IRepository {
                 tweet_identified_lang = CybozuLangDetect.getInstance().identifyLanguage(cleanTweetFromURLs(post), TWEET_UNDEFINED_LANG);
             }
             Long postID = post.getId();
+
+
             dbConnection = dataSource.getConnection();
 		
 	java.sql.Statement stmt = (java.sql.Statement) dbConnection.createStatement();
@@ -222,7 +225,17 @@ public class MySQLRepository extends AbstractRepository implements IRepository {
             prepStmt.setLong(10, api_user_id);
             prepStmt.setString(11, engine_type.toString());
             prepStmt.setLong(12, engine_id);
-            prepStmt.execute();
+            try {
+                prepStmt.execute();
+            }
+            catch (Exception ex)
+            {
+                System.err.println(ex.getMessage());
+                System.err.println(">>Retrying query with tweet text normalization");
+                sTweet = processText(sTweet);
+                prepStmt.setString(7, sTweet);
+                prepStmt.execute();
+            }
             // insert hashtags in database
             for (HashtagEntity htent : post.getHashtagEntities()) {
                 insertHashtag(post.getId(), htent.getText());
@@ -234,6 +247,9 @@ public class MySQLRepository extends AbstractRepository implements IRepository {
             lsURLs = unshortenURLs(lsURLs);
             // insert them in the DB
             insertExternalURLs(post.getId(), lsURLs);
+
+            System.out.println("Post id inserted: " + postID);
+
         } catch (SQLException e) {
             System.err.println("Exception at insertion of post:" + sTweet);
             e.printStackTrace();
@@ -539,5 +555,15 @@ public class MySQLRepository extends AbstractRepository implements IRepository {
             SQLUtils.release(dbConnection, pStmt, resultSet);
         }
         return Collections.unmodifiableMap(res);
+    }
+
+    String processText(String text)
+    {
+
+        String res =  Normalizer.normalize(text, Normalizer.Form.NFD);
+        res = res.replace("/[\\u{1F600}-\\u{1F6FF}]/","");
+        res = res.replaceAll("\\p{Cntrl}", "");
+        res = res.replaceAll("[^\\x00-\\x7F]", "");
+        return res;
     }
 }
