@@ -133,7 +133,7 @@ public abstract class AbstractCrawler {
                 Document doc = null;
                 System.out.printf("Fetching url %d/%d : [%s]\n", 1+s,urls.size(),url);
                 try {
-                    doc = Jsoup.connect(url).get();
+                    doc = Jsoup.connect(url).userAgent("Mozilla").get();
                 }
                 catch (org.jsoup.HttpStatusException e) {
                     //e.printStackTrace();
