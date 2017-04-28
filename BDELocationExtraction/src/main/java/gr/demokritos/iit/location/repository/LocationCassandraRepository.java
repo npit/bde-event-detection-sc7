@@ -61,61 +61,117 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
         shouldUpdateEvents = true;
     }
     @Override
-    public LocSched scheduleInitialized(OperationMode mode)
+    public LocSched scheduleInitialized(OperationMode mode,String extractionObjective)
     {
         java.util.Calendar window = Calendar.getInstance();
-        return scheduleInitialized(mode,window);
+        return scheduleInitialized(mode,extractionObjective,window);
     }
     @Override
-    public LocSched scheduleInitialized(OperationMode mode,java.util.Calendar window) {
-        String schedule_type = new StringBuilder().append(SCHEDULE_TYPE_BASE).append("_").append(mode.getMode()).toString();
-        Statement select = QueryBuilder
-                .select(Cassandra.Location.TBL_LOCATION_LOG.FLD_SCHEDULE_ID.getColumnName(), Cassandra.Location.TBL_LOCATION_LOG.FLD_LAST_PARSED.getColumnName())
-                .from(session.getLoggedKeyspace(), Cassandra.Location.Tables.LOCATION_LOG.getTableName())
-                .where(eq(Cassandra.Location.TBL_LOCATION_LOG.FLD_SCHEDULE_TYPE.getColumnName(), schedule_type)).limit(1);
-        ResultSet results = session.execute(select);
+    public LocSched scheduleInitialized(OperationMode mode, String extractionObjective,java.util.Calendar window){
 
-        long max_existing = 0l;
-        // replaced with argument
-        // set initial last 2 months ago
-//        Calendar two_months_ago = Calendar.getInstance();
-//        System.out.println("*****************SETTING 1 year as time window");
-//        two_months_ago.set(Calendar.MONTH, two_months_ago.get(Calendar.MONTH) - 1);
-        long last_parsed = window.getTimeInMillis();
-        System.out.println("Data retrieval window set from now to :" + new Date(last_parsed).toString());
+        if (extractionObjective.equals("locations")) {
+            String schedule_type = new StringBuilder().append(SCHEDULE_TYPE_BASE).append("_").append(mode.getMode()).toString();
+            Statement select = QueryBuilder
+                    .select(Cassandra.Location.TBL_LOCATION_LOG.FLD_SCHEDULE_ID.getColumnName(), Cassandra.Location.TBL_LOCATION_LOG.FLD_LAST_PARSED.getColumnName())
+                    .from(session.getLoggedKeyspace(), Cassandra.Location.Tables.LOCATION_LOG.getTableName())
+                    .where(eq(Cassandra.Location.TBL_LOCATION_LOG.FLD_SCHEDULE_TYPE.getColumnName(), schedule_type)).limit(1);
+            ResultSet results = session.execute(select);
 
-        Row one = results.one();
-        if (one != null) {
-            max_existing = one.getLong(Cassandra.Location.TBL_LOCATION_LOG.FLD_SCHEDULE_ID.getColumnName());
-            last_parsed = one.getLong(Cassandra.Location.TBL_LOCATION_LOG.FLD_LAST_PARSED.getColumnName());
+            long max_existing = 0l;
+            // replaced with argument
+            // set initial last 2 months ago
+            //        Calendar two_months_ago = Calendar.getInstance();
+            //        System.out.println("*****************SETTING 1 year as time window");
+            //        two_months_ago.set(Calendar.MONTH, two_months_ago.get(Calendar.MONTH) - 1);
+            long last_parsed = window.getTimeInMillis();
+            System.out.println("Data retrieval window set from now to :" + new Date(last_parsed).toString());
+
+            Row one = results.one();
+            if (one != null) {
+                max_existing = one.getLong(Cassandra.Location.TBL_LOCATION_LOG.FLD_SCHEDULE_ID.getColumnName());
+                last_parsed = one.getLong(Cassandra.Location.TBL_LOCATION_LOG.FLD_LAST_PARSED.getColumnName());
+            }
+            long current = max_existing + 1;
+            LocSched curSched = new LocSched(mode, current, last_parsed);
+
+            Statement insert = QueryBuilder
+                    .insertInto(session.getLoggedKeyspace(), Cassandra.Location.Tables.LOCATION_LOG.getTableName())
+                    .value(Cassandra.Location.TBL_LOCATION_LOG.FLD_SCHEDULE_TYPE.getColumnName(), schedule_type)
+                    .value(Cassandra.Location.TBL_LOCATION_LOG.FLD_SCHEDULE_ID.getColumnName(), current)
+                    .value(Cassandra.Location.TBL_LOCATION_LOG.FLD_END.getColumnName(), 0l) // avoid nulls
+                    .value(Cassandra.Location.TBL_LOCATION_LOG.FLD_ITEMS_UPDATED.getColumnName(), 0l) // avoid nulls
+                    .value(Cassandra.Location.TBL_LOCATION_LOG.FLD_LAST_PARSED.getColumnName(), last_parsed)
+                    .value(Cassandra.Location.TBL_LOCATION_LOG.FLD_START.getColumnName(), new Date().getTime());
+
+            session.execute(insert);
+            return curSched;
         }
-        long current = max_existing + 1;
-        LocSched curSched = new LocSched(mode, current, last_parsed);
+        else if (extractionObjective.equals("entities"))
+        {
+            String schedule_type = new StringBuilder().append(SCHEDULE_TYPE_BASE).append("_").append(mode.getMode()).toString();
+            Statement select = QueryBuilder
+                    .select(Cassandra.Entity.TBL_ENTITY_LOG.FLD_SCHEDULE_ID.getColumnName(), Cassandra.Entity.TBL_ENTITY_LOG.FLD_LAST_PARSED.getColumnName())
+                    .from(session.getLoggedKeyspace(), Cassandra.Entity.Tables.ENTITY_LOG.getTableName())
+                    .where(eq(Cassandra.Entity.TBL_ENTITY_LOG.FLD_SCHEDULE_TYPE.getColumnName(), schedule_type)).limit(1);
+            ResultSet results = session.execute(select);
 
-        Statement insert = QueryBuilder
-                .insertInto(session.getLoggedKeyspace(), Cassandra.Location.Tables.LOCATION_LOG.getTableName())
-                .value(Cassandra.Location.TBL_LOCATION_LOG.FLD_SCHEDULE_TYPE.getColumnName(), schedule_type)
-                .value(Cassandra.Location.TBL_LOCATION_LOG.FLD_SCHEDULE_ID.getColumnName(), current)
-                .value(Cassandra.Location.TBL_LOCATION_LOG.FLD_END.getColumnName(), 0l) // avoid nulls
-                .value(Cassandra.Location.TBL_LOCATION_LOG.FLD_ITEMS_UPDATED.getColumnName(), 0l) // avoid nulls
-                .value(Cassandra.Location.TBL_LOCATION_LOG.FLD_LAST_PARSED.getColumnName(), last_parsed)
-                .value(Cassandra.Location.TBL_LOCATION_LOG.FLD_START.getColumnName(), new Date().getTime());
+            long max_existing = 0l;
+            // replaced with argument
+            // set initial last 2 months ago
+            //        Calendar two_months_ago = Calendar.getInstance();
+            //        System.out.println("*****************SETTING 1 year as time window");
+            //        two_months_ago.set(Calendar.MONTH, two_months_ago.get(Calendar.MONTH) - 1);
+            long last_parsed = window.getTimeInMillis();
+            System.out.println("Data retrieval window set from now to :" + new Date(last_parsed).toString());
 
-        session.execute(insert);
-        return curSched;
+            Row one = results.one();
+            if (one != null) {
+                max_existing = one.getLong(Cassandra.Entity.TBL_ENTITY_LOG.FLD_SCHEDULE_ID.getColumnName());
+                last_parsed = one.getLong(Cassandra.Entity.TBL_ENTITY_LOG.FLD_LAST_PARSED.getColumnName());
+            }
+            long current = max_existing + 1;
+            LocSched curSched = new LocSched(mode, current, last_parsed);
+
+            Statement insert = QueryBuilder
+                    .insertInto(session.getLoggedKeyspace(), Cassandra.Entity.Tables.ENTITY_LOG.getTableName())
+                    .value(Cassandra.Entity.TBL_ENTITY_LOG.FLD_SCHEDULE_TYPE.getColumnName(), schedule_type)
+                    .value(Cassandra.Entity.TBL_ENTITY_LOG.FLD_SCHEDULE_ID.getColumnName(), current)
+                    .value(Cassandra.Entity.TBL_ENTITY_LOG.FLD_END.getColumnName(), 0l) // avoid nulls
+                    .value(Cassandra.Entity.TBL_ENTITY_LOG.FLD_ITEMS_UPDATED.getColumnName(), 0l) // avoid nulls
+                    .value(Cassandra.Entity.TBL_ENTITY_LOG.FLD_LAST_PARSED.getColumnName(), last_parsed)
+                    .value(Cassandra.Entity.TBL_ENTITY_LOG.FLD_START.getColumnName(), new Date().getTime());
+
+            session.execute(insert);
+            return curSched;
+
+        }
+        else return null;
     }
 
     @Override
-    public void scheduleFinalized(LocSched sched) {
+    public void scheduleFinalized(LocSched sched, String extractionObjective) {
+        
         String schedule_type = new StringBuilder().append(SCHEDULE_TYPE_BASE).append("_").append(sched.getOperationMode().getMode()).toString();
-        Statement update = QueryBuilder
-                .update(session.getLoggedKeyspace(), Cassandra.Location.Tables.LOCATION_LOG.getTableName())
-                .with(set(Cassandra.Location.TBL_LOCATION_LOG.FLD_END.getColumnName(), new Date().getTime()))
-                .and(set(Cassandra.Location.TBL_LOCATION_LOG.FLD_LAST_PARSED.getColumnName(), sched.getLastParsed()))
-                .and(set(Cassandra.Location.TBL_LOCATION_LOG.FLD_ITEMS_UPDATED.getColumnName(), sched.getItemsUpdated()))
-                .where(eq(Cassandra.Location.TBL_LOCATION_LOG.FLD_SCHEDULE_TYPE.getColumnName(), schedule_type))
-                .and(eq(Cassandra.Location.TBL_LOCATION_LOG.FLD_SCHEDULE_ID.getColumnName(), sched.getScheduleID()));
-        session.execute(update);
+        Statement update = null;
+        if(extractionObjective.equals("locations")) {
+            update = QueryBuilder
+                    .update(session.getLoggedKeyspace(), Cassandra.Location.Tables.LOCATION_LOG.getTableName())
+                    .with(set(Cassandra.Location.TBL_LOCATION_LOG.FLD_END.getColumnName(), new Date().getTime()))
+                    .and(set(Cassandra.Location.TBL_LOCATION_LOG.FLD_LAST_PARSED.getColumnName(), sched.getLastParsed()))
+                    .and(set(Cassandra.Location.TBL_LOCATION_LOG.FLD_ITEMS_UPDATED.getColumnName(), sched.getItemsUpdated()))
+                    .where(eq(Cassandra.Location.TBL_LOCATION_LOG.FLD_SCHEDULE_TYPE.getColumnName(), schedule_type))
+                    .and(eq(Cassandra.Location.TBL_LOCATION_LOG.FLD_SCHEDULE_ID.getColumnName(), sched.getScheduleID()));
+        }
+        else if(extractionObjective.equals("entities")) {
+            update = QueryBuilder
+                    .update(session.getLoggedKeyspace(), Cassandra.Entity.Tables.ENTITY_LOG.getTableName())
+                    .with(set(Cassandra.Entity.TBL_ENTITY_LOG.FLD_END.getColumnName(), new Date().getTime()))
+                    .and(set(Cassandra.Entity.TBL_ENTITY_LOG.FLD_LAST_PARSED.getColumnName(), sched.getLastParsed()))
+                    .and(set(Cassandra.Entity.TBL_ENTITY_LOG.FLD_ITEMS_UPDATED.getColumnName(), sched.getItemsUpdated()))
+                    .where(eq(Cassandra.Entity.TBL_ENTITY_LOG.FLD_SCHEDULE_TYPE.getColumnName(), schedule_type))
+                    .and(eq(Cassandra.Entity.TBL_ENTITY_LOG.FLD_SCHEDULE_ID.getColumnName(), sched.getScheduleID()));
+        }
+            session.execute(update);
     }
 
 

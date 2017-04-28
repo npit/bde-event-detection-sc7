@@ -23,7 +23,6 @@ import gr.demokritos.iit.location.mode.OperationMode;
 import gr.demokritos.iit.location.repository.ILocationRepository;
 import gr.demokritos.iit.location.structs.LocSched;
 
-import java.security.InvalidParameterException;
 import java.util.*;
 
 /**
@@ -34,13 +33,16 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
     private final OperationMode opMode;
     private final ILocationRepository repos;
     private final ILocationExtractor locExtractor;
+    private final ILocationExtractor entExtractor;
     private final IPolygonExtraction poly;
     private final ILocConf conf;
 
-    public LocationExtractionScheduler(OperationMode opMode, ILocationRepository repo, ILocationExtractor locExt, IPolygonExtraction pol, ILocConf conf) {
+    public LocationExtractionScheduler(OperationMode opMode, ILocationRepository repo, ILocationExtractor locExt,
+                                       ILocationExtractor entExtractor,IPolygonExtraction pol, ILocConf conf) {
         this.opMode = opMode;
         this.repos = repo;
         this.locExtractor = locExt;
+        this.entExtractor = entExtractor;
         this.poly = pol;
         this.conf = conf;
     }
@@ -87,11 +89,22 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
             System.err.println("Use articles or tweets , but not both");
             return;
         }
-        Map<String,Map<String,String>> id_geometries_map = new HashMap<>();
+
         Map<String,Set<String>> ids_entities = new HashMap<>();
-        extractLocation(opMode, items, id_geometries_map,ids_entities);
-        insertLocationData(opMode, id_geometries_map);
-        insertEntityData(opMode, ids_entities);
+        Map<String,Map<String,String>> id_geometries_map = new HashMap<>();
+
+
+        if(conf.shouldExtractLocations(conf.getExtractionObjective()))
+        {
+            performExtraction(opMode,"locations", items, id_geometries_map,ids_entities);
+            insertLocationData(opMode, id_geometries_map);
+
+        }
+        else if(conf.shouldExtractEntities(conf.getExtractionObjective()))
+        {
+            performExtraction(opMode, "entities", items,id_geometries_map,ids_entities);
+            insertEntityData(opMode, ids_entities);
+        }
         System.out.println("Targeted location extraction completed.");
     }
     @Override
@@ -116,22 +129,34 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
     private void executeSchedule(OperationMode mode) {
 
 
-
-        LocSched sched;
+        System.out.println("Executing schedule [" + mode.toString() + "]");
+        LocSched schedLoc, schedEnt;
         // register starting operation
-        sched = repos.scheduleInitialized(mode,Utils.getCalendarFromStringTimeWindow(conf.getDocumentRetrievalTimeWindow()));
-        System.out.println("last parsed: " + new Date(sched.getLastParsed()).toString());
-        Collection<Map<String, Object>> items = null;
+        String extractionObjective = conf.getExtractionObjective();
+        boolean extractEntities = conf.shouldExtractEntities(extractionObjective) || extractionObjective.equals("all");
+        boolean extractLocations = conf.shouldExtractLocations(extractionObjective);
+        schedEnt = repos.scheduleInitialized(mode, "entities", Utils.getCalendarFromStringTimeWindow(conf.getDocumentRetrievalTimeWindow()));
+        schedLoc = repos.scheduleInitialized(mode, "locations", Utils.getCalendarFromStringTimeWindow(conf.getDocumentRetrievalTimeWindow()));
+        System.out.println("last parsed loc: " + new Date(schedLoc.getLastParsed()).toString());
+        System.out.println("last parsed ent: " + new Date(schedEnt.getLastParsed()).toString());
+        Collection<Map<String, Object>> itemsLoc = null;
+        Collection<Map<String, Object>> itemsEnt = null;
         // npit switched loadArticles/loadTweets to loadAllArticles/loadAllTweets
         switch (mode) {
             case ARTICLES:
                 // load items to process from last_parsed indicator.
-                items = repos.loadArticles(sched.getLastParsed()); // TODO
+                if(extractLocations)
+                    itemsLoc = repos.loadArticles(schedLoc.getLastParsed()); // TODO
+                if(extractEntities)
+                    itemsEnt = repos.loadArticles(schedEnt.getLastParsed()); // TODO
                 //System.err.println("*****Suspending article resuming - loading ALL for debuggery.");
                 //items = repos.loadAllArticles(-1);
                 break;
             case TWEETS:
-                items = repos.loadTweets(sched.getLastParsed());
+                if(extractLocations)
+                    itemsLoc = repos.loadTweets(schedLoc.getLastParsed());
+                if(extractEntities)
+                    itemsEnt = repos.loadTweets(schedEnt.getLastParsed());
                 //System.err.println("*****Suspending twitter resuming - loading ALL for debuggery.");
                 //items = repos.loadAllTweets(-1);
                 break;
@@ -140,30 +165,43 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
         // get location
         Map<String,Map<String,String>> id_geometries_map = new HashMap<>();
         Map<String,Set<String>> ids_entities = new HashMap<>();
-        er = extractLocation(mode, items, id_geometries_map,ids_entities);
-        insertLocationData(mode,id_geometries_map);
-        insertEntityData(mode,ids_entities);
-        // schedule updated
-        sched.setItemsUpdated(er.getItemsFound());
+        if(extractLocations) {
+            er = performExtraction(mode,"locations", itemsLoc, id_geometries_map, ids_entities);
+            insertLocationData(mode, id_geometries_map);
+            schedLoc.setItemsUpdated(er.getItemsFound());
+            schedLoc.setLastParsed(er.getMaxPublished());
+            System.out.println("Set last parsed (locations) to " + schedLoc.getLastParsed());
+            repos.scheduleFinalized(schedLoc,"locations");
+        }
+        if(extractEntities)
+        {
+            er = performExtraction(mode,"entities", itemsEnt, id_geometries_map,ids_entities);
+            insertEntityData(mode,ids_entities);
+            schedEnt.setItemsUpdated(er.getItemsFound());
+            schedEnt.setLastParsed(er.getMaxPublished());
+            System.out.println("Set last parsed (entities) to " + schedEnt.getLastParsed());
+            repos.scheduleFinalized(schedEnt, "entities");
+        }
+
+
         // update last timestamp parsed
 
-        sched.setLastParsed(er.getMaxPublished());
-        System.out.println("Set last parsed to " + sched.getLastParsed());
+
         // register completed
-        repos.scheduleFinalized(sched);
+
     }
 
-    private ExecRes extractLocation(OperationMode mode,Collection<Map<String, Object>> items, Map<String,Map<String,String>> ids_geometries, Map<String,Set<String>> ids_entities) {
+    private ExecRes performExtraction(OperationMode mode, String extractionObjective, Collection<Map<String, Object>> items, Map<String,Map<String,String>> ids_geometries, Map<String,Set<String>> ids_entities) {
 
         // keep most recent published for reference
         long max_published = Long.MIN_VALUE;
         System.out.println("Initial max published: " + max_published);
         int i = 0;
         int count = 0;
-        int noLocationCount = 0;
+        int resultsCount = 0;
         switch (mode) {
             case ARTICLES:
-                poly.init();
+                if(conf.shouldExtractLocations(extractionObjective)) poly.init();
                 ArrayList<String> permalinks = new ArrayList<>();
 
                 // for each article
@@ -177,144 +215,138 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                     String permalink;
                     long published = (long) article.get(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PUBLISHED.getColumnName());
                     max_published = Math.max(max_published, published);
-
                     permalink = (String) article.get(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName());
-
                     String clean_text = (String) article.get(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CLEAN_TEXT.getColumnName());
-                    // extract location entities
-                    //System.out.println("Extracting location for article " + permalink);
                     System.out.print("\tArticle " + count +  "/" +  items.size() + " : "  + permalink); //debugprint
-
                     String RequiredResource;
-                    if(locExtractor.getRequiredResource().equals(ILocationExtractor.LE_RESOURCE_TYPE.URL))
-                        RequiredResource = permalink;
-                    else if(locExtractor.getRequiredResource().equals(ILocationExtractor.LE_RESOURCE_TYPE.CLEAN_TEXT))
-                    {
-                        if(clean_text == null || clean_text.isEmpty())
-                        {
-                            System.out.println(" (!) Empty or null clean text");
-                            continue;
+
+
+
+                    if(conf.shouldExtractLocations(extractionObjective)) {
+                        RequiredResource = locExtractor.ChooseRequiredResource(permalink, clean_text);
+                        Set<String> locationsFound = locExtractor.doExtraction(RequiredResource);
+                        if (!locationsFound.isEmpty()) {
+                            Map<String, String> places_polygons = poly.extractPolygon(locationsFound);
+
+                            // update entry
+                            // edit geometry
+                            places_polygons = poly.postProcessGeometries(places_polygons);
+
+                            ids_geometries.put(permalink,places_polygons);
+                            System.out.print(String.format(" %s", places_polygons.keySet().toString()));
+                            i++;
+
                         }
-                        RequiredResource = clean_text;
-                    }
-                    else
-                    {
-                        System.err.println("Undefined required resource : [" + locExtractor.getRequiredResource().toString() +"]");
-                        break;
-                    }
-                    Set<String> locationsFound = locExtractor.extractLocation(RequiredResource);
-                    Set<String> entitiesFound =  locExtractor.extractGenericEntities(RequiredResource);
-                    ids_entities.put(permalink,new HashSet(entitiesFound));
-                    if (!locationsFound.isEmpty()) {
-                        Map<String, String> places_polygons = poly.extractPolygon(locationsFound);
-
-                        // update entry
-                        // edit geometry
-                        places_polygons = poly.postProcessGeometries(places_polygons);
-
-                        ids_geometries.put(permalink,places_polygons);
-                        System.out.print(String.format(" %s", places_polygons.keySet().toString()));
-                        i++;
+                        else
+                        {
+                            ids_geometries.put(permalink,new HashMap<String,String>());
+                            resultsCount++;
+                        }
 
                     }
-                    else
-                    {
-                        ids_geometries.put(permalink,new HashMap<String,String>());
-                        noLocationCount++;
+                    if(conf.shouldExtractEntities(extractionObjective)) {
+                        RequiredResource = entExtractor.ChooseRequiredResource(permalink, clean_text);
+                        Set<String> entitiesFound = entExtractor.doExtraction(RequiredResource);
+                        ids_entities.put(permalink, new HashSet(entitiesFound));
+                        if(! entitiesFound.isEmpty()) System.out.print(" \t" +entitiesFound);
                     }
-                    if(! entitiesFound.isEmpty()) System.out.print(" \t" +entitiesFound);
+
+
                     System.out.println();
                     permalinks.add(permalink);
 
                 }
-                System.out.println("\tLocation literal found for " + (items.size() - noLocationCount) + " / " + items.size() + " articles.");
-                System.out.println("\t\tPolygon fetch failed for locations: " + poly.getFailedExtractionNames());
+                if(conf.shouldExtractLocations(extractionObjective)) {
+                    System.out.println("\tLocation literal found for " + (items.size() - resultsCount) + " / " + items.size() + " articles.");
+                    System.out.println("\t\tPolygon fetch failed for locations: " + poly.getFailedExtractionNames());
+                }
                 //repos.updateEventsWithAllLocationPolygonPairs(mode, null, null,article_geometries,permalinks);
 
                 break;
             case TWEETS:
-                poly.init();
+                if(conf.shouldExtractLocations(extractionObjective)) poly.init();
                 // for each tweet
                 for (Map<String, Object> item : items) {
                     ++count;
                     long published = (long) item.get(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_CREATED_AT.getColumnName());
                     max_published = Math.max(max_published, published);
-
                     long post_id = (long) item.get(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_POST_ID.getColumnName());
                     String tweet = (String) item.get(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_DATE.FLD_TWEET.getColumnName());
-                    // clean tweet
-                    String clean_tweet = Utils.cleanTweet(tweet);
-                    // extract location entities
-                    //System.out.println("Extracting location for tweet " + post_id);
-
-
-
-                    if( ! locExtractor.getRequiredResource().equals(ILocationExtractor.LE_RESOURCE_TYPE.CLEAN_TEXT))
-                    {
-                        System.err.println("Location extractor for tweets must deal with clean text only.");
-                        System.err.println("Current LE resource is : " + locExtractor.getRequiredResource().toString());
-                        System.err.println("Aborting location extraction for tweets!");
-                        throw new InvalidParameterException();
-                    }
                     String post_id_str = Long.toString(post_id);
-                    Set<String> locationsFound = locExtractor.extractLocation(clean_tweet);
-                    Set<String> entitiesFound =  locExtractor.extractGenericEntities(clean_tweet);
-                    ids_entities.put(post_id_str ,new HashSet(entitiesFound));
-                    // extract coordinates for each entity
+                    String clean_tweet = Utils.cleanTweet(tweet);
                     System.out.print("\n\tTweet " + count +  "/" +  items.size() + " : "  + post_id); //debugprint
 
-                    if (!locationsFound.isEmpty()) {
-                        Map<String, String> places_polygons = poly.extractPolygon(locationsFound);
-                        places_polygons = poly.postProcessGeometries(places_polygons);
 
-                        ids_geometries.put(post_id_str ,places_polygons);
-                        if(! places_polygons.keySet().isEmpty())
-                            System.out.print(String.format(" %s", places_polygons.keySet().toString()));
+                    if(conf.shouldExtractLocations(extractionObjective)) {
+                        if(!locExtractor.canHandleResource(ILocationExtractor.LE_RESOURCE_TYPE.TEXT)) continue;
+                        Set<String> locationsFound = locExtractor.doExtraction(clean_tweet);
+                        if (!locationsFound.isEmpty()) {
+                            Map<String, String> places_polygons = poly.extractPolygon(locationsFound);
+                            places_polygons = poly.postProcessGeometries(places_polygons);
 
-                        i++;
+                            ids_geometries.put(post_id_str ,places_polygons);
+                            if(! places_polygons.keySet().isEmpty())
+                                System.out.print(String.format(" %s", places_polygons.keySet().toString()));
+
+                            i++;
+                        }
+                        else {
+                            resultsCount++;
+                            ids_geometries.put(post_id_str ,new HashMap<String,String>());
+                        }
                     }
-                    else {
-                        noLocationCount++;
-                        ids_geometries.put(post_id_str ,new HashMap<String,String>());
+                    if(conf.shouldExtractEntities(extractionObjective)) {
+                        if(!entExtractor.canHandleResource(ILocationExtractor.LE_RESOURCE_TYPE.TEXT)) continue;
+                        Set<String> entitiesFound = entExtractor.doExtraction(clean_tweet);
+                        ids_entities.put(post_id_str, new HashSet(entitiesFound));
+                        if(! entitiesFound.isEmpty()) System.out.print(" \t" +entitiesFound);
                     }
-                    if(! entitiesFound.isEmpty()) System.out.print(" \t" +entitiesFound);
                 }
-                System.out.println("\tLocation literal found for " + (items.size() - noLocationCount)  + " / " + items.size() + " tweets ");
-                System.out.println("\t\tPolygon fetch failed for locations: " + poly.getFailedExtractionNames());
+                if(conf.shouldExtractLocations(extractionObjective)) {
+                    System.out.println("\tLocation literal found for " + (items.size() - resultsCount) + " / " + items.size() + " tweets ");
+                    System.out.println("\t\tPolygon fetch failed for locations: " + poly.getFailedExtractionNames());
+                }
                 //repos.updateEventsWithAllLocationPolygonPairs(mode, tweet_geometries, post_ids,null, null);
 
                 break;
             case TEXT:
-                poly.init();
-                if( ! locExtractor.getRequiredResource().equals(ILocationExtractor.LE_RESOURCE_TYPE.CLEAN_TEXT))
-                {
-                    System.err.println("TEXT mode location extraction requires an extractor that deals with text.");
-                    System.err.println("Current extractor is : " + conf.getLocationExtractor());
-                    break;
-                }
+                if(conf.shouldExtractLocations(extractionObjective)) poly.init();
                 for (Map<String, Object> item : items) {
                     String text = (String) item.get("text");
                     String textid=text.substring(0,30);
-                    Set<String> locationsFound = locExtractor.extractLocation(text);
                     System.out.print("\tText " + ++count +  "/" +  items.size() + " : "  + textid + "[...] ");
-                    if (!locationsFound.isEmpty()) {
-                        Map<String, String> places_polygons = poly.extractPolygon(locationsFound);
-                        places_polygons = poly.postProcessGeometries(places_polygons);
-                        ids_geometries.put(textid,places_polygons);
-                        i++;
-                        if(! places_polygons.keySet().isEmpty())
-                            System.out.println(String.format(" %s", places_polygons.keySet().toString()));
 
+                    if(conf.shouldExtractLocations(extractionObjective)) {
+                        if(!locExtractor.canHandleResource(ILocationExtractor.LE_RESOURCE_TYPE.TEXT)) continue;
+                        Set<String> locationsFound = locExtractor.doExtraction(text);
+                        if (!locationsFound.isEmpty()) {
+                            Map<String, String> places_polygons = poly.extractPolygon(locationsFound);
+                            places_polygons = poly.postProcessGeometries(places_polygons);
+                            ids_geometries.put(textid,places_polygons);
+                            i++;
+                            if(! places_polygons.keySet().isEmpty())
+                                System.out.println(String.format(" %s", places_polygons.keySet().toString()));
+
+                        }
+                        else {
+                            resultsCount++;
+                            ids_geometries.put("",new HashMap<String,String>());
+                            System.out.println("");
+                        }
                     }
-                    else {
-                        noLocationCount++;
-                        ids_geometries.put("",new HashMap<String,String>());
-                        System.out.println("");
+                    if(conf.shouldExtractEntities(extractionObjective)) {
+                        if(!entExtractor.canHandleResource(ILocationExtractor.LE_RESOURCE_TYPE.TEXT)) continue;
+                        Set<String> entitiesFound = entExtractor.doExtraction(text);
+                        ids_entities.put(textid, new HashSet(entitiesFound));
+                        if(! entitiesFound.isEmpty()) System.out.print(" \t" +entitiesFound);
                     }
+
 
                 }
-                System.out.println("\tLocation literal found for " + (items.size() - noLocationCount)  + " / " + items.size() + " texts ");
-                System.out.println("\t\tPolygon fetch failed for locations: " + poly.getFailedExtractionNames());
+                if(conf.shouldExtractLocations(extractionObjective)) {
+                    System.out.println("\tLocation literal found for " + (items.size() - resultsCount) + " / " + items.size() + " texts ");
+                    System.out.println("\t\tPolygon fetch failed for locations: " + poly.getFailedExtractionNames());
+                }
 
         }
         return new ExecRes(max_published, i);

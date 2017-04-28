@@ -26,8 +26,9 @@ public interface IRestfulFilter {
         public String toString(){ return value;}
 
     }
-    boolean initialize(String str, boolean verbose);
+    boolean initialize(String str, boolean AppendProject, boolean verbose);
     void filter(Object input);
     String toString();
-    Set<String> getEntityType(EntityType ent);
+    Set<String> getEntities();
+    void clear();
 }

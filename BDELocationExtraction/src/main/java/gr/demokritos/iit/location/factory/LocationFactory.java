@@ -163,9 +163,9 @@ public class LocationFactory implements ILocFactory {
     }
 
     @Override
-    public ILocationExtractor createDefaultLocationExtractor() throws NoSuchMethodException, ClassNotFoundException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    public ILocationExtractor createDefaultLocationExtractor(String objective) throws NoSuchMethodException, ClassNotFoundException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         ITokenProvider tp = createTokenProvider();
-        return new DefaultLocationExtractor(tp);
+        return new DefaultLocationExtractor(tp,objective);
     }
 
     @Override
@@ -178,11 +178,30 @@ public class LocationFactory implements ILocFactory {
 //        return (ILocationExtractor) class_constructor.newInstance(tp);
         String extractor = conf.getLocationExtractor();
 
-        if(extractor.equals("default")) return createDefaultLocationExtractor();
-        else if(extractor.equals("restful")) return new RESTfulLocationExtractor();
+        if(extractor.equals("default")) return createDefaultLocationExtractor("locations");
+        else if(extractor.equals("restful")) return new RESTfulLocationExtractor("locations");
         else
         {
             System.err.println("Undefined location extractor: [" + extractor + "]");
+            return null;
+        }
+    }
+
+    @Override
+    public ILocationExtractor createEntityExtractor() throws NoSuchMethodException, ClassNotFoundException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+//        ITokenProvider tp = createTokenProvider();
+//        String locExImpl = conf.getLocationExtractor();
+//        Class tpSourceCl = Class.forName(locExImpl);
+//        Constructor class_constructor;
+//        class_constructor = tpSourceCl.getConstructor(ITokenProvider.class);
+//        return (ILocationExtractor) class_constructor.newInstance(tp);
+        String extractor = conf.getEntityExtractor();
+
+        if(extractor.equals("default")) return createDefaultLocationExtractor("entities");
+        else if(extractor.equals("restful")) return new RESTfulLocationExtractor("entities");
+        else
+        {
+            System.err.println("Undefined entity extractor: [" + extractor + "]");
             return null;
         }
     }

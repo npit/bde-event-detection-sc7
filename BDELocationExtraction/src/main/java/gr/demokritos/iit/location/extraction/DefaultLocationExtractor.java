@@ -21,6 +21,7 @@ import gr.demokritos.iit.location.sentsplit.OpenNLPSentenceSplitter;
 import org.apache.commons.lang3.text.WordUtils;
 
 import java.io.IOException;
+import java.security.InvalidParameterException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -30,7 +31,7 @@ import java.util.Set;
  *
  * @author George K. <gkiom@iit.demokritos.gr>
  */
-public class DefaultLocationExtractor implements ILocationExtractor {
+public class DefaultLocationExtractor extends BaseLocationExtractor implements ILocationExtractor {
 
     public boolean configure(ILocConf conf)
     {
@@ -50,9 +51,12 @@ public class DefaultLocationExtractor implements ILocationExtractor {
             System.err.println("Undefined value for extraction objective: " + objective);
             return false;
         }
-
+        this.RequiredResource = LE_RESOURCE_TYPE.TEXT;
         return token_provider.configure(conf);
     }
+
+
+
     /**
      * The interface for token extraction
      */
@@ -62,8 +66,11 @@ public class DefaultLocationExtractor implements ILocationExtractor {
      *
      * @param token_provider the token provider interface
      */
-    public DefaultLocationExtractor(ITokenProvider token_provider) {
+    public DefaultLocationExtractor(ITokenProvider token_provider, String extractorObjective) {
         this.token_provider = token_provider;
+        this.objective = extractorObjective;
+        if(! extractorObjective.equals("locations"))
+            throw new InvalidParameterException("The default location extractor should only be invoked in location mode.");
     }
 
 
@@ -195,12 +202,12 @@ public class DefaultLocationExtractor implements ILocationExtractor {
 
     @Override
     public LE_RESOURCE_TYPE getRequiredResource() {
-        return LE_RESOURCE_TYPE.CLEAN_TEXT;
+        return LE_RESOURCE_TYPE.TEXT;
 
     }
 
     @Override
-    public Set<String> extractLocation(String document) {
+    public Set<String> doExtraction(String document) {
         if (document == null || document.trim().isEmpty()) {
             return Collections.EMPTY_SET;
         }
@@ -221,10 +228,6 @@ public class DefaultLocationExtractor implements ILocationExtractor {
         return toClean;
     }
 
-    @Override
-    public Set<String> extractGenericEntities(String resource) {
-        return new HashSet<String>();
-    }
 
     /**
      *  for testing purposes alone
@@ -234,8 +237,8 @@ public class DefaultLocationExtractor implements ILocationExtractor {
     public static void main(String[] args) throws IOException {
 
         ITokenProvider tp = new EnhancedOpenNLPTokenProvider("../../NewSumV3/NewSumV3/dataEN/Tools/ne_models/", new OpenNLPSentenceSplitter("../../NewSumV3/NewSumV3/dataEN/Tools/en-sent.bin"), 0.8);
-        ILocationExtractor ext = new DefaultLocationExtractor(tp);
-        Set<String> tokenMap = ext.extractLocation("NEW YORK! - After years in the making, \"Deadpool\" hits cinema screens this week and fans of Marvel's anti-hero got to interact with the movie's cast at a special event in New York on Monday.\n"
+        ILocationExtractor ext = new DefaultLocationExtractor(tp,"locations");
+        Set<String> tokenMap = ext.doExtraction("NEW YORK! - After years in the making, \"Deadpool\" hits cinema screens this week and fans of Marvel's anti-hero got to interact with the movie's cast at a special event in New York on Monday.\n"
                 + "\n"
                 + "Ryan Reynolds, Morena Baccarin, Ed Skrein star in the movie, which, with dark humor, violence and offensive language, has an \"R\" rating.\n"
                 + "\n"

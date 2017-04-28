@@ -20,10 +20,13 @@ public interface ILocConf extends IBaseConf {
     String getPolygonExtractionImpl();
 
     String getLocationExtractorConfig();
+    String getEntityExtractorConfig();
 
     boolean shouldUpdateEvents();
 
     String getLocationExtractor();
+    String getEntityExtractor();
+
 
 
     String getTokenProviderImpl();
@@ -48,5 +51,8 @@ public interface ILocConf extends IBaseConf {
 
     String getExtractionObjective();
 
+    boolean shouldExtractLocations(String mode);
+
+    boolean shouldExtractEntities(String mode);
 
 }

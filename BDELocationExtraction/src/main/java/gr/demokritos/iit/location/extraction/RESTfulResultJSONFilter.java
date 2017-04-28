@@ -18,29 +18,29 @@ public class RESTfulResultJSONFilter implements IRestfulFilter{
     private final String delimiter = "/";
     private final String scoreField = "score";
     private final String projectField = "project";
+    private boolean AppendProject;
+    // the filter in the conf file is specified as
+    //  output_filter=category/fieldToGet/threshold
+
+
 
     List<String> Categories;
     Map<String,Double> ThreshPerCategory;
     Map<String,String> FieldPerCategory;
+    Set<String> Entities;
     String Str;
 
-    Map<String,Set<String>> Entities;
-    Map<String,Set<String>> CategoriesPerType;
     boolean Verbosity;
     @Override
-    public boolean initialize(String str, boolean verbose) {
+    public boolean initialize(String str, boolean AppendProject, boolean verbose) {
         Verbosity = verbose;
         this.Str = str;
+        this.AppendProject = AppendProject;
         Categories = new ArrayList<>();
         ThreshPerCategory= new HashMap<>();
         FieldPerCategory = new HashMap<>();
-        CategoriesPerType = new HashMap<>();
-        Entities = new HashMap<>();
-        for(EntityType ent : IRestfulFilter.EntityType.values())
-        {
-            Entities.put(ent.toString(),new HashSet<String>());
-        }
-        // format: category/fieldname/scoreThreshold/type
+        Entities = new HashSet<>();
+        // format: category/fieldname/scoreThreshold
         String [] parts = str.split(",");
         for(String catstr : parts)
         {
@@ -51,21 +51,10 @@ public class RESTfulResultJSONFilter implements IRestfulFilter{
                 String category = catparts[0];
                 double thresh = Double.parseDouble(catparts[2]);
                 String field = catparts[1];
-                String type = catparts[3];
-                if( ! EntityType.supports(type))
-                {
-                    System.err.println("RESTful filter does not support entity : " + type);
-                    System.err.println("Available are : " + Arrays.asList(IRestfulFilter.EntityType.values()));
-
-                    return false;
-                }
 
                 Categories.add(category);
                 FieldPerCategory.put(category,field);
                 ThreshPerCategory.put(category, thresh);
-                if(!CategoriesPerType.containsKey(type)) CategoriesPerType.put(type, new HashSet<String>());
-                CategoriesPerType.put(type, new HashSet<String>());
-                CategoriesPerType.get(type).add(category);
             }
             catch (Exception ex)
             {
@@ -82,10 +71,6 @@ public class RESTfulResultJSONFilter implements IRestfulFilter{
     public void filter(Object input)
     {
 
-        for(String key : Entities.keySet())
-        {
-            Entities.get(key).clear();
-        }
         ArrayList<String> data = (ArrayList<String>) input;
         JSONParser parser = new JSONParser();
 
@@ -115,20 +100,13 @@ public class RESTfulResultJSONFilter implements IRestfulFilter{
                             }
                             if(Verbosity) System.out.println();
                         }
-
-
-
-                        // if location, add to res, else add to entities
-                        if(CategoriesPerType.get(EntityType.GENERIC.toString()).contains(category))
+                        String entity = rawName;
+                        if(AppendProject)
                         {
-                            if(Verbosity) System.out.println("\t >>> Adding " + rawName + " to entities");
                             String projectField = (String) jarrayMember.get(this.projectField);
-                            Entities.get(EntityType.GENERIC.toString()).add(projectField + "," + rawName);
+                            entity =projectField + "," +  entity;
                         }
-                        else if(CategoriesPerType.get(EntityType.LOCATION.toString()).contains(category))
-                        {
-                            if(Verbosity) System.out.println("Adding " + rawName + " to locations");
-                            Entities.get(EntityType.LOCATION.toString()).add(rawName);                        }
+                        Entities.add(entity);
                     }
                 }
 
@@ -145,9 +123,16 @@ public class RESTfulResultJSONFilter implements IRestfulFilter{
         return Str;
     }
 
+
     @Override
-    public Set<String> getEntityType(EntityType ent) {
-        return Entities.get(ent.toString());
+    public Set<String> getEntities() {
+        return this.Entities;
+
+    }
+
+    @Override
+    public void clear() {
+        Entities.clear();
     }
 
 }

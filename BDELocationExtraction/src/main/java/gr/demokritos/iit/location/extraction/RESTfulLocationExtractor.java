@@ -1,20 +1,15 @@
 package gr.demokritos.iit.location.extraction;
 
 import gr.demokritos.iit.base.conf.BaseConfiguration;
-import gr.demokritos.iit.base.conf.IBaseConf;
 import gr.demokritos.iit.base.util.Utils;
 import gr.demokritos.iit.location.factory.conf.ILocConf;
 import gr.demokritos.iit.location.factory.conf.LocConf;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
+import net.didion.jwnl.data.Verb;
 import org.apache.commons.codec.binary.Base64;
-import org.json.simple.parser.ParseException;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.StringReader;
 import java.text.Normalizer;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -24,7 +19,7 @@ import java.util.regex.Pattern;
  */
 
 // implements location extraction by querying an online RESTful service
-public class RESTfulLocationExtractor implements ILocationExtractor {
+public class RESTfulLocationExtractor extends  BaseLocationExtractor implements ILocationExtractor {
 
 
     IRestfulFilter Filter;
@@ -47,24 +42,24 @@ public class RESTfulLocationExtractor implements ILocationExtractor {
     private final int JSON=0;
 
 
-    private final LE_RESOURCE_TYPE[] SupportedModesRequire = {LE_RESOURCE_TYPE.URL, LE_RESOURCE_TYPE.CLEAN_TEXT};
+    private final LE_RESOURCE_TYPE[] SupportedModesRequire = {LE_RESOURCE_TYPE.URL, LE_RESOURCE_TYPE.TEXT};
     private String inputMode, outputMode;
     boolean Verbosity, Debug;
-    public RESTfulLocationExtractor() {
+    public RESTfulLocationExtractor(String extractorObjective) {
         this.urlParamNames = new ArrayList<>();
         this.urlParamValues = new ArrayList<>();
         authEncoded="";
         Verbosity = false;
         Debug = false;
+
         DoExtractLocations=false;
         DoExtractEntities=false;
+
+        if(extractorObjective.equals("locations")) DoExtractLocations=true;
+        if(extractorObjective.equals("entities")) DoExtractEntities=true;
+        this.objective = extractorObjective;
     }
 
-    // return requested type
-    @Override
-    public LE_RESOURCE_TYPE getRequiredResource() {
-        return SupportedModesRequire[Arrays.asList(SupportedArgModes).indexOf(inputMode)];
-    }
 
     // if the text is too large to fit in a URI, split it as many times as needed and perform separate calls
     // split is done around a white space
@@ -123,9 +118,6 @@ public class RESTfulLocationExtractor implements ILocationExtractor {
     {
         String response = null;
 
-//        System.out.println("CONTACT API, url:");
-//        System.out.println(url);
-//        System.out.println();
         if(authEncoded.isEmpty())
             response = Utils.sendGET(url);
         else
@@ -142,8 +134,8 @@ public class RESTfulLocationExtractor implements ILocationExtractor {
         return Utils.encodeParameterizedURL(urlParamNames,urlParamValues);
     }
     @Override
-    public Set<String> extractLocation(String document) {
-
+    public Set<String> doExtraction(String document) {
+        this.Filter.clear();
         Set<String> res;
         if (document == null || document.trim().isEmpty()) {
             return Collections.EMPTY_SET;
@@ -157,6 +149,8 @@ public class RESTfulLocationExtractor implements ILocationExtractor {
 
         try {
             String apiResponse = contactAPI(baseURL + payload, authEncoded);
+            if(Verbosity)
+                System.out.println("\nApi call:\n\t" + baseURL + payload);
             response.add(apiResponse);
         } catch (IOException e) {
             if(e.getMessage().contains("HTTP response code: 414"))
@@ -178,22 +172,23 @@ public class RESTfulLocationExtractor implements ILocationExtractor {
         else
             res = parse(response);
 
-        if(!DoExtractLocations) return new HashSet<>();
         return res;
     }
 
-    @Override
-    public Set<String> extractGenericEntities(String resource) {
-        if(!DoExtractEntities) return new HashSet<>();
-        return Filter.getEntityType(IRestfulFilter.EntityType.GENERIC);
-    }
+//    @Override
+//    public Set<String> extractGenericEntities(String resource) {
+//        if(!DoExtractEntities) return new HashSet<>();
+//        return Filter.getEntityType(IRestfulFilter.EntityType.GENERIC);
+//    }
 
     Set<String> parse(ArrayList<String> data)
     {
         if(outputMode.equals("json"))
         {
             Filter.filter(data);
-            return removeAccents(Filter.getEntityType(IRestfulFilter.EntityType.LOCATION));
+            Set<String> res = Filter.getEntities();
+            if(DoExtractLocations) res = removeAccents(res);
+            return res;
         }
         else
         {
@@ -225,27 +220,15 @@ public class RESTfulLocationExtractor implements ILocationExtractor {
     @Override
     public boolean configure(ILocConf conf) {
 
-        String objective = conf.getExtractionObjective();
-        if(objective.equals("locations"))
+        String confFile = "";
+        if(this.DoExtractEntities) confFile =  conf.getEntityExtractorConfig();
+        if(this.DoExtractLocations) confFile =  conf.getLocationExtractorConfig();
+        if(this.DoExtractLocations && this.DoExtractEntities)
         {
-            DoExtractLocations = true;
-        }
-        else if(objective.equals("entities"))
-        {
-            DoExtractEntities = true;
-        }
-        else if(objective.equals("all"))
-        {
-            DoExtractLocations = true;
-            DoExtractEntities= true;
-        }
-        else
-        {
-            System.err.println("Undefined value for extraction objective: " + objective);
+            System.err.println("Restful extractor was set to multiple roles.");
             return false;
         }
 
-        String confFile = conf.getLocationExtractorConfig();
         if(confFile.isEmpty()) {
             System.err.println("No extractor config. file specified.");
             return false;
@@ -301,7 +284,7 @@ public class RESTfulLocationExtractor implements ILocationExtractor {
             // json out filter. Format : category:fieldToGet
             if(outputMode.equals(SupportedOutputModes[JSON])) {
                 Filter = new RESTfulResultJSONFilter();
-                if( ! Filter.initialize(str,this.Debug) ) throw new Exception("Failed to initialize REST LE JSON filter.");
+                if( ! Filter.initialize(str,DoExtractEntities,this.Debug) ) throw new Exception("Failed to initialize REST LE JSON filter.");
             }
             // name-value
             str = props.getProperty(NAME_VAL, "");
@@ -335,6 +318,9 @@ public class RESTfulLocationExtractor implements ILocationExtractor {
             ex.printStackTrace();
             return false;
         }
+
+        this.RequiredResource = SupportedModesRequire[Arrays.asList(SupportedArgModes).indexOf(inputMode)];
+
         return true;
     }
 
@@ -352,7 +338,7 @@ public class RESTfulLocationExtractor implements ILocationExtractor {
     }
     public static void main(String [] args)
     {
-        RESTfulLocationExtractor pp = new RESTfulLocationExtractor();
+        RESTfulLocationExtractor pp = new RESTfulLocationExtractor("entities");
         ILocConf conf = new LocConf("/home/nik/work/iit/BDE/bde-event-detection-sc7/BDELocationExtraction/res/location.properties");
         pp.configure(conf);
         String test = "Republic of Côte d'Angelo";

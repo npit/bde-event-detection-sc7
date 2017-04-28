@@ -66,22 +66,37 @@ public class LocationExtraction {
             {
                 if(conf.shouldUpdateEvents())
                     repos.setUpdateEvents();
-                // init location extractor
 
-                ILocationExtractor locExtractor = factory.createLocationExtractor();
-                if(locExtractor == null) return;
+                // init  extractors
+                ILocationExtractor entityExtractor = null;
+                ILocationExtractor locExtractor = null;
+                IPolygonExtraction poly = null;
 
-                if(locExtractor.configure(conf) == false) {
-                    System.out.println("Location extractor configuration failed.");
-                    factory.releaseResources();
-                    return;
+                if(conf.shouldExtractLocations(conf.getExtractionObjective())) {
+                    locExtractor = factory.createLocationExtractor();
+                    if (locExtractor == null) return;
+
+                    if (locExtractor.configure(conf) == false) {
+                        System.out.println("Location extractor configuration failed.");
+                        factory.releaseResources();
+                        return;
+                    }
+                    // load polygon extraction client
+                    poly = factory.createPolygonExtractionClient();
                 }
 
-                // load polygon extraction client
-                IPolygonExtraction poly = factory.createPolygonExtractionClient();
+                if(conf.shouldExtractEntities(conf.getExtractionObjective())) {
+                    entityExtractor = factory.createEntityExtractor();
+                    if (entityExtractor.configure(conf) == false) {
+                        System.out.println("Location extractor configuration failed.");
+                        factory.releaseResources();
+                        return;
+                    }
+                }
+
                 // according to mode, execute location extraction schedule.
                 ILocationExtractionScheduler scheduler = new LocationExtractionScheduler(
-                        documentMode, repos, locExtractor, poly, conf
+                        documentMode, repos, locExtractor, entityExtractor, poly, conf
                 );
                 String retrieval_mode = conf.getDocumentRetrievalMode();
                 if(retrieval_mode.equals(LocConf.RETRIEVAL_MODE_SCHEDULED))

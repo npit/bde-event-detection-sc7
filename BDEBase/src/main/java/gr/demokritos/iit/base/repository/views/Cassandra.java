@@ -452,6 +452,45 @@ public class Cassandra {
         }
 
     }
+
+    public static class Entity {
+
+        public enum Tables {
+
+            ENTITY_LOG("entity_extraction_log");
+            private String table_name;
+
+            private Tables(String name) {
+                this.table_name = name;
+            }
+
+            public String getTableName() {
+                return table_name;
+            }
+        }
+
+        public enum TBL_ENTITY_LOG {
+
+            FLD_SCHEDULE_TYPE("schedule_type"),
+            FLD_SCHEDULE_ID("schedule_id"),
+            FLD_START("start"),
+            FLD_END("end"),
+            FLD_LAST_PARSED("last_parsed"),
+            FLD_ITEMS_UPDATED("items_updated");
+            private String column;
+
+            private TBL_ENTITY_LOG(String column) {
+                this.column = column;
+            }
+
+            public String getColumnName() {
+                return column;
+            }
+
+        }
+
+    }
+
     public static class Event {
 
         public enum Tables {

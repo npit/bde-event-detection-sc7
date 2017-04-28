@@ -49,15 +49,15 @@ public interface ILocationRepository extends IBaseRepository {
      * @return the timestamp of the last article parsed in the previous
      * execution
      */
-    LocSched scheduleInitialized(OperationMode mode);
-    LocSched scheduleInitialized(OperationMode mode, java.util.Calendar window);
+    LocSched scheduleInitialized(OperationMode mode, String extractionObjective);
+    LocSched scheduleInitialized(OperationMode mode,String extractionObjective, java.util.Calendar window);
 
     /**
      * register schedule completed
      *
      * @param schedule
      */
-    void scheduleFinalized(LocSched schedule);
+    void scheduleFinalized(LocSched schedule, String extractionObjective);
 
     Map<String, Object> loadArticlePerPlace(String place_literal, String entry_url);
 

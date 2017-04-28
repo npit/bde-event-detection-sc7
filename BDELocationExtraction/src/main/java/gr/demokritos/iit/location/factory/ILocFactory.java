@@ -27,9 +27,10 @@ public interface ILocFactory {
 
     ILocationRepository createLocationCassandraRepository();
 
-    ILocationExtractor createDefaultLocationExtractor() throws NoSuchMethodException, ClassNotFoundException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException;
+    ILocationExtractor createDefaultLocationExtractor(String objective) throws NoSuchMethodException, ClassNotFoundException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException;
 
     ILocationExtractor createLocationExtractor() throws NoSuchMethodException, ClassNotFoundException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException;
+    ILocationExtractor createEntityExtractor() throws NoSuchMethodException, ClassNotFoundException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException;
 
     ITokenProvider createTokenProvider() throws NoSuchMethodException, ClassNotFoundException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException;
 

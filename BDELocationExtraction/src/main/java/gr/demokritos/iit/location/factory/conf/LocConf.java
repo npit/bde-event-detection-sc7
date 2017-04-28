@@ -77,10 +77,20 @@ public class LocConf extends BaseConfiguration implements ILocConf {
 
     @Override
     public String getLocationExtractor() {
-        String res = properties.getProperty("extractor","");
+        String res = properties.getProperty("loc_extractor","");
         if(res.isEmpty()) {
             System.err.println("Location extractor not specified, using default.");
             res = "default";
+        }
+        return res;
+    }
+
+    @Override
+    public String getEntityExtractor() {
+        String res = properties.getProperty("ent_extractor","");
+        if(res.isEmpty()) {
+            System.err.println("Entity extractor not specified, using restful.");
+            res = "restful";
         }
         return res;
     }
@@ -98,7 +108,10 @@ public class LocConf extends BaseConfiguration implements ILocConf {
     }
 
     @Override
-    public String getLocationExtractorConfig(){ return properties.getProperty("extractor_config","");}
+    public String getLocationExtractorConfig(){ return properties.getProperty("loc_extractor_config","");}
+
+    @Override
+    public String getEntityExtractorConfig() { return properties.getProperty("ent_extractor_config","");}
 
     @Override
     public boolean onlyUpdateEvents()
@@ -133,4 +146,15 @@ public class LocConf extends BaseConfiguration implements ILocConf {
     }
 
 
+    @Override
+    public boolean shouldExtractLocations(String mode)
+    {
+        return mode.equals("locations") || mode.equals("all");
+    }
+
+    @Override
+    public boolean shouldExtractEntities(String mode)
+    {
+        return mode.equals("entities") || mode.equals("all");
+    }
 }
