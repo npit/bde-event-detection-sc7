@@ -46,6 +46,7 @@ public class DefaultLocationExtractor extends BaseLocationExtractor implements I
         {
             System.err.println("Warning: The default location extraction does not support entity extraction.");
         }
+        else if(objective.equals("locations")) ;
         else
         {
             System.err.println("Undefined value for extraction objective: " + objective);
