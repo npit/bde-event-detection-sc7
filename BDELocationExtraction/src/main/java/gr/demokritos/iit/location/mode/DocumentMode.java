@@ -4,13 +4,13 @@ package gr.demokritos.iit.location.mode;
  * Choose on which collection we should work upon.
  * @author George K. <gkiom@iit.demokritos.gr>
  */
-public enum OperationMode {
+public enum DocumentMode {
 
     TWEETS("tweets"), ARTICLES("articles"), BOTH("both"), TEXT("text");
 
     private final String mode;
 
-    private OperationMode(String mode) {
+    private DocumentMode(String mode) {
         this.mode = mode;
     }
 

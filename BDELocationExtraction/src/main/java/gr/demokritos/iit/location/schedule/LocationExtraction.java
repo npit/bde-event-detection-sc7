@@ -20,7 +20,7 @@ import gr.demokritos.iit.location.factory.LocationFactory;
 import gr.demokritos.iit.location.factory.conf.ILocConf;
 import gr.demokritos.iit.location.factory.conf.LocConf;
 import gr.demokritos.iit.location.mapping.IPolygonExtraction;
-import gr.demokritos.iit.location.mode.OperationMode;
+import gr.demokritos.iit.location.mode.DocumentMode;
 import gr.demokritos.iit.location.repository.ILocationRepository;
 
 import java.io.IOException;
@@ -51,7 +51,7 @@ public class LocationExtraction {
         try {
             // get operation mode
             String mode = conf.getDocumentMode();
-            OperationMode documentMode = OperationMode.valueOf(mode.toUpperCase());
+            DocumentMode documentMode = DocumentMode.valueOf(mode.toUpperCase());
             // instantiate a new factory
             factory = new LocationFactory(conf);
             // init connection pool to the repository

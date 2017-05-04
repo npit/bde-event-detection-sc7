@@ -18,24 +18,13 @@ import com.datastax.driver.core.*;
 import com.datastax.driver.core.exceptions.InvalidQueryException;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 
-import com.vividsolutions.jts.io.ParseException;
 import gr.demokritos.iit.base.repository.BaseCassandraRepository;
 import gr.demokritos.iit.base.repository.views.Cassandra;
 import gr.demokritos.iit.base.util.Utils;
-import gr.demokritos.iit.location.mode.OperationMode;
+import gr.demokritos.iit.location.mode.DocumentMode;
 import gr.demokritos.iit.location.structs.LocSched;
-import gr.demokritos.iit.location.util.GeometryFormatTransformer;
-import org.omg.CORBA.DynAnyPackage.Invalid;
 
-import java.io.IOException;
 // dependencies of json POST
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.io.DataOutputStream;
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
 
 import java.util.*;
 
@@ -61,13 +50,13 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
         shouldUpdateEvents = true;
     }
     @Override
-    public LocSched scheduleInitialized(OperationMode mode,String extractionObjective)
+    public LocSched scheduleInitialized(DocumentMode mode, String extractionObjective)
     {
         java.util.Calendar window = Calendar.getInstance();
         return scheduleInitialized(mode,extractionObjective,window);
     }
     @Override
-    public LocSched scheduleInitialized(OperationMode mode, String extractionObjective,java.util.Calendar window){
+    public LocSched scheduleInitialized(DocumentMode mode, String extractionObjective, java.util.Calendar window){
 
         if (extractionObjective.equals("locations")) {
             String schedule_type = new StringBuilder().append(SCHEDULE_TYPE_BASE).append("_").append(mode.getMode()).toString();
@@ -1034,7 +1023,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
      */
 
     @Override
-    public void updateEventsWithAllLocationPolygonPairs(OperationMode mode, ArrayList<Map<String,String>> tweet_places_polygons, ArrayList<Long> post_ids,ArrayList<Map<String,String>> article_places_polygons, ArrayList<String> permalinks)
+    public void updateEventsWithAllLocationPolygonPairs(DocumentMode mode, ArrayList<Map<String,String>> tweet_places_polygons, ArrayList<Long> post_ids, ArrayList<Map<String,String>> article_places_polygons, ArrayList<String> permalinks)
     {
         System.out.println("Updating events' location data, mode :" + mode);
         // get all event ids

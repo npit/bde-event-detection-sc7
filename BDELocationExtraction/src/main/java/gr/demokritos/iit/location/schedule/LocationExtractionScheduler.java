@@ -14,12 +14,13 @@
  */
 package gr.demokritos.iit.location.schedule;
 
+import gr.demokritos.iit.base.conf.IBaseConf;
 import gr.demokritos.iit.base.repository.views.Cassandra;
 import gr.demokritos.iit.base.util.Utils;
 import gr.demokritos.iit.location.extraction.ILocationExtractor;
 import gr.demokritos.iit.location.factory.conf.ILocConf;
 import gr.demokritos.iit.location.mapping.IPolygonExtraction;
-import gr.demokritos.iit.location.mode.OperationMode;
+import gr.demokritos.iit.location.mode.DocumentMode;
 import gr.demokritos.iit.location.repository.ILocationRepository;
 import gr.demokritos.iit.location.structs.LocSched;
 
@@ -30,15 +31,15 @@ import java.util.*;
  */
 public class LocationExtractionScheduler implements ILocationExtractionScheduler {
 
-    private final OperationMode opMode;
+    private final DocumentMode opMode;
     private final ILocationRepository repos;
     private final ILocationExtractor locExtractor;
     private final ILocationExtractor entExtractor;
     private final IPolygonExtraction poly;
     private final ILocConf conf;
 
-    public LocationExtractionScheduler(OperationMode opMode, ILocationRepository repo, ILocationExtractor locExt,
-                                       ILocationExtractor entExtractor,IPolygonExtraction pol, ILocConf conf) {
+    public LocationExtractionScheduler(DocumentMode opMode, ILocationRepository repo, ILocationExtractor locExt,
+                                       ILocationExtractor entExtractor, IPolygonExtraction pol, ILocConf conf) {
         this.opMode = opMode;
         this.repos = repo;
         this.locExtractor = locExt;
@@ -64,16 +65,16 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
             return;
         }
         Collection<Map<String, Object>> items =  new ArrayList<>();
-        if(opMode == OperationMode.ARTICLES) {
+        if(opMode == DocumentMode.ARTICLES) {
             for (String id : documentIDs)
                 items.add(repos.loadArticle(id));
         }
-        else if(opMode == OperationMode.ARTICLES)
+        else if(opMode == DocumentMode.ARTICLES)
         {
             for (String id : documentIDs)
                 items.add(repos.loadTweet(Long.parseLong(id)));
         }
-        else if(opMode == OperationMode.TEXT)
+        else if(opMode == DocumentMode.TEXT)
         {
             for (String id : documentIDs)
             {
@@ -109,11 +110,11 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
     }
     @Override
     public void executeSchedule() {
-        if (opMode == OperationMode.BOTH) {
-            OperationMode[] opModeVals = OperationMode.values();
+        if (opMode == DocumentMode.BOTH) {
+            DocumentMode[] opModeVals = DocumentMode.values();
             // iterate on the two first modes (tweets, articles)
             for (int i = 0; i < opModeVals.length - 1; i++) {
-                OperationMode m = opModeVals[i];
+                DocumentMode m = opModeVals[i];
                 // execute schedule for current mode
                 executeSchedule(m);
 
@@ -126,7 +127,7 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
         }
     }
 
-    private void executeSchedule(OperationMode mode) {
+    private void executeSchedule(DocumentMode mode) {
 
 
         System.out.println("Executing schedule [" + mode.toString() + "]");
@@ -191,7 +192,7 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
 
     }
 
-    private ExecRes performExtraction(OperationMode mode, String extractionObjective, Collection<Map<String, Object>> items, Map<String,Map<String,String>> ids_geometries, Map<String,Set<String>> ids_entities) {
+    private ExecRes performExtraction(DocumentMode mode, String extractionObjective, Collection<Map<String, Object>> items, Map<String,Map<String,String>> ids_geometries, Map<String,Set<String>> ids_entities) {
 
         // keep most recent published for reference
         long max_published = Long.MIN_VALUE;
@@ -278,7 +279,7 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
 
 
                     if(conf.shouldExtractLocations(extractionObjective)) {
-                        if(!locExtractor.canHandleResource(ILocationExtractor.LE_RESOURCE_TYPE.TEXT)) continue;
+                        if(!locExtractor.canHandleResource(ILocationExtractor.LE_RESOURCE_TYPE.TEXT)) break;
                         Set<String> locationsFound = locExtractor.doExtraction(clean_tweet);
                         if (!locationsFound.isEmpty()) {
                             Map<String, String> places_polygons = poly.extractPolygon(locationsFound);
@@ -296,7 +297,7 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                         }
                     }
                     if(conf.shouldExtractEntities(extractionObjective)) {
-                        if(!entExtractor.canHandleResource(ILocationExtractor.LE_RESOURCE_TYPE.TEXT)) continue;
+                        if(!entExtractor.canHandleResource(ILocationExtractor.LE_RESOURCE_TYPE.TEXT)) break;
                         Set<String> entitiesFound = entExtractor.doExtraction(clean_tweet);
                         ids_entities.put(post_id_str, new HashSet(entitiesFound));
                         if(! entitiesFound.isEmpty()) System.out.print(" \t" +entitiesFound);
@@ -314,10 +315,13 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                 for (Map<String, Object> item : items) {
                     String text = (String) item.get("text");
                     String textid=text.substring(0,30);
-                    System.out.print("\tText " + ++count +  "/" +  items.size() + " : "  + textid + "[...] ");
+                    String textprint = "";
+                    if(conf.hasModifier(IBaseConf.Modifiers.VERBOSE.toString())) textprint=text;
+                    else textprint = textid + "[...] ";
+                    System.out.print("\tText " + ++count +  "/" +  items.size() + " : "  + textprint);
 
                     if(conf.shouldExtractLocations(extractionObjective)) {
-                        if(!locExtractor.canHandleResource(ILocationExtractor.LE_RESOURCE_TYPE.TEXT)) continue;
+                        if(!locExtractor.canHandleResource(ILocationExtractor.LE_RESOURCE_TYPE.TEXT)) break;
                         Set<String> locationsFound = locExtractor.doExtraction(text);
                         if (!locationsFound.isEmpty()) {
                             Map<String, String> places_polygons = poly.extractPolygon(locationsFound);
@@ -335,7 +339,7 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                         }
                     }
                     if(conf.shouldExtractEntities(extractionObjective)) {
-                        if(!entExtractor.canHandleResource(ILocationExtractor.LE_RESOURCE_TYPE.TEXT)) continue;
+                        if(!entExtractor.canHandleResource(ILocationExtractor.LE_RESOURCE_TYPE.TEXT)) break;
                         Set<String> entitiesFound = entExtractor.doExtraction(text);
                         ids_entities.put(textid, new HashSet(entitiesFound));
                         if(! entitiesFound.isEmpty()) System.out.print(" \t" +entitiesFound);
@@ -352,7 +356,7 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
         return new ExecRes(max_published, i);
     }
 
-    private void insertLocationData(OperationMode mode,Map<String,Map<String,String>> ids_geometries_entities)
+    private void insertLocationData(DocumentMode mode, Map<String,Map<String,String>> ids_geometries_entities)
     {
         switch (mode) {
             case ARTICLES:
@@ -366,7 +370,7 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
         }
 
     }
-    private void insertEntityData(OperationMode mode,Map<String,Set<String>> ids_entities)
+    private void insertEntityData(DocumentMode mode, Map<String,Set<String>> ids_entities)
     {
         switch (mode) {
             case ARTICLES:

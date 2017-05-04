@@ -10,6 +10,7 @@ import org.apache.commons.codec.binary.Base64;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.text.Normalizer;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -69,7 +70,8 @@ public class RESTfulLocationExtractor extends  BaseLocationExtractor implements 
         int numChunks = 2;
         while(true)
         {
-            //System.out.println("\tSpliting to " + numChunks + " parts.");
+            if(Verbosity)
+                System.out.println("\tSpliting to " + numChunks + " parts.");
             // split text
             ArrayList<String> parts = new ArrayList<>();
 
@@ -103,12 +105,24 @@ public class RESTfulLocationExtractor extends  BaseLocationExtractor implements 
                 }
                 return res;
             } catch (IOException e) {
-                if(e.getMessage().contains("HTTP response code: 414"))
+                try {
+                    if (e.getMessage().contains("HTTP response code: 414")) {
+                        ++numChunks;
+                        continue;
+                    }
+                    else
+                    {
+                        System.err.println(e.getMessage());
+                        throw new Exception("Error response from rest api");
+                    }
+                }
+                catch (Exception ex)
                 {
-                    ++numChunks;
-                    continue;
+                    System.err.println(ex.getMessage());
+                    res =  null;
                 }
             }
+
 
             return res;
         }
@@ -118,6 +132,8 @@ public class RESTfulLocationExtractor extends  BaseLocationExtractor implements 
     {
         String response = null;
 
+        if(Verbosity)
+            System.out.println("url: " + url);
         if(authEncoded.isEmpty())
             response = Utils.sendGET(url);
         else
@@ -167,7 +183,7 @@ public class RESTfulLocationExtractor extends  BaseLocationExtractor implements 
         }
         if(response == null)
             res =  Collections.EMPTY_SET;
-        if(response.isEmpty())
+        else if(response.isEmpty())
             res = Collections.EMPTY_SET;
         else
             res = parse(response);

@@ -4,7 +4,7 @@ import gr.demokritos.iit.location.factory.ILocFactory;
 import gr.demokritos.iit.location.factory.LocationFactory;
 import gr.demokritos.iit.location.factory.conf.ILocConf;
 import gr.demokritos.iit.location.factory.conf.LocConf;
-import gr.demokritos.iit.location.mode.OperationMode;
+import gr.demokritos.iit.location.mode.DocumentMode;
 import gr.demokritos.iit.location.repository.ILocationRepository;
 
 import java.util.logging.Level;
@@ -26,7 +26,7 @@ public class hotfix {
         try {
             // get operation mode
             String mode = conf.getDocumentMode();
-            OperationMode operationMode = OperationMode.valueOf(mode.toUpperCase());
+            DocumentMode operationMode = DocumentMode.valueOf(mode.toUpperCase());
             // instantiate a new factory
             factory = new LocationFactory(conf);
             // init connection pool to the repository
