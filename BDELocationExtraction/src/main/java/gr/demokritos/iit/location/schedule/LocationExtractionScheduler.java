@@ -98,15 +98,15 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
         if(conf.shouldExtractLocations(conf.getExtractionObjective()))
         {
             performExtraction(opMode,"locations", items, id_geometries_map,ids_entities);
-            insertLocationData(opMode, id_geometries_map);
+            if(opMode != OperationMode.TEXT) insertLocationData(opMode, id_geometries_map);
 
         }
         else if(conf.shouldExtractEntities(conf.getExtractionObjective()))
         {
             performExtraction(opMode, "entities", items,id_geometries_map,ids_entities);
-            insertEntityData(opMode, ids_entities);
+            if(opMode != OperationMode.TEXT) insertEntityData(opMode, ids_entities);
         }
-        System.out.println("Targeted location extraction completed.");
+        System.out.println("\nTargeted location extraction completed.");
     }
     @Override
     public void executeSchedule() {
