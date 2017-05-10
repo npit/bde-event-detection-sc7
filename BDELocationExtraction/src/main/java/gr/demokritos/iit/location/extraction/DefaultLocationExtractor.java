@@ -22,10 +22,7 @@ import org.apache.commons.lang3.text.WordUtils;
 
 import java.io.IOException;
 import java.security.InvalidParameterException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 /**
  *
@@ -75,8 +72,8 @@ public class DefaultLocationExtractor extends BaseLocationExtractor implements I
     }
 
 
-    private Set<String> clean(Set<String> s) {
-        Set<String> ret = new HashSet();
+    private List<String> clean(List<String> s) {
+        List<String> ret = new ArrayList();
         Iterator<String> iter = s.iterator();
         while (iter.hasNext()) {
             String token = iter.next().trim();
@@ -97,11 +94,11 @@ public class DefaultLocationExtractor extends BaseLocationExtractor implements I
         return removeNameEntitiesThatAreSimilar(ret);
     }
 
-    private Set<String> removeNameEntitiesThatAreSimilar(Set<String> s) {
+    private List<String> removeNameEntitiesThatAreSimilar(List<String> s) {
         if (s.size() <= 1) {
             return s;
         }
-        Set<String> ret = new HashSet();
+        List<String> ret = new ArrayList<>();
         String[] allEntities = s.toArray(new String[s.size()]);
         Boolean[] remove = new Boolean[s.size()];
         for (int i = 0; i < allEntities.length; i++) {
@@ -128,7 +125,7 @@ public class DefaultLocationExtractor extends BaseLocationExtractor implements I
             }
         }
         // force capitalization
-        Set<String> res = new HashSet();
+        List<String> res = new ArrayList<>();
         for (String each : ret) {
             res.add(WordUtils.capitalizeFully(each));
         }
@@ -208,20 +205,20 @@ public class DefaultLocationExtractor extends BaseLocationExtractor implements I
     }
 
     @Override
-    public Set<String> doExtraction(String document) {
+    public List<String> doExtraction(String document) {
         if (document == null || document.trim().isEmpty()) {
-            return Collections.EMPTY_SET;
+            return Collections.EMPTY_LIST;
         }
-        Set<String> res =  token_provider.getLocationTokens(document);
+        List<String> res =  new ArrayList<String>(token_provider.getLocationTokens(document));
         if(res.isEmpty()) return res;
 
         // only post-process tokens found by the NLP model, not the ones explicitly supplied by the user
         Set<String>  allImmutables = token_provider.getImmutableNames();
 
-        Set<String> toClean = new HashSet<>(res);
+        List<String> toClean = new ArrayList<>(res);
         toClean.removeAll(allImmutables);
 
-        Set<String> immutables = res;
+        List<String> immutables = res;
         immutables.retainAll(allImmutables);
 
         toClean = clean(toClean);
@@ -239,23 +236,23 @@ public class DefaultLocationExtractor extends BaseLocationExtractor implements I
 
         ITokenProvider tp = new EnhancedOpenNLPTokenProvider("../../NewSumV3/NewSumV3/dataEN/Tools/ne_models/", new OpenNLPSentenceSplitter("../../NewSumV3/NewSumV3/dataEN/Tools/en-sent.bin"), 0.8);
         ILocationExtractor ext = new DefaultLocationExtractor(tp,"locations");
-        Set<String> tokenMap = ext.doExtraction("NEW YORK! - After years in the making, \"Deadpool\" hits cinema screens this week and fans of Marvel's anti-hero got to interact with the movie's cast at a special event in New York on Monday.\n"
-                + "\n"
-                + "Ryan Reynolds, Morena Baccarin, Ed Skrein star in the movie, which, with dark humor, violence and offensive language, has an \"R\" rating.\n"
-                + "\n"
-                + "\"I just felt like it was a character in a comic book universe that could occupy a space that no one else could and no one else could ever in the future as well,\" Reynolds, who plays Deadpool, said.\n"
-                + "\n"
-                + "\"So I was always really excited about it. He's able to operate in an 'X-Men' universe in a way which other characters could never do that. So I just liked this idea of a protagonist that's morally flexible.\"\n"
-                + "\n"
-                + "According to the movie's synopsis, the film tells the story of former Special Forces agent turned mercenary Wade Wilson, who undergoes a rogue experiment to treat his cancer.\n"
-                + "\n"
-                + "The operation leaves him scarred but also with powers that allow him to heal quickly and Wilson, soon Deadpool, seeks revenge on the man who carried out the experiment.\n"
-                + "\n"
-                + "\"There is a lot of Deadpool in me. I have a much better editing system in my mind then Deadpool does,\" Reynolds said.\n"
-                + "\n"
-                + "The movie comes with a legion of fans -- a surprise for Tony Award winner Leslie Uggams who plays \"Blind Al\".\n"
-                + "\n"
-                + "\"This is awesome. This is a whole world that I didn't know existed,\" she said. \"And my son LESLIE UGGAMS... He's a Deadpool fan, so for him, no matter what other stuff I did, this is the one.\"");
-        System.out.println(tokenMap.toString());
+//        Set<String> tokenMap = ext.doExtraction("NEW YORK! - After years in the making, \"Deadpool\" hits cinema screens this week and fans of Marvel's anti-hero got to interact with the movie's cast at a special event in New York on Monday.\n"
+//                + "\n"
+//                + "Ryan Reynolds, Morena Baccarin, Ed Skrein star in the movie, which, with dark humor, violence and offensive language, has an \"R\" rating.\n"
+//                + "\n"
+//                + "\"I just felt like it was a character in a comic book universe that could occupy a space that no one else could and no one else could ever in the future as well,\" Reynolds, who plays Deadpool, said.\n"
+//                + "\n"
+//                + "\"So I was always really excited about it. He's able to operate in an 'X-Men' universe in a way which other characters could never do that. So I just liked this idea of a protagonist that's morally flexible.\"\n"
+//                + "\n"
+//                + "According to the movie's synopsis, the film tells the story of former Special Forces agent turned mercenary Wade Wilson, who undergoes a rogue experiment to treat his cancer.\n"
+//                + "\n"
+//                + "The operation leaves him scarred but also with powers that allow him to heal quickly and Wilson, soon Deadpool, seeks revenge on the man who carried out the experiment.\n"
+//                + "\n"
+//                + "\"There is a lot of Deadpool in me. I have a much better editing system in my mind then Deadpool does,\" Reynolds said.\n"
+//                + "\n"
+//                + "The movie comes with a legion of fans -- a surprise for Tony Award winner Leslie Uggams who plays \"Blind Al\".\n"
+//                + "\n"
+//                + "\"This is awesome. This is a whole world that I didn't know existed,\" she said. \"And my son LESLIE UGGAMS... He's a Deadpool fan, so for him, no matter what other stuff I did, this is the one.\"");
+//        System.out.println(tokenMap.toString());
     }
 }

@@ -98,13 +98,13 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
         if(conf.shouldExtractLocations(conf.getExtractionObjective()))
         {
             performExtraction(opMode,"locations", items, id_geometries_map,ids_entities);
-            if(opMode != OperationMode.TEXT) insertLocationData(opMode, id_geometries_map);
+            if(opMode != DocumentMode.TEXT) insertLocationData(opMode, id_geometries_map);
 
         }
         else if(conf.shouldExtractEntities(conf.getExtractionObjective()))
         {
             performExtraction(opMode, "entities", items,id_geometries_map,ids_entities);
-            if(opMode != OperationMode.TEXT) insertEntityData(opMode, ids_entities);
+            if(opMode != DocumentMode.TEXT) insertEntityData(opMode, ids_entities);
         }
         System.out.println("\nTargeted location extraction completed.");
     }
@@ -225,7 +225,7 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
 
                     if(conf.shouldExtractLocations(extractionObjective)) {
                         RequiredResource = locExtractor.ChooseRequiredResource(permalink, clean_text);
-                        Set<String> locationsFound = locExtractor.doExtraction(RequiredResource);
+                        List<String> locationsFound = locExtractor.doExtraction(RequiredResource);
                         if (!locationsFound.isEmpty()) {
                             Map<String, String> places_polygons = poly.extractPolygon(locationsFound);
 
@@ -247,7 +247,7 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                     }
                     if(conf.shouldExtractEntities(extractionObjective)) {
                         RequiredResource = entExtractor.ChooseRequiredResource(permalink, clean_text);
-                        Set<String> entitiesFound = entExtractor.doExtraction(RequiredResource);
+                        List<String> entitiesFound = entExtractor.doExtraction(RequiredResource);
                         ids_entities.put(permalink, new HashSet(entitiesFound));
                         if(! entitiesFound.isEmpty()) System.out.print(" \t" +entitiesFound);
                     }
@@ -280,7 +280,7 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
 
                     if(conf.shouldExtractLocations(extractionObjective)) {
                         if(!locExtractor.canHandleResource(ILocationExtractor.LE_RESOURCE_TYPE.TEXT)) break;
-                        Set<String> locationsFound = locExtractor.doExtraction(clean_tweet);
+                        List<String> locationsFound = locExtractor.doExtraction(clean_tweet);
                         if (!locationsFound.isEmpty()) {
                             Map<String, String> places_polygons = poly.extractPolygon(locationsFound);
                             places_polygons = poly.postProcessGeometries(places_polygons);
@@ -298,7 +298,7 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                     }
                     if(conf.shouldExtractEntities(extractionObjective)) {
                         if(!entExtractor.canHandleResource(ILocationExtractor.LE_RESOURCE_TYPE.TEXT)) break;
-                        Set<String> entitiesFound = entExtractor.doExtraction(clean_tweet);
+                        List<String> entitiesFound = entExtractor.doExtraction(clean_tweet);
                         ids_entities.put(post_id_str, new HashSet(entitiesFound));
                         if(! entitiesFound.isEmpty()) System.out.print(" \t" +entitiesFound);
                     }
@@ -314,7 +314,7 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                 if(conf.shouldExtractLocations(extractionObjective)) poly.init();
                 for (Map<String, Object> item : items) {
                     String text = (String) item.get("text");
-                    String textid=text.substring(0,30);
+                    String textid=text.substring(0,(text.length() > 30) ? 30 : text.length());
                     String textprint = "";
                     if(conf.hasModifier(IBaseConf.Modifiers.VERBOSE.toString())) textprint=text;
                     else textprint = textid + "[...] ";
@@ -322,7 +322,7 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
 
                     if(conf.shouldExtractLocations(extractionObjective)) {
                         if(!locExtractor.canHandleResource(ILocationExtractor.LE_RESOURCE_TYPE.TEXT)) break;
-                        Set<String> locationsFound = locExtractor.doExtraction(text);
+                        List<String> locationsFound = locExtractor.doExtraction(text);
                         if (!locationsFound.isEmpty()) {
                             Map<String, String> places_polygons = poly.extractPolygon(locationsFound);
                             places_polygons = poly.postProcessGeometries(places_polygons);
@@ -340,9 +340,10 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                     }
                     if(conf.shouldExtractEntities(extractionObjective)) {
                         if(!entExtractor.canHandleResource(ILocationExtractor.LE_RESOURCE_TYPE.TEXT)) break;
-                        Set<String> entitiesFound = entExtractor.doExtraction(text);
+                        List<String> entitiesFound = entExtractor.doExtraction(text);
                         ids_entities.put(textid, new HashSet(entitiesFound));
                         if(! entitiesFound.isEmpty()) System.out.print(" \t" +entitiesFound);
+                        System.out.println("");
                     }
 
 

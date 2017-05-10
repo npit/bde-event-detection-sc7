@@ -150,11 +150,11 @@ public class RESTfulLocationExtractor extends  BaseLocationExtractor implements 
         return Utils.encodeParameterizedURL(urlParamNames,urlParamValues);
     }
     @Override
-    public Set<String> doExtraction(String document) {
+    public List<String> doExtraction(String document) {
         this.Filter.clear();
-        Set<String> res;
+        List<String> res;
         if (document == null || document.trim().isEmpty()) {
-            return Collections.EMPTY_SET;
+            return Collections.EMPTY_LIST;
         }
 
         // set article url
@@ -182,9 +182,9 @@ public class RESTfulLocationExtractor extends  BaseLocationExtractor implements 
             }
         }
         if(response == null)
-            res =  Collections.EMPTY_SET;
+            res =  Collections.EMPTY_LIST;
         else if(response.isEmpty())
-            res = Collections.EMPTY_SET;
+            res = Collections.EMPTY_LIST;
         else
             res = parse(response);
 
@@ -197,12 +197,12 @@ public class RESTfulLocationExtractor extends  BaseLocationExtractor implements 
 //        return Filter.getEntityType(IRestfulFilter.EntityType.GENERIC);
 //    }
 
-    Set<String> parse(ArrayList<String> data)
+    List<String> parse(ArrayList<String> data)
     {
         if(outputMode.equals("json"))
         {
             Filter.filter(data);
-            Set<String> res = Filter.getEntities();
+            List<String> res = Filter.getEntities();
             if(DoExtractLocations) res = removeAccents(res);
             return res;
         }
@@ -214,9 +214,9 @@ public class RESTfulLocationExtractor extends  BaseLocationExtractor implements 
         }
 
     }
-    private static Set<String> removeAccents(Set<String> setstr)
+    private static List<String> removeAccents(List<String> setstr)
     {
-        Set<String> res = new HashSet<>();
+        List<String> res = new ArrayList<>();
         for(String s : setstr)
         {
             res.add(removeAccents(s));

@@ -16,6 +16,7 @@ package gr.demokritos.iit.location.extraction;
 
 import gr.demokritos.iit.location.factory.conf.ILocConf;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -51,7 +52,7 @@ public interface ILocationExtractor {
             return name;
         }
     }
-    Set<String> doExtraction(String resource);
+    List<String> doExtraction(String resource);
     boolean configure(ILocConf conf);
     String ChooseRequiredResource(String res1, String res2);
     boolean canHandleResource(ILocationExtractor.LE_RESOURCE_TYPE res);

@@ -1,5 +1,6 @@
 package gr.demokritos.iit.location.extraction;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -29,6 +30,6 @@ public interface IRestfulFilter {
     boolean initialize(String str, boolean AppendProject, boolean verbose);
     void filter(Object input);
     String toString();
-    Set<String> getEntities();
+    List<String> getEntities();
     void clear();
 }

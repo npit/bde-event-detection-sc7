@@ -27,7 +27,7 @@ public class RESTfulResultJSONFilter implements IRestfulFilter{
     List<String> Categories;
     Map<String,Double> ThreshPerCategory;
     Map<String,String> FieldPerCategory;
-    Set<String> Entities;
+    TreeMap<String,Double> Entities;
     String Str;
 
     boolean Verbosity;
@@ -39,7 +39,7 @@ public class RESTfulResultJSONFilter implements IRestfulFilter{
         Categories = new ArrayList<>();
         ThreshPerCategory= new HashMap<>();
         FieldPerCategory = new HashMap<>();
-        Entities = new HashSet<>();
+        Entities = new TreeMap<>();
         // format: category/fieldname/scoreThreshold
         String [] parts = str.split(",");
         for(String catstr : parts)
@@ -89,9 +89,10 @@ public class RESTfulResultJSONFilter implements IRestfulFilter{
 
                         if(Verbosity) System.out.print("\t" + category + " - " + rawName);
                         // apply the score filter
+                        double score = -1.0d;
                         if(jarrayMember.containsKey(scoreField))
                         {
-                            double score = (Double)jarrayMember.get(scoreField);
+                            score = (Double)jarrayMember.get(scoreField);
                             if(Verbosity) System.out.print(" - " + score);
                             if(score < this.ThreshPerCategory.get(category))
                             {
@@ -106,7 +107,7 @@ public class RESTfulResultJSONFilter implements IRestfulFilter{
                             String projectField = (String) jarrayMember.get(this.projectField);
                             entity =projectField + "," +  entity;
                         }
-                        Entities.add(entity);
+                        Entities.put(entity, score);
                     }
                 }
 
@@ -125,8 +126,33 @@ public class RESTfulResultJSONFilter implements IRestfulFilter{
 
 
     @Override
-    public Set<String> getEntities() {
-        return this.Entities;
+    public List<String> getEntities() {
+        // sort the entities by score value
+
+        ArrayList<String> keys =  new ArrayList<>();
+        ArrayList<String> entities = new ArrayList<>();
+        ArrayList<Double> scores = new ArrayList<>();
+        for(String e : Entities.keySet())
+        {
+            keys.add(e);
+            scores.add(Entities.get(e));
+        }
+        Collections.sort(scores);
+        Collections.reverse(scores);
+        for(int i=0;i<scores.size();++i)
+        {
+            for(String ent : keys)
+            {
+                if(Entities.get(ent) == scores.get(i))
+                {
+                    keys.remove(ent);
+                    entities.add(ent);
+                    break;
+                }
+            }
+        }
+        // return them
+        return entities;
 
     }
 
