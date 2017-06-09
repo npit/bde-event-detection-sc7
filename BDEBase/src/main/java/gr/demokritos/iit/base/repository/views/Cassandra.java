@@ -419,7 +419,7 @@ public class Cassandra {
 
         public enum Tables {
 
-            LOCATION_LOG("location_extraction_log");
+            LOCATION_LOG("location_extraction_log"), LOCATION_IMAGES("location_images");
             private String table_name;
 
             private Tables(String name) {
@@ -442,6 +442,24 @@ public class Cassandra {
             private String column;
 
             private TBL_LOCATION_LOG(String column) {
+                this.column = column;
+            }
+
+            public String getColumnName() {
+                return column;
+            }
+
+        }
+
+        public enum TBL_LOCATION_IMAGES {
+
+            FLD_PLACE("place"),
+            FLD_LINKS("links"),
+            FLD_SOURCE("source");
+
+            private String column;
+
+            private TBL_LOCATION_IMAGES(String column) {
                 this.column = column;
             }
 

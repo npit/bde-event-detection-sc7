@@ -17,8 +17,10 @@ package gr.demokritos.iit.location.repository;
 import gr.demokritos.iit.base.repository.IBaseRepository;
 import gr.demokritos.iit.location.mode.DocumentMode;
 import gr.demokritos.iit.location.structs.LocSched;
+import gr.demokritos.iit.location.util.Pair;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -76,4 +78,8 @@ public interface ILocationRepository extends IBaseRepository {
 
     // -----------------------------------------------
     void setUpdateEvents();
+
+    Map<String,String> loadGeometries();
+    void insertImageLinks(Map<String,Map<String,String>> linksPerPlace, String source);
+
 }

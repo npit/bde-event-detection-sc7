@@ -22,5 +22,6 @@ public interface ILocationExtractionScheduler {
 
     void executeSchedule();
     void executeTargetedUpdate();
+    void processMetadata();
 
 }

@@ -99,7 +99,10 @@ public class LocationExtraction {
                         documentMode, repos, locExtractor, entityExtractor, poly, conf
                 );
                 String retrieval_mode = conf.getDocumentRetrievalMode();
-                if(retrieval_mode.equals(LocConf.RETRIEVAL_MODE_SCHEDULED))
+                String document_mode = conf.getDocumentMode();
+                if(document_mode.equals(DocumentMode.LOCATIONS.toString()))
+                    scheduler.processMetadata();
+                else if(retrieval_mode.equals(LocConf.RETRIEVAL_MODE_SCHEDULED))
                     scheduler.executeSchedule();
                 else if(retrieval_mode.equals(LocConf.RETRIEVAL_MODE_EXPLICIT))
                     scheduler.executeTargetedUpdate();

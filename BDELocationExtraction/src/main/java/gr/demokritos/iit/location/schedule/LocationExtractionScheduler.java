@@ -14,6 +14,7 @@
  */
 package gr.demokritos.iit.location.schedule;
 
+import com.vividsolutions.jts.io.ParseException;
 import gr.demokritos.iit.base.conf.IBaseConf;
 import gr.demokritos.iit.base.repository.views.Cassandra;
 import gr.demokritos.iit.base.util.Utils;
@@ -23,7 +24,13 @@ import gr.demokritos.iit.location.mapping.IPolygonExtraction;
 import gr.demokritos.iit.location.mode.DocumentMode;
 import gr.demokritos.iit.location.repository.ILocationRepository;
 import gr.demokritos.iit.location.structs.LocSched;
+import gr.demokritos.iit.location.util.GeometryFormatTransformer;
+import gr.demokritos.iit.location.util.Pair;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.*;
 
 /**
@@ -48,6 +55,75 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
         this.conf = conf;
     }
 
+    @Override
+    public void processMetadata()
+    {
+        if(conf.getDocumentMode().equals(DocumentMode.LOCATIONS.toString()))
+        {
+            // process location geometries
+            String source = conf.getMetadataProviderName();
+            Map<String, String> items;
+            items = repos.loadGeometries();
+            Map<String,Map<String,String>> links_per_place = new HashMap<>();
+            for(String place : items.keySet()) {
+                String geom = items.get(place);
+                String centroid = "";
+                try {
+                    centroid = GeometryFormatTransformer.GetWKTPolygonCenter(geom);
+                } catch (ParseException e) {
+                    System.err.println("Cannot parse geometry centroid:" + geom);
+                    continue;
+                }
+                // process
+                List<String> results = entExtractor.doExtraction(Arrays.asList(centroid.split(",")));
+                Map<String, String> links_titles = null;
+                try {
+                    links_titles = processEntities(results);
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                    return;
+                }
+                links_per_place.put(place,links_titles);
+            }
+            // insert results
+            repos.insertImageLinks(links_per_place, source);
+        }
+
+
+    }
+
+    Map<String,String> processEntities(List<String> ents) throws IOException, org.json.simple.parser.ParseException {
+        Map<String,String> res = new HashMap<>();
+        if(conf.getMetadataProviderName().equals("flickr"))
+        {
+            for(String datum : ents)
+            {
+                JSONParser parser = new JSONParser();
+                JSONObject obj = (JSONObject) parser.parse(new StringReader(datum));
+
+                /* possible formats:
+                    https://farm{farm-id}.staticflickr.com/{server-id}/{id}_{secret}.jpg
+                    https://farm{farm-id}.staticflickr.com/{server-id}/{id}_{secret}_[mstzb].jpg
+                    https://farm{farm-id}.staticflickr.com/{server-id}/{id}_{o-secret}_o.(jpg|gif|png)
+                 */
+                long farm = (long)obj.get("farm");
+                String server = (String)obj.get("server");
+                String id = (String)obj.get("id");
+                String secret = (String)obj.get("secret");
+                String title = (String) obj.get("title");
+                String link = String.format("https://farm%d.staticflickr.com/%s/%s_%s.jpg",
+                        farm, server, id, secret);
+//                System.out.println(link);
+                res.put(link, title);
+                if(res.size() >= conf.getMaxResultsPerItem())
+                    break;
+            }
+        }
+
+        return res;
+    }
     @Override
     public void executeTargetedUpdate()
     {

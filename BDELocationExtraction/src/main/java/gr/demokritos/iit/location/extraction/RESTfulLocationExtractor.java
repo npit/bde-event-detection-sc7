@@ -4,13 +4,11 @@ import gr.demokritos.iit.base.conf.BaseConfiguration;
 import gr.demokritos.iit.base.util.Utils;
 import gr.demokritos.iit.location.factory.conf.ILocConf;
 import gr.demokritos.iit.location.factory.conf.LocConf;
-import net.didion.jwnl.data.Verb;
 import org.apache.commons.codec.binary.Base64;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.text.Normalizer;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -38,14 +36,16 @@ public class RESTfulLocationExtractor extends  BaseLocationExtractor implements 
     private ArrayList<String> urlParamNames, urlParamValues;    // param. names and values of the request
     String baseURL, authEncoded;    // base url of the request, encoded authentication info
     // you can run the extractor with the below main parameters for each article / tweet
-    private final String[] SupportedArgModes = {"url", "text"};
+
     private final String[] SupportedOutputModes = {"json"};
     private final int JSON=0;
 
 
-    private final LE_RESOURCE_TYPE[] SupportedModesRequire = {LE_RESOURCE_TYPE.URL, LE_RESOURCE_TYPE.TEXT};
+    private final LE_RESOURCE_TYPE[] SupportedArgModes = LE_RESOURCE_TYPE.values();
+    private final String[] SupportedArgModesStr = new String[SupportedArgModes.length];
     private String inputMode, outputMode;
     boolean Verbosity, Debug;
+    int NumberOfArgumentFields = 0;
     public RESTfulLocationExtractor(String extractorObjective) {
         this.urlParamNames = new ArrayList<>();
         this.urlParamValues = new ArrayList<>();
@@ -144,21 +144,50 @@ public class RESTfulLocationExtractor extends  BaseLocationExtractor implements 
 
     }
 
-    private String formPayload(String articleArgument)
+    private String formPayload(List<String> args)
     {
-        urlParamValues.set(0,articleArgument);
+        int paramsIdx = 0, argsIdx = 0;
+        for(;paramsIdx<urlParamNames.size();++paramsIdx) {
+            if (urlParamValues.get(paramsIdx).isEmpty())
+            {
+                urlParamValues.set(paramsIdx, args.get(argsIdx++));
+            }
+        }
+        if(argsIdx != args.size())
+        {
+            // an arg was not assigned!
+            System.err.println(String.format("ERROR : Only %d out of %d arguments were assigned in the payload",argsIdx, paramsIdx ));
+            System.err.println("Arguments: " + args);
+        }
+        return Utils.encodeParameterizedURL(urlParamNames,urlParamValues);
+    }
+    private String formPayload(String arg)
+    {
+        urlParamValues.set(0,arg);
         return Utils.encodeParameterizedURL(urlParamNames,urlParamValues);
     }
     @Override
-    public List<String> doExtraction(String document) {
+    public List<String> doExtraction(Object dataObject) {
         this.Filter.clear();
         List<String> res;
-        if (document == null || document.trim().isEmpty()) {
-            return Collections.EMPTY_LIST;
+
+
+        String payload = "";
+        // set arguments
+        if(NumberOfArgumentFields > 1)
+        {
+            List<String> dataarr = (List<String>) dataObject;
+            payload = formPayload(dataarr);
+        }
+        else
+        {
+            String datastr = (String) dataObject;
+            if (datastr == null || datastr.trim().isEmpty()) {
+                return Collections.EMPTY_LIST;
+            }
+            payload = formPayload(datastr);
         }
 
-        // set article url
-        String payload = formPayload(document);
 
         // use an arraylist, since we may have to split the article text, in that mode.
         ArrayList<String> response = new ArrayList<>();
@@ -171,9 +200,17 @@ public class RESTfulLocationExtractor extends  BaseLocationExtractor implements 
         } catch (IOException e) {
             if(e.getMessage().contains("HTTP response code: 414"))
             {
-                if(Verbosity)
-                    System.out.println("\n\tBreaking up text due to too large URI.");
-                response = splitTextAPICall(document);
+                if(NumberOfArgumentFields == 1) {
+                    if (Verbosity)
+                        System.out.println("\n\tBreaking up text due to too large URI.");
+                    String datastr = (String) dataObject;
+                    response = splitTextAPICall(datastr);
+                }
+                else
+                {
+                    System.err.println("Cannot handle request fragmentation in multi-argument calls!");
+                    res =  Collections.EMPTY_LIST;
+                }
             }
             System.out.println();
             if(Debug) {
@@ -236,6 +273,8 @@ public class RESTfulLocationExtractor extends  BaseLocationExtractor implements 
     @Override
     public boolean configure(ILocConf conf) {
 
+        for (int i=0;i<SupportedArgModes.length;++i)SupportedArgModesStr[i] = SupportedArgModes[i].toString();
+
         String confFile = "";
         if(this.DoExtractEntities) confFile =  conf.getEntityExtractorConfig();
         if(this.DoExtractLocations) confFile =  conf.getLocationExtractorConfig();
@@ -263,18 +302,20 @@ public class RESTfulLocationExtractor extends  BaseLocationExtractor implements 
             Verbosity = conf.hasModifier(BaseConfiguration.Modifiers.VERBOSE.toString());
             Debug = conf.hasModifier(BaseConfiguration.Modifiers.DEBUG.toString());
             String str;
+
             // base api url
             // read property
             baseURL = props.getProperty(API, ""); if(baseURL.isEmpty()) throw new Exception("Empty " + API +  " parameter");
 
-            str = props.getProperty(ARG,""); if(str.isEmpty()) throw new Exception("Empty " + ARG +  " parameter");
-            // sanity check
-            if(!Utils.arrayContains(SupportedArgModes,str))
+            str = props.getProperty(ARG,""); if(str.isEmpty()) throw new Exception("Empty " + ARG +  " parameter(s)");
+            // multiple-parameterizable argument
+            String [] parts = str.split(",");
+            for (String part : parts )
             {
-                System.err.println(SupportedArgModes);
-                throw new Exception("Unsupported " + ARG + " parameter.");
+                urlParamNames.add(part); urlParamValues.add(""); // empty values denote pluginnable fields
+                NumberOfArgumentFields++;
             }
-            urlParamNames.add(str); urlParamValues.add("");
+
             // out format
             str = props.getProperty(OUT_FORMAT,""); if(str.isEmpty()) throw new Exception("Empty " + OUT_FORMAT +  " parameter");
             if(!Utils.arrayContains(SupportedOutputModes,str))
@@ -285,11 +326,12 @@ public class RESTfulLocationExtractor extends  BaseLocationExtractor implements 
             outputMode = str;
             // in format
             str = props.getProperty(IN_FORMAT,""); if(str.isEmpty()) throw new Exception("Empty " + IN_FORMAT +  " parameter");
-            if(!Utils.arrayContains(SupportedArgModes,str))
+            if(!Utils.arrayContains(SupportedArgModesStr,str))
             {
-                System.err.println(SupportedArgModes);
-                throw new Exception("Unsupported " + ARG + " parameter.");
+                System.err.println(SupportedArgModesStr);
+                throw new Exception("Unsupported " + ARG + " parameter " + str + ".");
             }
+            RequiredResource = LE_RESOURCE_TYPE.valueOf(str.toUpperCase());
             inputMode = str;
             // out filter
             str = props.getProperty(OUT_SPEC,"");
@@ -307,7 +349,7 @@ public class RESTfulLocationExtractor extends  BaseLocationExtractor implements 
             if (!str.isEmpty()) {
                 // name - value
 
-                String[] parts = str.split(",");
+                parts = str.split(",");
                 for (String part : parts) {
                     String[] nameval = part.split("=");
                     if (nameval.length != 2) throw new Exception("Error @ reading name-value: " + part);
@@ -335,7 +377,7 @@ public class RESTfulLocationExtractor extends  BaseLocationExtractor implements 
             return false;
         }
 
-        this.RequiredResource = SupportedModesRequire[Arrays.asList(SupportedArgModes).indexOf(inputMode)];
+//        this.RequiredResource = SupportedArgModes[Arrays.asList(SupportedArgModes).indexOf(inputMode)];
 
         return true;
     }

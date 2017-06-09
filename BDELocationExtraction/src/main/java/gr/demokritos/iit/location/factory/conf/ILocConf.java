@@ -55,4 +55,6 @@ public interface ILocConf extends IBaseConf {
 
     boolean shouldExtractEntities(String mode);
 
+    String getMetadataProviderName();
+    int getMaxResultsPerItem();
 }

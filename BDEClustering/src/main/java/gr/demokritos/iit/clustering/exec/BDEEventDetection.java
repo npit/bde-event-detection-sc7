@@ -100,6 +100,7 @@ public class BDEEventDetection {
         repository.loadTweetsToCluster();
         repository.processTweets();
 
+
         repository.localStoreEvents();
 
         if (configuration.sendToStrabon()) {

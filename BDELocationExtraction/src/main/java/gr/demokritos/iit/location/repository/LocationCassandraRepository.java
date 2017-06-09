@@ -23,6 +23,7 @@ import gr.demokritos.iit.base.repository.views.Cassandra;
 import gr.demokritos.iit.base.util.Utils;
 import gr.demokritos.iit.location.mode.DocumentMode;
 import gr.demokritos.iit.location.structs.LocSched;
+import gr.demokritos.iit.location.util.Pair;
 
 // dependencies of json POST
 
@@ -59,7 +60,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
     public LocSched scheduleInitialized(DocumentMode mode, String extractionObjective, java.util.Calendar window){
 
         if (extractionObjective.equals("locations")) {
-            String schedule_type = new StringBuilder().append(SCHEDULE_TYPE_BASE).append("_").append(mode.getMode()).toString();
+            String schedule_type = new StringBuilder().append(SCHEDULE_TYPE_BASE).append("_").append(mode.toString()).toString();
             Statement select = QueryBuilder
                     .select(Cassandra.Location.TBL_LOCATION_LOG.FLD_SCHEDULE_ID.getColumnName(), Cassandra.Location.TBL_LOCATION_LOG.FLD_LAST_PARSED.getColumnName())
                     .from(session.getLoggedKeyspace(), Cassandra.Location.Tables.LOCATION_LOG.getTableName())
@@ -97,7 +98,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
         }
         else if (extractionObjective.equals("entities"))
         {
-            String schedule_type = new StringBuilder().append(SCHEDULE_TYPE_BASE).append("_").append(mode.getMode()).toString();
+            String schedule_type = new StringBuilder().append(SCHEDULE_TYPE_BASE).append("_").append(mode.toString()).toString();
             Statement select = QueryBuilder
                     .select(Cassandra.Entity.TBL_ENTITY_LOG.FLD_SCHEDULE_ID.getColumnName(), Cassandra.Entity.TBL_ENTITY_LOG.FLD_LAST_PARSED.getColumnName())
                     .from(session.getLoggedKeyspace(), Cassandra.Entity.Tables.ENTITY_LOG.getTableName())
@@ -140,7 +141,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
     @Override
     public void scheduleFinalized(LocSched sched, String extractionObjective) {
         
-        String schedule_type = new StringBuilder().append(SCHEDULE_TYPE_BASE).append("_").append(sched.getOperationMode().getMode()).toString();
+        String schedule_type = new StringBuilder().append(SCHEDULE_TYPE_BASE).append("_").append(sched.getOperationMode().toString()).toString();
         Statement update = null;
         if(extractionObjective.equals("locations")) {
             update = QueryBuilder
@@ -1482,6 +1483,43 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
 
     }
 
+    public Map<String,String> loadGeometries()
+    {
+        Statement select;
+        ResultSet results;
+        select = QueryBuilder.select().all().from(session.getLoggedKeyspace(),
+                Cassandra.RSS.Tables.NEWS_ARTICLES_PER_PLACE.getTableName()
+        );
+        results = session.execute(select);
+        Map<String, String> res = new HashMap();
+
+        for (Row row : results) {
+
+            String place = row.getString(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_PLACE_LITERAL.getColumnName());
+            String geom = row.getString(Cassandra.RSS.TBL_ARTICLES_PER_PLACE.FLD_BOUNDING_BOX.getColumnName());
+            res.put(place,geom);
+
+        }
+
+        return res;
+    }
+
+    public void insertImageLinks(Map<String,Map<String,String>> linksPerPlace, String source)
+    {
+        for(String place : linksPerPlace.keySet())
+        {
+
+            Map<String,String> linksTitles =linksPerPlace.get(place);
+            if(linksPerPlace.isEmpty()) continue;
+            Statement insert;
+            insert = QueryBuilder.insertInto(session.getLoggedKeyspace(),Cassandra.Location.Tables.LOCATION_IMAGES.getTableName())
+                    .value(Cassandra.Location.TBL_LOCATION_IMAGES.FLD_PLACE.getColumnName(),place)
+                    .value(Cassandra.Location.TBL_LOCATION_IMAGES.FLD_LINKS.getColumnName(),linksTitles)
+                    .value(Cassandra.Location.TBL_LOCATION_IMAGES.FLD_SOURCE.getColumnName(),source);
+            session.execute(insert);
+        }
+
+    }
 
 }
 

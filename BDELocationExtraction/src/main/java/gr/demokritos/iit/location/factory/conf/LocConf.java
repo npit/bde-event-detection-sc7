@@ -157,4 +157,17 @@ public class LocConf extends BaseConfiguration implements ILocConf {
     {
         return mode.equals("entities") || mode.equals("all");
     }
+    @Override
+    public String getMetadataProviderName()
+    {
+        return properties.getProperty("metadata_provider_name","unspecified");
+    }
+
+    @Override
+    public int getMaxResultsPerItem()
+    {
+        String num = properties.getProperty("max_results_per_item","10");
+        return Integer.parseInt(num);
+    }
+
 }

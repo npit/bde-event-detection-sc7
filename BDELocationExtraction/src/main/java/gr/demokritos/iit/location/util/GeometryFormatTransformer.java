@@ -12,6 +12,7 @@ import java.util.Set;
 
 
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.util.GeometryTransformer;
 import org.json.simple.JSONArray;
 import org.json.simple.parser.JSONParser;
@@ -42,6 +43,17 @@ public class GeometryFormatTransformer {
         return geom.getArea();
 
     }
+
+    public static String GetWKTPolygonCenter(String wktGeometry) throws ParseException {
+        WKTReader reader = new WKTReader();
+        Geometry geom = reader.read(wktGeometry);
+        Point pt = geom.getCentroid();
+
+//        return Double.toString(pt.getX()) + "," + Double.toString(pt.getY());
+        System.err.println("HARDCODING CENTROID!!");
+        return "40.703434,-74.015595";
+    }
+
     public static String WKTtoGeoJSON(String input) throws ParseException, IOException {
 
 

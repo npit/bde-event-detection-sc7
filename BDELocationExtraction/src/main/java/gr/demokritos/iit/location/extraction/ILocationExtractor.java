@@ -35,7 +35,7 @@ public interface ILocationExtractor {
     LE_RESOURCE_TYPE getRequiredResource();
     enum LE_RESOURCE_TYPE
     {
-        URL("url"), TEXT("text");
+        URL("url"), TEXT("text"), COORD("coord");
         LE_RESOURCE_TYPE(String s)
         {
             name = s;
@@ -52,7 +52,7 @@ public interface ILocationExtractor {
             return name;
         }
     }
-    List<String> doExtraction(String resource);
+    List<String> doExtraction(Object resource);
     boolean configure(ILocConf conf);
     String ChooseRequiredResource(String res1, String res2);
     boolean canHandleResource(ILocationExtractor.LE_RESOURCE_TYPE res);

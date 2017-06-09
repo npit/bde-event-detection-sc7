@@ -6,15 +6,15 @@ package gr.demokritos.iit.location.mode;
  */
 public enum DocumentMode {
 
-    TWEETS("tweets"), ARTICLES("articles"), BOTH("both"), TEXT("text");
+    TWEETS("tweets"), ARTICLES("articles"), BOTH("both"), TEXT("text"), LOCATIONS("locations");
 
     private final String mode;
 
     private DocumentMode(String mode) {
         this.mode = mode;
     }
-
-    public String getMode() {
+    @Override
+    public String toString () {
         return mode;
     }
 }

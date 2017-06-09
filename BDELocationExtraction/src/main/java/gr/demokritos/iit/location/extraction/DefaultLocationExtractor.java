@@ -205,7 +205,8 @@ public class DefaultLocationExtractor extends BaseLocationExtractor implements I
     }
 
     @Override
-    public List<String> doExtraction(String document) {
+    public List<String> doExtraction(Object docObj) {
+        String document = (String) docObj;
         if (document == null || document.trim().isEmpty()) {
             return Collections.EMPTY_LIST;
         }
