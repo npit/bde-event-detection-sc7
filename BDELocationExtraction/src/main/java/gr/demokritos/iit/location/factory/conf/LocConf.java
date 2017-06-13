@@ -16,6 +16,20 @@ import java.util.ArrayList;
  */
 public class LocConf extends BaseConfiguration implements ILocConf {
 
+    public enum Metadata_Provider {
+
+        FLICKR("flickr");
+
+        private final String provider;
+
+        private Metadata_Provider(String mode) {
+            this.provider = mode;
+        }
+        @Override
+        public String toString () {
+            return provider;
+        }
+    }
     public static final String RETRIEVAL_MODE_SCHEDULED="scheduled";
     public static final String RETRIEVAL_MODE_EXPLICIT="explicit";
     public static String modes()

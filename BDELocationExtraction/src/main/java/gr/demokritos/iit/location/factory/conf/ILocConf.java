@@ -15,6 +15,7 @@ import java.util.ArrayList;
  */
 public interface ILocConf extends IBaseConf {
 
+
     boolean onlyUpdateEvents();
     String getPolygonExtractionSourceFile();
     String getPolygonExtractionImpl();

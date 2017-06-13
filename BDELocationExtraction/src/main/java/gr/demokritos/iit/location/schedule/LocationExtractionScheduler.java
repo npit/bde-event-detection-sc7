@@ -20,6 +20,7 @@ import gr.demokritos.iit.base.repository.views.Cassandra;
 import gr.demokritos.iit.base.util.Utils;
 import gr.demokritos.iit.location.extraction.ILocationExtractor;
 import gr.demokritos.iit.location.factory.conf.ILocConf;
+import gr.demokritos.iit.location.factory.conf.LocConf;
 import gr.demokritos.iit.location.mapping.IPolygonExtraction;
 import gr.demokritos.iit.location.mode.DocumentMode;
 import gr.demokritos.iit.location.repository.ILocationRepository;
@@ -64,8 +65,15 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
             String source = conf.getMetadataProviderName();
             Map<String, String> items;
             items = repos.loadGeometries();
+            if(items.isEmpty())
+            {
+                System.out.println("No geometries to process.");
+                return;
+            }
             Map<String,Map<String,String>> links_per_place = new HashMap<>();
+            int idx=1;
             for(String place : items.keySet()) {
+                System.out.println(String.format("Processing location %d / %d : %s",idx++, items.keySet().size(), place));
                 String geom = items.get(place);
                 String centroid = "";
                 try {
@@ -96,7 +104,7 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
 
     Map<String,String> processEntities(List<String> ents) throws IOException, org.json.simple.parser.ParseException {
         Map<String,String> res = new HashMap<>();
-        if(conf.getMetadataProviderName().equals("flickr"))
+        if(conf.getMetadataProviderName().equals(LocConf.Metadata_Provider.FLICKR.toString()))
         {
             for(String datum : ents)
             {
@@ -120,6 +128,12 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                 if(res.size() >= conf.getMaxResultsPerItem())
                     break;
             }
+        }
+        else
+        {
+            System.err.println("Undefined entity metadata provider:" + conf.getMetadataProviderName());
+            System.err.println("Available are: " + Arrays.toString(LocConf.Metadata_Provider.values()));
+            throw new IOException();
         }
 
         return res;
@@ -206,7 +220,13 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
     private void executeSchedule(DocumentMode mode) {
 
 
-        System.out.println("Executing schedule [" + mode.toString() + "]");
+        System.out.println("Executing schedule on document mode[" + mode.toString() + "]");
+        if(mode.equals(DocumentMode.TEXT))
+        {
+            System.err.println("Scheduled extraction works only on database data.");
+            System.err.println(String.format("For %s mode, provide a file with the texts to process.", DocumentMode.TEXT.toString()));
+            return;
+        }
         LocSched schedLoc, schedEnt;
         // register starting operation
         String extractionObjective = conf.getExtractionObjective();

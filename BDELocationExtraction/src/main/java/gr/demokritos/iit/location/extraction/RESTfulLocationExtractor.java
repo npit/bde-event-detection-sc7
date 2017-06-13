@@ -45,10 +45,11 @@ public class RESTfulLocationExtractor extends  BaseLocationExtractor implements 
     private final String[] SupportedArgModesStr = new String[SupportedArgModes.length];
     private String inputMode, outputMode;
     boolean Verbosity, Debug;
-    int NumberOfArgumentFields = 0;
+    private ArrayList<String >paramArguments;
     public RESTfulLocationExtractor(String extractorObjective) {
         this.urlParamNames = new ArrayList<>();
         this.urlParamValues = new ArrayList<>();
+        paramArguments = new ArrayList<>();
         authEncoded="";
         Verbosity = false;
         Debug = false;
@@ -146,18 +147,18 @@ public class RESTfulLocationExtractor extends  BaseLocationExtractor implements 
 
     private String formPayload(List<String> args)
     {
-        int paramsIdx = 0, argsIdx = 0;
-        for(;paramsIdx<urlParamNames.size();++paramsIdx) {
-            if (urlParamValues.get(paramsIdx).isEmpty())
-            {
-                urlParamValues.set(paramsIdx, args.get(argsIdx++));
-            }
-        }
-        if(argsIdx != args.size())
+
+        if(paramArguments.size() != args.size())
         {
             // an arg was not assigned!
-            System.err.println(String.format("ERROR : Only %d out of %d arguments were assigned in the payload",argsIdx, paramsIdx ));
-            System.err.println("Arguments: " + args);
+            System.err.println(String.format("ERROR : payload expects %d arguments : %s , provide %d : %s\n",paramArguments.size(),paramArguments.toString(), args.size(), args.toString()));
+            return "";
+        }
+        int argidx = 0;
+        for(String param : paramArguments)
+        {
+            int idx = urlParamNames.indexOf(param);
+            urlParamValues.set(idx,args.get(argidx++));
         }
         return Utils.encodeParameterizedURL(urlParamNames,urlParamValues);
     }
@@ -174,7 +175,7 @@ public class RESTfulLocationExtractor extends  BaseLocationExtractor implements 
 
         String payload = "";
         // set arguments
-        if(NumberOfArgumentFields > 1)
+        if(paramArguments.size() > 1)
         {
             List<String> dataarr = (List<String>) dataObject;
             payload = formPayload(dataarr);
@@ -200,7 +201,7 @@ public class RESTfulLocationExtractor extends  BaseLocationExtractor implements 
         } catch (IOException e) {
             if(e.getMessage().contains("HTTP response code: 414"))
             {
-                if(NumberOfArgumentFields == 1) {
+                if(paramArguments.size() == 1) {
                     if (Verbosity)
                         System.out.println("\n\tBreaking up text due to too large URI.");
                     String datastr = (String) dataObject;
@@ -313,7 +314,7 @@ public class RESTfulLocationExtractor extends  BaseLocationExtractor implements 
             for (String part : parts )
             {
                 urlParamNames.add(part); urlParamValues.add(""); // empty values denote pluginnable fields
-                NumberOfArgumentFields++;
+                paramArguments.add(part);
             }
 
             // out format

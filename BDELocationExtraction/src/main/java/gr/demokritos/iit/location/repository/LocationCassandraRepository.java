@@ -1506,6 +1506,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
 
     public void insertImageLinks(Map<String,Map<String,String>> linksPerPlace, String source)
     {
+        System.out.print("Inserting places in storage...");
         for(String place : linksPerPlace.keySet())
         {
 
@@ -1518,7 +1519,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
                     .value(Cassandra.Location.TBL_LOCATION_IMAGES.FLD_SOURCE.getColumnName(),source);
             session.execute(insert);
         }
-
+        System.out.println("Done.");
     }
 
 }

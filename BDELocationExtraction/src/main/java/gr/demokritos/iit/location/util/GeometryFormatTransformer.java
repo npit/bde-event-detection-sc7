@@ -49,9 +49,7 @@ public class GeometryFormatTransformer {
         Geometry geom = reader.read(wktGeometry);
         Point pt = geom.getCentroid();
 
-//        return Double.toString(pt.getX()) + "," + Double.toString(pt.getY());
-        System.err.println("HARDCODING CENTROID!!");
-        return "40.703434,-74.015595";
+        return Double.toString(pt.getX()) + "," + Double.toString(pt.getY());
     }
 
     public static String WKTtoGeoJSON(String input) throws ParseException, IOException {
