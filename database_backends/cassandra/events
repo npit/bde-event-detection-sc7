@@ -7,6 +7,7 @@ CREATE TABLE bde.events (
     place_mappings map<text, text>,
     title text,
     entities set<text>,
+    images map<text,text>,
     tweet_post_ids map<bigint, text>
 ) WITH bloom_filter_fp_chance = 0.01
     AND caching = '{"keys":"ALL", "rows_per_partition":"NONE"}'
@@ -33,6 +34,7 @@ CREATE TABLE bde.events_per_place_literal (
     place_polygon text,
     title text,
     entities set<text>,
+    images map<text,text>,
     tweet_post_ids map<bigint, text>,
     PRIMARY KEY (place_literal, event_id)
 ) WITH CLUSTERING ORDER BY (event_id DESC)

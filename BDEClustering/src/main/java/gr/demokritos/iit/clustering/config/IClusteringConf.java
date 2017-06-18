@@ -111,5 +111,7 @@ public interface IClusteringConf extends IBaseConf {
 
     String getNGramMode();
 
+    String getPhotoTimeOffset();
+
 
 }

@@ -394,11 +394,8 @@ public class Utils {
      *               <integer>_<days/months/hours/years>
      * @return
      */
-    public static Calendar getCalendarFromStringTimeWindow(String window)
+    public static Calendar getCalendarFromStringTimeWindow(String window, Calendar cal, boolean subtract)
     {
-        // default : 1 month
-        Calendar cal = Calendar.getInstance();
-
         if (window.isEmpty())
         {
             System.err.println("No time window specified, using default 1 month window.");
@@ -408,6 +405,7 @@ public class Utils {
         System.out.println("Using document retrieval window : [" + window + "]");
         String [] tokens = window.split("_");
         int offset = Integer.parseInt(tokens[0]);
+        if(!subtract) offset = -1 * offset;
         tokens[1] = tokens[1].toLowerCase();
         if(tokens[1].equals("months") || tokens[1].equals("month"))
         {
@@ -436,6 +434,13 @@ public class Utils {
         }
 
         return cal;
+    }
+    public static Calendar getCalendarFromStringTimeWindow(String window)
+    {
+        // default : 1 month
+        Calendar cal = Calendar.getInstance();
+        return getCalendarFromStringTimeWindow(window,cal,true);
+
 
     }
 //    public static String unixTimeToDateString(long timestamp)

@@ -201,5 +201,11 @@ public class clusteringConf extends BaseConfiguration implements IClusteringConf
         return properties.getProperty("ngram_graph_mode", "word");
     }
 
+    @Override
+    public String getPhotoTimeOffset()
+    {
+        String offset = properties.getProperty("image_date_offset","1_month");
+        return offset;
+    }
 
 }

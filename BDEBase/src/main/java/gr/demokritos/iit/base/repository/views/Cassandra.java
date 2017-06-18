@@ -455,6 +455,7 @@ public class Cassandra {
 
             FLD_PLACE("place"),
             FLD_LINKS("links"),
+            FLD_TAKEN_DATE("taken_date"),
             FLD_SOURCE("source");
 
             private String column;

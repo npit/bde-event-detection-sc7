@@ -39,6 +39,7 @@ import org.scify.newsum.server.summarization.Summarizer;
 import scala.Tuple2;
 import scala.Tuple4;
 
+import javax.management.Query;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.sql.Timestamp;
@@ -46,8 +47,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.set;
+import static com.datastax.driver.core.querybuilder.QueryBuilder.*;
 import static gr.demokritos.iit.base.conf.IBaseConf.DATE_FORMAT_ISO_8601;
 import static gr.demokritos.iit.base.conf.IBaseConf.TIMEZONE_ID_UTC;
 import static gr.demokritos.iit.base.util.Utils.toc;
@@ -109,6 +109,7 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
     public void localStoreEvents() {
         entities = getEntities(articles, ArticlesPerCluster);
         place_mappings = getPlaceMappings(articles, ArticlesPerCluster);
+        Map<String,Map<String,String>> images = getImages(place_mappings, ArticlesPerCluster);
         int event_size_cuttof = configuration.getEventSizeCutoffThreshold();
         System.out.println("saving events...");
 
@@ -531,6 +532,40 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
         tweetURLtoUserIDMapping = getTweetClustersToUsersMappings(cleanTweets);
     }
 
+
+    @Override
+    public Map<String,Map<String,String>> getImages(Map<String, Map<String, String>> placemappings, HashMap<String, Topic> ArticlesPerCluster)
+    {
+        String offset = configuration.getPhotoTimeOffset();
+        Map<String,Map<String,String>> images = new HashMap<>();
+
+        for (Map.Entry<String, Topic> entry  : ArticlesPerCluster.entrySet()) {
+            images.put("ASD",new HashMap<String, String>());
+            Map<String,String> currMap = images.get(images.size()-1);
+            Topic t = entry.getValue();
+            Calendar eventCal = t.getDate();
+            long maxDate = Utils.getCalendarFromStringTimeWindow(offset,eventCal,false).getTimeInMillis();
+            long minDate = Utils.getCalendarFromStringTimeWindow(offset,eventCal,true).getTimeInMillis();
+
+            for(String place :  placemappings.keySet())
+            {
+                // get photos links of the place, that were taken
+                Statement query = QueryBuilder.select().all().
+                        from(session.getLoggedKeyspace(),Cassandra.Location.Tables.LOCATION_IMAGES.getTableName()).
+                        where(eq(Cassandra.Location.TBL_LOCATION_IMAGES.FLD_PLACE.getColumnName(), place))
+                        .and(lte(Cassandra.Location.TBL_LOCATION_IMAGES.FLD_TAKEN_DATE.getColumnName(), maxDate))
+                        .and(gte(Cassandra.Location.TBL_LOCATION_IMAGES.FLD_TAKEN_DATE.getColumnName(), minDate));
+                ResultSet results = session.execute(query);
+                for(Row row : results)
+                {
+                    String link_title = row.getString(Cassandra.Location.TBL_LOCATION_IMAGES.FLD_LINKS.getColumnName());
+                    String img_place = row.getString(Cassandra.Location.TBL_LOCATION_IMAGES.FLD_PLACE.getColumnName());
+                    currMap.put(link_title, img_place);
+                }
+            }
+        }
+        return images;
+    }
     @Override
     public Collection<TwitterResult> getTweets() {
         return tweets;
