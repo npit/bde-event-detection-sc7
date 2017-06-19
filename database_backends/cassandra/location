@@ -49,10 +49,12 @@ CREATE TABLE bde.entity_extraction_log (
 
 CREATE TABLE bde.location_images (
     place text,
-    links map<text,text>,
+    link text,
+    title text,
+    taken bigint,
     source text,
-    PRIMARY KEY (place, source)
-) WITH CLUSTERING ORDER BY (source DESC)
+    PRIMARY KEY (place, taken, source)
+) WITH CLUSTERING ORDER BY (taken DESC)
     AND bloom_filter_fp_chance = 0.01
     AND caching = '{"keys":"ALL", "rows_per_partition":"NONE"}'
     AND comment = ''
@@ -66,3 +68,4 @@ CREATE TABLE bde.location_images (
     AND min_index_interval = 128
     AND read_repair_chance = 0.0
     AND speculative_retry = '99.0PERCENTILE';
+

@@ -394,7 +394,7 @@ public class Utils {
      *               <integer>_<days/months/hours/years>
      * @return
      */
-    public static Calendar getCalendarFromStringTimeWindow(String window, Calendar cal, boolean subtract)
+    public static Calendar getCalendarFromStringTimeWindow(String window, Calendar cal, boolean add)
     {
         if (window.isEmpty())
         {
@@ -402,18 +402,18 @@ public class Utils {
             cal.set(Calendar.MONTH,cal.get(Calendar.MONTH )-1);
             return cal;
         }
-        System.out.println("Using document retrieval window : [" + window + "]");
+//        System.out.println("Using document retrieval window : [" + window + "] on input calendar " + cal.getTime().toString());
         String [] tokens = window.split("_");
         int offset = Integer.parseInt(tokens[0]);
-        if(!subtract) offset = -1 * offset;
+        if(add) offset = -1 * offset;
         tokens[1] = tokens[1].toLowerCase();
         if(tokens[1].equals("months") || tokens[1].equals("month"))
         {
-            cal.set(Calendar.MONTH,cal.get(Calendar.MONTH ) - offset);
+            cal.add(Calendar.MONTH, -offset);
         }
         else if(tokens[1].equals("weeks") || tokens[1].equals("week"))
         {
-            cal.set(Calendar.DAY_OF_MONTH,cal.get(Calendar.DAY_OF_MONTH ) - 7*offset);
+            cal.set(Calendar.WEEK_OF_MONTH,cal.get(Calendar.WEEK_OF_MONTH) - 7*offset);
         }
         else if(tokens[1].equals("days") || tokens[1].equals("day"))
         {
@@ -439,7 +439,7 @@ public class Utils {
     {
         // default : 1 month
         Calendar cal = Calendar.getInstance();
-        return getCalendarFromStringTimeWindow(window,cal,true);
+        return getCalendarFromStringTimeWindow(window,cal,false);
 
 
     }

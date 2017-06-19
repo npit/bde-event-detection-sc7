@@ -30,8 +30,11 @@ import gr.demokritos.iit.location.util.Pair;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -70,10 +73,11 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                 System.out.println("No geometries to process.");
                 return;
             }
-            Map<String,Map<String,String>> links_per_place = new HashMap<>();
+            Map<String,ArrayList<ArrayList<Object>> > data_per_place = new HashMap<>();
             int idx=1;
             for(String place : items.keySet()) {
                 System.out.println(String.format("Processing location %d / %d : %s",idx++, items.keySet().size(), place));
+//                 if (idx>5) break;  // debug
                 String geom = items.get(place);
                 String centroid = "";
                 try {
@@ -84,28 +88,54 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                 }
                 // process
                 List<String> results = entExtractor.doExtraction(Arrays.asList(centroid.split(",")));
-                Map<String, String> links_titles = null;
+                ArrayList<ArrayList<Object>>  data = null;
                 try {
-                    links_titles = processEntities(results);
+                    data = processEntities(results);
                 }
                 catch (Exception e)
                 {
                     e.printStackTrace();
                     return;
                 }
-                links_per_place.put(place,links_titles);
+                data_per_place.put(place,data);
             }
             // insert results
-            repos.insertImageLinks(links_per_place, source);
+            repos.insertImageLinks(data_per_place, source);
         }
 
 
     }
 
-    Map<String,String> processEntities(List<String> ents) throws IOException, org.json.simple.parser.ParseException {
-        Map<String,String> res = new HashMap<>();
+    ArrayList<ArrayList<Object>>  processEntities(List<String> ents) throws IOException, org.json.simple.parser.ParseException {
+        ArrayList<ArrayList<Object>> res = new ArrayList<>();
         if(conf.getMetadataProviderName().equals(LocConf.Metadata_Provider.FLICKR.toString()))
         {
+            String confFile =  conf.getEntityExtractorConfig();
+            Properties props = new Properties();
+            try {
+                props.load(new FileReader(new File(confFile)));
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
+            String name_value_pairs = props.getProperty("name_value_pairs");
+            String [] parts = name_value_pairs.split(",");
+            String key="";
+            for(String p : parts)
+            {
+                if(p.startsWith("api_key="))
+                {
+                    String [] pparts = p.split("=");
+                    key = pparts[1];
+                    break;
+                }
+            }
+            if(key.isEmpty())
+            {
+                System.err.println("Failed to find flickr api key");
+                return null;
+            }
+
             for(String datum : ents)
             {
                 JSONParser parser = new JSONParser();
@@ -123,8 +153,30 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
                 String title = (String) obj.get("title");
                 String link = String.format("https://farm%d.staticflickr.com/%s/%s_%s.jpg",
                         farm, server, id, secret);
-//                System.out.println(link);
-                res.put(link, title);
+
+                // get additional photo information
+                String url = "https://api.flickr.com/services/rest/?method=flickr.photos.getInfo&photo_id="+id+"&format=json&nojsoncallback=1&api_key="+key;
+                String resp = Utils.sendGET(url);
+                JSONObject jo = (JSONObject) parser.parse(new StringReader(resp));
+                jo = (JSONObject) jo.get("photo");
+                jo = (JSONObject) jo.get("dates");
+                String takendate = (String) jo.get("taken");
+                String fmt = "yyyy-MM-dd' 'HH:mm:ss";
+                SimpleDateFormat sdf = new SimpleDateFormat(fmt);
+                long msecs=0l;
+                try {
+                    Date tdate = sdf.parse(takendate);
+                    Calendar cal = Calendar.getInstance();
+                    cal.setTime(tdate);
+                    msecs = cal.getTimeInMillis();
+                } catch (java.text.ParseException e) {
+                    e.printStackTrace();
+                }
+                ArrayList<Object> arr = new ArrayList<>();
+                arr.add(link);
+                arr.add(title);
+                arr.add(msecs);
+                res.add(arr);
                 if(res.size() >= conf.getMaxResultsPerItem())
                     break;
             }

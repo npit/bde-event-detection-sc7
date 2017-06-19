@@ -253,7 +253,7 @@ public class BaseCassandraRepository implements IBaseRepository {
             }
         }
         // debug
-        System.out.println(String.format("Loaded %d articles from the database for te given timestamp.", out.size()));
+        System.out.println(String.format("Loaded %d articles from the database for the given timestamp.", out.size()));
         // debug
         return Collections.unmodifiableCollection(out);
     }

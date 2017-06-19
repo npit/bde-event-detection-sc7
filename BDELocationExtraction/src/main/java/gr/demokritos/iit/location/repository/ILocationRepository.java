@@ -80,6 +80,6 @@ public interface ILocationRepository extends IBaseRepository {
     void setUpdateEvents();
 
     Map<String,String> loadGeometries();
-    void insertImageLinks(Map<String,Map<String,String>> linksPerPlace, String source);
+    void insertImageLinks(Map<String,ArrayList<ArrayList<Object>>  >linksPerPlace, String source);
 
 }

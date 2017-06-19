@@ -1485,6 +1485,7 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
 
     public Map<String,String> loadGeometries()
     {
+        // from news
         Statement select;
         ResultSet results;
         select = QueryBuilder.select().all().from(session.getLoggedKeyspace(),
@@ -1500,24 +1501,46 @@ public class LocationCassandraRepository extends BaseCassandraRepository impleme
             res.put(place,geom);
 
         }
+        // from tweets
+        select = QueryBuilder.select().all().from(session.getLoggedKeyspace(),
+                Cassandra.Twitter.Tables.TWITTER_POSTS_PER_REFERRED_PLACE.getTableName()
+        );
+        results = session.execute(select);
 
+        for (Row row : results) {
+
+            String place = row.getString(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_REFERRED_PLACE.FLD_PLACE_LITERAL.getColumnName());
+            String geom = row.getString(Cassandra.Twitter.TBL_TWITTER_POSTS_PER_REFERRED_PLACE.FLD_LOCATION.getColumnName());
+            res.put(place, geom);
+        }
         return res;
     }
 
-    public void insertImageLinks(Map<String,Map<String,String>> linksPerPlace, String source)
+    public void insertImageLinks(Map<String,ArrayList<ArrayList<Object>> > linksPerPlace, String source)
     {
         System.out.print("Inserting places in storage...");
         for(String place : linksPerPlace.keySet())
         {
 
-            Map<String,String> linksTitles =linksPerPlace.get(place);
-            if(linksPerPlace.isEmpty()) continue;
-            Statement insert;
-            insert = QueryBuilder.insertInto(session.getLoggedKeyspace(),Cassandra.Location.Tables.LOCATION_IMAGES.getTableName())
-                    .value(Cassandra.Location.TBL_LOCATION_IMAGES.FLD_PLACE.getColumnName(),place)
-                    .value(Cassandra.Location.TBL_LOCATION_IMAGES.FLD_LINKS.getColumnName(),linksTitles)
-                    .value(Cassandra.Location.TBL_LOCATION_IMAGES.FLD_SOURCE.getColumnName(),source);
-            session.execute(insert);
+            for(ArrayList<Object> arr : linksPerPlace.get(place))
+            {
+                if(arr.isEmpty()) continue;
+                for(int l=0;l<arr.size();++l) {
+
+                    String link = (String) arr.get(0);
+                    String title = (String) arr.get(1);
+                    Long taken = (Long) arr.get(2);
+
+                    Statement insert;
+                    insert = QueryBuilder.insertInto(session.getLoggedKeyspace(), Cassandra.Location.Tables.LOCATION_IMAGES.getTableName())
+                            .value(Cassandra.Location.TBL_LOCATION_IMAGES.FLD_PLACE.getColumnName(), place)
+                            .value(Cassandra.Location.TBL_LOCATION_IMAGES.FLD_LINK.getColumnName(), link)
+                            .value(Cassandra.Location.TBL_LOCATION_IMAGES.FLD_TITLE.getColumnName(), title)
+                            .value(Cassandra.Location.TBL_LOCATION_IMAGES.FLD_TAKEN_DATE.getColumnName(), taken)
+                            .value(Cassandra.Location.TBL_LOCATION_IMAGES.FLD_SOURCE.getColumnName(), source);
+                    session.execute(insert);
+                }
+            }
         }
         System.out.println("Done.");
     }

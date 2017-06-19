@@ -56,4 +56,5 @@ public interface ILocationExtractor {
     boolean configure(ILocConf conf);
     String ChooseRequiredResource(String res1, String res2);
     boolean canHandleResource(ILocationExtractor.LE_RESOURCE_TYPE res);
+
 }

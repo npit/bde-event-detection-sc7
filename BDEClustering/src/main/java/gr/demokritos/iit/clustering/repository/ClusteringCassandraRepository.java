@@ -43,6 +43,7 @@ import javax.management.Query;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -120,7 +121,7 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
             String id = entry.getKey();
             Topic t = entry.getValue();
             if (t.size() >= event_size_cuttof) {
-                event ev = saveEvent(id, t, summaries.get(id), RelatedTweets, place_mappings,entities,
+                event ev = saveEvent(id, t, summaries.get(id), RelatedTweets, place_mappings, entities, images,
                         tweetURLtoPostIDMapping,tweetURLtoUserIDMapping);
                 if(ev != null )
                     SavedEvents.add(ev);
@@ -140,7 +141,8 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
                           Summary s,
                           Map<Topic, List<String>> relatedTweets,
                           Map<String, Map<String, String>> places_polygons_per_id,
-                                       Map<String,Set<String>> entities_per_id,
+                          Map<String,Set<String>> entities_per_id,
+                          Map<String,Map<String,String>> images,
                           Map<String, Long> tweetURLtoPostIDMapping,
                           Map<String, String> tweetURLtoUserIDMapping
 
@@ -177,6 +179,7 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
         if(tweetIDsUsers == null) System.out.println("> The event has no assigned tweets.");
         // news : updated to extract URL + title pairs
         Map<String,String> topicSourceURL_Titles = extractSourceURLTitlePairs(t);
+        Map<String,String> topic_images = images.get(t.getID());
         // update events
         Statement upsert = QueryBuilder
                 .update(session.getLoggedKeyspace(), Cassandra.Event.Tables.EVENTS.getTableName())
@@ -189,6 +192,7 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
                // .and(set(Cassandra.Event.TBL_EVENTS.FLD_EVENT_SOURCE_URLS.getColumnName(), topicSourceURLs))
                 .and(set(Cassandra.Event.TBL_EVENTS.FLD_EVENT_SOURCE_URLS.getColumnName(), topicSourceURL_Titles))
                 .and(set(Cassandra.Event.TBL_EVENTS.FLD_ENTITY.getColumnName(),event_entities))
+                .and(set(Cassandra.Event.TBL_EVENTS.FLD_IMAGES.getColumnName(),topic_images))
                 .where(eq(Cassandra.Event.TBL_EVENTS.FLD_EVENT_ID.getColumnName(), topicID));
         //System.out.println(upsert.toString());
         session.execute(upsert);
@@ -540,14 +544,15 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
         Map<String,Map<String,String>> images = new HashMap<>();
 
         for (Map.Entry<String, Topic> entry  : ArticlesPerCluster.entrySet()) {
-            images.put("ASD",new HashMap<String, String>());
-            Map<String,String> currMap = images.get(images.size()-1);
+            String topic_id = entry.getKey();
             Topic t = entry.getValue();
-            Calendar eventCal = t.getDate();
-            long maxDate = Utils.getCalendarFromStringTimeWindow(offset,eventCal,false).getTimeInMillis();
-            long minDate = Utils.getCalendarFromStringTimeWindow(offset,eventCal,true).getTimeInMillis();
+            images.put(topic_id,new HashMap<String, String>());
 
-            for(String place :  placemappings.keySet())
+            long maxDate = Utils.getCalendarFromStringTimeWindow(offset,(Calendar)t.getDate().clone(),true).getTimeInMillis();
+            long minDate = Utils.getCalendarFromStringTimeWindow(offset,(Calendar)t.getDate().clone(),false).getTimeInMillis();
+
+            Map<String,String> places_geometries = placemappings.get(topic_id);
+            for(String place :  places_geometries.keySet())
             {
                 // get photos links of the place, that were taken
                 Statement query = QueryBuilder.select().all().
@@ -558,9 +563,8 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
                 ResultSet results = session.execute(query);
                 for(Row row : results)
                 {
-                    String link_title = row.getString(Cassandra.Location.TBL_LOCATION_IMAGES.FLD_LINKS.getColumnName());
-                    String img_place = row.getString(Cassandra.Location.TBL_LOCATION_IMAGES.FLD_PLACE.getColumnName());
-                    currMap.put(link_title, img_place);
+                    String link = row.getString(Cassandra.Location.TBL_LOCATION_IMAGES.FLD_LINK.getColumnName());
+                    images.get(topic_id).put(link, place);
                 }
             }
         }

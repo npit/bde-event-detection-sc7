@@ -454,8 +454,9 @@ public class Cassandra {
         public enum TBL_LOCATION_IMAGES {
 
             FLD_PLACE("place"),
-            FLD_LINKS("links"),
-            FLD_TAKEN_DATE("taken_date"),
+            FLD_LINK("link"),
+            FLD_TITLE("title"),
+            FLD_TAKEN_DATE("taken"),
             FLD_SOURCE("source");
 
             private String column;
@@ -536,7 +537,8 @@ public class Cassandra {
             FLD_PLACE_MAPPINGS("place_mappings"),
             FLD_TWEET_IDS("tweet_post_ids"),
             FLD_EVENT_SOURCE_URLS("event_source_urls"),
-            FLD_ENTITY("entities");
+            FLD_ENTITY("entities"),
+            FLD_IMAGES("images");
 
             private String column;
 
