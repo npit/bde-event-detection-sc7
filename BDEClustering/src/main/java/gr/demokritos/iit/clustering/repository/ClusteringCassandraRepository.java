@@ -681,7 +681,8 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
                         Cassandra.Event.TBL_EVENTS.FLD_TITLE.getColumnName(),
                         Cassandra.Event.TBL_EVENTS.FLD_DATE_LITERAL.getColumnName(),
                         Cassandra.Event.TBL_EVENTS.FLD_PLACE_MAPPINGS.getColumnName(),
-                        Cassandra.Event.TBL_EVENTS.FLD_ENTITY.getColumnName())
+                        Cassandra.Event.TBL_EVENTS.FLD_ENTITY.getColumnName(),
+                        Cassandra.Event.TBL_EVENTS.FLD_IMAGES.getColumnName())
                 .from(session.getLoggedKeyspace(),Cassandra.Event.Tables.EVENTS.getTableName());
         ResultSet results = session.execute(query);
         int count = 1;
@@ -705,11 +706,12 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
             String date = (row.getString(Cassandra.Event.TBL_EVENTS.FLD_DATE_LITERAL.getColumnName()));
             // get entities
             Set<String> entities = (row.getSet(Cassandra.Event.TBL_EVENTS.FLD_ENTITY.getColumnName(),String.class));
+            Map<String, String> images = (row.getMap(Cassandra.Event.TBL_EVENTS.FLD_IMAGES.getColumnName(),String.class,String.class));
             // reconstruct the entries in the format expected by strabon
             String payload="";
             try
             {
-                payload = GeometryFormatTransformer.EventRowToStrabonJSON(id,title,date,locpoly, entities);
+                payload = GeometryFormatTransformer.EventRowToStrabonJSON(id,title,date,locpoly, entities, images);
                 if(IsVerbose) {
                     System.out.println("Payload is:\n[" + payload + "]");
                     System.out.flush();                }

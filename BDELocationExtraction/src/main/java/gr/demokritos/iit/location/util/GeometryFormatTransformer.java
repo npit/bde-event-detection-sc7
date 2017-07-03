@@ -151,7 +151,7 @@ public class GeometryFormatTransformer {
      */
 
     // popeye, meaning strabon
-    public static String EventRowToStrabonJSON(String id, String title, String date, Map<String,String> locpoly, Set<String> entities) throws IOException, ParseException {
+    public static String EventRowToStrabonJSON(String id, String title, String date, Map<String,String> locpoly, Set<String> entities, Map<String,String> images) throws IOException, ParseException {
         JSONObject obj = new JSONObject();
         // date format  in the repository is like:
         // 2016-09-28T08:32+0000
@@ -183,7 +183,18 @@ public class GeometryFormatTransformer {
             jo.put("concept_uri",parts[1]);
             arr.add(jo);
         }
-        obj.put("poolparties",arr);
+        obj.put("entities",arr);
+
+        JSONArray img_arr = new JSONArray();
+        for (String link : images.keySet())
+        {
+            String place = images.get(link);
+            JSONObject jo = new JSONObject();
+            jo.put("link",link);
+            jo.put("place",place);
+            img_arr.add(jo);
+        }
+        obj.put("images",img_arr);
 
         JSONArray array = new JSONArray();
         for(String location : locpoly.keySet())
