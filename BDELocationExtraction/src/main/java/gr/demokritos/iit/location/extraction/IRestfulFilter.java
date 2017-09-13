@@ -32,4 +32,5 @@ public interface IRestfulFilter {
     String toString();
     List<String> getEntities();
     void clear();
+    boolean isStatusGood();
 }

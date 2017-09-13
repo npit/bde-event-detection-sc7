@@ -1,6 +1,7 @@
 package gr.demokritos.iit.location.extraction;
 
 import com.google.gson.JsonParseException;
+import gr.demokritos.iit.base.util.ComparablePair;
 import gr.demokritos.iit.base.util.Utils;
 import gr.demokritos.iit.location.util.Pair;
 import net.didion.jwnl.data.Verb;
@@ -18,7 +19,9 @@ import java.util.*;
  * Created by nik on 2/15/17.
  */
 public class RESTfulResultJSONFilter implements IRestfulFilter{
-    private final String delimiter = "/";
+    private final String delimiter = "/"; // delimits nestes objects in the structure
+    private final String delimiterSibling = "&"; // delimits sibling objects
+    private final String EntityDelimiter = ",";
     private final String scoreField = "score";
 
     private static final String JOBJECT="\\{\\}";
@@ -28,15 +31,23 @@ public class RESTfulResultJSONFilter implements IRestfulFilter{
 
     private final String projectField = "project";
     private boolean AppendProject;
+
+    private boolean StatusGood = true;
     // the filter in the conf file is specified as
     //  output_filter=category/fieldToGet/threshold
 
+    @Override
+    public boolean isStatusGood() {
+        return StatusGood;
+    }
 
-
-    List<Pair<String,String>> Categories; // fieldname, type
+    List<List<Pair<String,String>>> CategoriesLists; // fieldname, type
     Map<String,Pair<String,Pair<String,Double>>> ThreshPerCategory; // fieldname, thresname, thresval
 
-    TreeMap<String,Double> Entities;
+    ArrayList<String> Entities;
+    ArrayList<ArrayList<String>> EntityNames;
+    ArrayList<Double> EntityScores;
+
     String Str;
 
     boolean Verbosity;
@@ -45,14 +56,19 @@ public class RESTfulResultJSONFilter implements IRestfulFilter{
         Verbosity = verbose;
         this.Str = str;
         this.AppendProject = AppendProject;
-        Categories = new ArrayList<>();
+        CategoriesLists = new ArrayList<>();
         ThreshPerCategory= new HashMap<>();
-        Entities = new TreeMap<>();
+        Entities = new ArrayList<>();
+        EntityNames = new ArrayList<>();
+        EntityScores = new ArrayList<>();
+
+
         // format: name1<type>threshname<threshval>/ ...
         // eg: person{}age10/children[]height180    // => from root jobj, get field person . if age < 10 continue. Get children field, it's an array. if height < 180 continue.
         String [] parts = str.split(",");
         for(String catstr : parts)
         {
+            CategoriesLists.add(new ArrayList<Pair<String, String>>());
 
             String [] catparts = catstr.split(delimiter);
             for (String fieldparts : catparts)
@@ -78,17 +94,26 @@ public class RESTfulResultJSONFilter implements IRestfulFilter{
 
             }
         }
+
+
         return true;
     }
     Pair<String,String> fieldIs(String arg,String type)
     {
+
         String ttype = type.replaceAll("\\\\","");
         if( ! arg.contains(ttype)) return null;
         String category = null;
         String []  arr = arg.split(type);
 
         category = arr[0];
-        Categories.add(new Pair<>(category,type));
+        // handle multiple categories, maybe
+        String []sibls = category.split(delimiterSibling);
+        if(sibls.length > 1){
+            for(String sibl : sibls) CategoriesLists.get(CategoriesLists.size()-1).add(new Pair<>(sibl, type));
+        }
+        else
+            CategoriesLists.get(CategoriesLists.size()-1).add(new Pair<>(category,type));
 
         String str = "";
         for(int j=1;j < arr.length;++j) str += arr[j];
@@ -119,92 +144,116 @@ public class RESTfulResultJSONFilter implements IRestfulFilter{
     @Override
     public void filter(Object input)
     {
-
         ArrayList<String> data = (ArrayList<String>) input;
         JSONParser parser = new JSONParser();
 
         for(String datum : data) {
-            try {
-                // get whole outer object
-                JSONObject outer_obj = (JSONObject) parser.parse(new StringReader(datum));
-                Object currentObject = outer_obj;
 
-                ArrayList<ArrayList<Object>> objectList = new ArrayList<>();
-                for (int j=0;j<Categories.size()+1;++j) objectList.add(new ArrayList<Object>());
+            for(List<Pair<String,String>> Categories : CategoriesLists) {
+                ArrayList<String> EntityNamesCurr = new ArrayList<>();
+                try {
+                    // get whole outer object
+                    JSONObject outer_obj = (JSONObject) parser.parse(new StringReader(datum));
+                    Object currentObject = outer_obj;
 
-                ArrayList<Double> scores = null; // scores for the final level, if any
-                int level = 0;
-                int maxLevel = Categories.size();
-                // loop over the field chain
-                while (true) {
-                    // dismantle current level
+                    ArrayList<ArrayList<Object>> objectList = new ArrayList<>();
+                    for (int j = 0; j < Categories.size() + 1; ++j) objectList.add(new ArrayList<Object>());
 
-                    // if array, break it up to next level
-                    if(level < maxLevel) {
-                        String field = Categories.get(level).first();
-                        String type = Categories.get(level).second();
-                        JSONObject currentJSONObject = (JSONObject) currentObject;
-                        Object newObject = ((JSONObject)currentObject).get(field);
-                        ArrayList<Object> objects = getJSONObjects(newObject, type);
+                    ArrayList<Double> scores = null; // scores for the final level, if any
+                    int level = 0;
+                    int maxLevel = Categories.size();
+                    // loop over the field chain
+                    while (true) {
+                        // dismantle current level
 
-                        Pair<ArrayList<Object>,ArrayList<Double>> objectsScores = restrict(currentJSONObject, objects, field, type);
-                        objects = objectsScores.first();
-                        scores =  objectsScores.second();
+                        // if array, break it up to next level
+                        if (level < maxLevel) {
+                            String field = Categories.get(level).first();
+                            String type = Categories.get(level).second();
+                            JSONObject currentJSONObject = (JSONObject) currentObject;
+                            Object newObject = ((JSONObject) currentObject).get(field);
+                            ArrayList<Object> objects = getJSONObjects(newObject, type);
 
-                        objectList.get(level + 1).addAll(objects);
-                        if( ! objectList.get(level).isEmpty())
-                            objectList.get(level).remove(currentObject);
+                            Pair<ArrayList<Object>, ArrayList<Double>> objectsScores = restrict(currentJSONObject, objects, field, type);
+                            objects = objectsScores.first();
+                            scores = objectsScores.second();
 
-                        if (objectList.get(level).isEmpty()) ++level;
-                        if ( ! objectList.get(level).isEmpty())
-                            currentObject = objectList.get(level).get(0);
-                    }
-                    else
-                    {
-                        // done!
-                        ArrayList<Object> finalList = objectList.get(objectList.size()-1);
+                            objectList.get(level + 1).addAll(objects);
+                            if (!objectList.get(level).isEmpty())
+                                objectList.get(level).remove(currentObject);
 
-                        if  (scores == null)
-                        {
-                            scores = new ArrayList<>();
-                            for(Object o : finalList) scores.add(-1.0d);
-                        }
 
-                        for( int i=0;i<finalList.size();++i)
-                        {
+                            if (objectList.get(level).isEmpty()) ++level;
+                            if (!objectList.get(level).isEmpty())
+                                currentObject = objectList.get(level).get(0);
 
-                            // get string values
-                            Object o = finalList.get(i);
-                            String str ="";
-                            Class jobjclass = JSONObject.class;
-                            if(jobjclass.isInstance(o))
-                            {
-                                str = o.toString();
-                                Entities.put(str,scores.get(i));
 
+
+                        } else {
+                            // done!
+                            ArrayList<Object> finalList = objectList.get(objectList.size() - 1);
+
+                            if (scores == null) {
+                                scores = new ArrayList<>();
+                                for (Object o : finalList) scores.add(-1.0d);
                             }
-                            else
-                            {
-                                for (Object oo : (JSONArray) o)
-                                {
-                                    str = oo.toString();
-                                    Entities.put(str,scores.get(i));
+
+                            for (int i = 0; i < finalList.size(); ++i) {
+
+                                // get string values
+                                Object o = finalList.get(i);
+                                String str = "";
+                                if (JSONObject.class.isInstance(o)) {
+                                    str = o.toString();
+//                                    Entities.put(str, scores.get(i));
+                                    EntityNamesCurr.add(str);
+                                    EntityScores.add(scores.get(i));
+
+                                } else if (JSONArray.class.isInstance(o)) {
+                                    for (Object oo : (JSONArray) o) {
+                                        str = oo.toString();
+//                                        Entities.put(str, scores.get(i));
+                                        EntityNamesCurr.add(str);
+                                        EntityScores.add(scores.get(i));
+                                    }
+                                } else {
+                                    // just String
+//                                    Entities.put((String) o, scores.get(i));
+                                    EntityNamesCurr.add((String) o);
+                                    EntityScores.add(scores.get(i));
                                 }
-                            }
 
+                            }
+                            break;
                         }
-                        break;
                     }
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    this.setFail();
+                    break;
+
+                }
+                EntityNames.add(EntityNamesCurr);
+            }
+            // fuse fields
+
+            if(EntityNames.isEmpty()) continue;
+
+            int numEntitiesPerDatum = EntityNames.get(0).size();
+            if(numEntitiesPerDatum==0) continue;
+            for(int j=0;j<numEntitiesPerDatum;++j){
+                String compositeEntity = "";
+                for(int i=0;i<EntityNames.size();++i){
+                    if(!compositeEntity.isEmpty()) compositeEntity +=EntityDelimiter;
+                    compositeEntity += EntityNames.get(i).get(j);
                 }
 
-            } catch (Exception e) {
-                e.printStackTrace();
-                break;
+                Entities.add(compositeEntity);
 
             }
+
         }
-
-
 
 //                for(String category : Categories) {
 //                    // get array of available categories
@@ -248,6 +297,10 @@ public class RESTfulResultJSONFilter implements IRestfulFilter{
 //                e.printStackTrace();
 //            }
 //        }
+    }
+
+    private void setFail(){
+        StatusGood = false;
     }
 
 
@@ -325,37 +378,28 @@ public class RESTfulResultJSONFilter implements IRestfulFilter{
     @Override
     public List<String> getEntities() {
         // sort the entities by score value
-
-        ArrayList<String> keys =  new ArrayList<>();
-        ArrayList<String> entities = new ArrayList<>();
-        ArrayList<Double> scores = new ArrayList<>();
-        for(String e : Entities.keySet())
-        {
-            keys.add(e);
-            scores.add(Entities.get(e));
+        // scores will be duplicated, we can keep the first copy only
+        while(EntityScores.size() > Entities.size()) EntityScores.remove(EntityScores.size()-1);
+        List<ComparablePair<?,?extends Comparable>> sorted = Utils.sort_corresponding(Entities, EntityScores);
+        if (sorted == null){
+            System.err.println("Failed to sort entity - scores lists!");
+            return new ArrayList<>();
         }
-        Collections.sort(scores);
-        Collections.reverse(scores);
-        for(int i=0;i<scores.size();++i)
-        {
-            for(String ent : keys)
-            {
-                if(Entities.get(ent) == scores.get(i))
-                {
-                    keys.remove(ent);
-                    entities.add(ent);
-                    break;
-                }
-            }
-        }
-        // return them
-        return entities;
 
+        for (ComparablePair<?, ? extends  Comparable> p : sorted)
+        {
+            Entities.add((String) p.getData()); Entities.remove(0);
+        }
+
+
+        return Entities;
     }
 
     @Override
     public void clear() {
         Entities.clear();
+        EntityNames.clear();
+        EntityScores.clear();
     }
 
 

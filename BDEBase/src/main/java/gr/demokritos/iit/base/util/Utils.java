@@ -14,8 +14,6 @@
  */
 package gr.demokritos.iit.base.util;
 
-import org.apache.commons.lang3.time.StopWatch;
-
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -37,6 +35,18 @@ public class Utils {
             ret += elem + delim;
         }
         return ret;
+    }
+
+    public static List<ComparablePair<?,?extends Comparable>> sort_corresponding(List<?> list, List<? extends Comparable> sortlist){
+        if(list.size() != sortlist.size()){
+            System.err.println("Attempted to sort corresponding lists of unequal size: " + list.size() + "," + sortlist.size());
+            return null;
+        }
+
+        List<ComparablePair<?,?extends Comparable>> pairsList = new ArrayList<>();
+        for(int i=0; i< list.size();++i) pairsList.add(new ComparablePair<Object, Comparable>(list.get(i), sortlist.get(i)));
+        Collections.sort(pairsList);
+        return pairsList;
     }
     public static <T> boolean  arrayContains(T arr[], T value)
     {

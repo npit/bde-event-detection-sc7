@@ -20,7 +20,7 @@ public class DPair<ObjTypeFirst, ObjTypeSecond> implements Serializable {
     protected ObjTypeSecond second;
 
     /**
-     * Creates a new instance of Pair, given two objects.
+     * Creates a new instance of ComparablePair, given two objects.
      *
      * @param oFirst The first object.
      * @param oSecond The second object.

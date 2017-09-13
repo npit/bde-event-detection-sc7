@@ -241,6 +241,7 @@ public class RESTfulLocationExtractor extends  BaseLocationExtractor implements 
         {
             Filter.filter(data);
             List<String> res = Filter.getEntities();
+            if(!Filter.isStatusGood()) return null;
             if(DoExtractLocations) res = removeAccents(res);
             return res;
         }
