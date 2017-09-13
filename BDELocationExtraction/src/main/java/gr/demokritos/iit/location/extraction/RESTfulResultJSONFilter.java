@@ -172,6 +172,7 @@ public class RESTfulResultJSONFilter implements IRestfulFilter{
                             String type = Categories.get(level).second();
                             JSONObject currentJSONObject = (JSONObject) currentObject;
                             Object newObject = ((JSONObject) currentObject).get(field);
+                            if(newObject == null)  break;
                             ArrayList<Object> objects = getJSONObjects(newObject, type);
 
                             Pair<ArrayList<Object>, ArrayList<Double>> objectsScores = restrict(currentJSONObject, objects, field, type);
