@@ -243,6 +243,19 @@ public class RESTfulLocationExtractor extends  BaseLocationExtractor implements 
             List<String> res = Filter.getEntities();
             if(!Filter.isStatusGood()) return null;
             if(DoExtractLocations) res = removeAccents(res);
+            if(DoExtractEntities){
+                List<String> proj_res = new ArrayList<>();
+                // append project id
+                String project = urlParamValues.get(urlParamNames.indexOf("projectId"));
+                for(String entities : res){
+
+                    if(Debug)
+                        System.out.println("Prepending the [projectId] param value: " +project+ " to each entity.");
+                    proj_res.add(project + "," + entities);
+
+                }
+                res = proj_res;
+            }
             return res;
         }
         else
@@ -344,7 +357,7 @@ public class RESTfulLocationExtractor extends  BaseLocationExtractor implements 
             // json out filter. Format : category:fieldToGet
             if(outputMode.equals(SupportedOutputModes[JSON])) {
                 Filter = new RESTfulResultJSONFilter();
-                if( ! Filter.initialize(str,DoExtractEntities,this.Debug) ) throw new Exception("Failed to initialize REST LE JSON filter.");
+                if( ! Filter.initialize(str,this.Debug) ) throw new Exception("Failed to initialize REST LE JSON filter.");
             }
             // name-value
             str = props.getProperty(NAME_VAL, "");

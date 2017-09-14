@@ -29,9 +29,6 @@ public class RESTfulResultJSONFilter implements IRestfulFilter{
     private static final String PRIMITIVE=":";
     private static final String [] COMPARISONS={">=","<=","==",">","<"};
 
-    private final String projectField = "project";
-    private boolean AppendProject;
-
     private boolean StatusGood = true;
     // the filter in the conf file is specified as
     //  output_filter=category/fieldToGet/threshold
@@ -52,10 +49,9 @@ public class RESTfulResultJSONFilter implements IRestfulFilter{
 
     boolean Verbosity;
     @Override
-    public boolean initialize(String str, boolean AppendProject, boolean verbose) {
+    public boolean initialize(String str, boolean verbose) {
         Verbosity = verbose;
         this.Str = str;
-        this.AppendProject = AppendProject;
         CategoriesLists = new ArrayList<>();
         ThreshPerCategory= new HashMap<>();
         Entities = new ArrayList<>();

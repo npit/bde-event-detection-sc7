@@ -180,7 +180,9 @@ public class GeometryFormatTransformer {
             String [] parts = entitypair.split(",");
             JSONObject jo = new JSONObject();
             jo.put("thesaurus_uuid",parts[0]);
-            jo.put("concept_uri",parts[1]);
+            jo.put("prefLabel",parts[1]);
+            jo.put("concept_uri",parts[2]);
+
             arr.add(jo);
         }
         obj.put("entities",arr);
