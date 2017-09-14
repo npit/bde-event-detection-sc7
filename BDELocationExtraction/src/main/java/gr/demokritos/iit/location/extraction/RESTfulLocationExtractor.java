@@ -246,7 +246,8 @@ public class RESTfulLocationExtractor extends  BaseLocationExtractor implements 
             if(DoExtractEntities){
                 List<String> proj_res = new ArrayList<>();
                 // append project id
-                String project = urlParamValues.get(urlParamNames.indexOf("projectId"));
+                int projectIdx = urlParamNames.indexOf("projectId");
+                String project = projectIdx < 0 ? "NO_URI" : urlParamValues.get(projectIdx);
                 for(String entities : res){
 
                     if(Debug)
