@@ -244,14 +244,15 @@ public class RESTfulLocationExtractor extends  BaseLocationExtractor implements 
             if(!Filter.isStatusGood()) return null;
             if(DoExtractLocations) res = removeAccents(res);
             if(DoExtractEntities){
+		int projectIdx = urlParamNames.indexOf("projectId");
+                String project = projectIdx < 0 ? "NO_URI" : urlParamValues.get(projectIdx);
+                if(Debug)
+		    System.out.println("Prepending the [projectId] param value: " +project+ " to each of the " + res.size() + " entities.");
                 List<String> proj_res = new ArrayList<>();
                 // append project id
-                int projectIdx = urlParamNames.indexOf("projectId");
-                String project = projectIdx < 0 ? "NO_URI" : urlParamValues.get(projectIdx);
                 for(String entities : res){
 
-                    if(Debug)
-                        System.out.println("Prepending the [projectId] param value: " +project+ " to each entity.");
+
                     proj_res.add(project + "," + entities);
 
                 }

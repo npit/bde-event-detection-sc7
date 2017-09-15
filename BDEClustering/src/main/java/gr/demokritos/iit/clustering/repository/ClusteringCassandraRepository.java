@@ -109,8 +109,11 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
     @Override
     public void localStoreEvents() {
         entities = getEntities(articles, ArticlesPerCluster);
+	System.out.println("Got " + entities.size() + " entities to assign to events");
         place_mappings = getPlaceMappings(articles, ArticlesPerCluster);
+	System.out.println("Got " + place_mappings.size() + " geometries to assign to events");
         Map<String,Map<String,String>> images = getImages(place_mappings, ArticlesPerCluster);
+	System.out.println("Got " + images.size() + " images to assign to events");
         int event_size_cuttof = configuration.getEventSizeCutoffThreshold();
         System.out.println("saving events...");
 
@@ -180,6 +183,8 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
         // news : updated to extract URL + title pairs
         Map<String,String> topicSourceURL_Titles = extractSourceURLTitlePairs(t);
         Map<String,String> topic_images = images.get(t.getID());
+	System.out.println("Assigning " + event_entities.size() + " entities to event " + title);
+	System.out.println("Assigning " + topic_images.size() + " images to event " + title);
         // update events
         Statement upsert = QueryBuilder
                 .update(session.getLoggedKeyspace(), Cassandra.Event.Tables.EVENTS.getTableName())

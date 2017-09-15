@@ -139,6 +139,11 @@ public class LocationExtractionScheduler implements ILocationExtractionScheduler
             for(String datum : ents)
             {
                 JSONParser parser = new JSONParser();
+		System.out.println("Entity to process : " + datum);
+		// strip out the prepended "project id". Assume it's just the project id and the entity in the datum
+
+		datum = datum.substring(datum.indexOf(",")+1);
+		System.out.println("Clean entity to process : " + datum);
                 JSONObject obj = (JSONObject) parser.parse(new StringReader(datum));
 
                 /* possible formats:
