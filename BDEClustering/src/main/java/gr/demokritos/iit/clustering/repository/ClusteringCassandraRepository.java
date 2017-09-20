@@ -15,6 +15,7 @@ import gr.demokritos.iit.clustering.clustering.ParameterizedBaseArticleClusterer
 import gr.demokritos.iit.clustering.config.IClusteringConf;
 import gr.demokritos.iit.clustering.model.BDEArticle;
 import gr.demokritos.iit.clustering.clustering.IClusterer;
+import gr.demokritos.iit.location.factory.conf.ILocConf;
 import gr.demokritos.iit.location.repository.LocationCassandraRepository;
 import gr.demokritos.iit.location.util.GeometryFormatTransformer;
 import org.scify.asset.server.model.datacollections.CleanResultCollection;
@@ -403,6 +404,14 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
             // get corresponding article, add it to the results
             articles.add(articlesUnfiltered.get(articleIndex));
         }
+        if(configuration.hasModifier(ILocConf.Modifiers.VERBOSE.toString())){
+            System.out.println("Articles with entities:"); int count=0;
+            for(BDEArticle art : articles){
+                if(art.getEntities().isEmpty()) continue;
+                System.out.println(String.format("%s : %d entities", art.getSource(),art.getEntities().size())); count++;
+            }
+            System.out.println(String.format("%d articles with entities in total", count));
+        }
         System.out.println("done.\n\tArticle loader returning " + articles.size() + " items.");
     }
     @Override
@@ -571,6 +580,7 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
                     String link = row.getString(Cassandra.Location.TBL_LOCATION_IMAGES.FLD_LINK.getColumnName());
                     images.get(topic_id).put(link, place);
                 }
+
             }
         }
         return images;
@@ -876,18 +886,18 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
     }
 
     private static Map<String, Set<String>> getEntities(List<BDEArticle> articles, Map<String, Topic> clusters) {
-
+        // map article url to article object
         Map<String, BDEArticle> mapped_articles = getMappingPerSourceURL(articles);
 
         Map<String, Set<String>> res = new HashMap();
-
+        // clusters contains map from topicid to Topic(=Article list)
         for (Map.Entry<String, Topic> entry : clusters.entrySet()) {
             String topic_id = entry.getKey();
             Topic topic = entry.getValue();
             Set< String> entities = new HashSet();
 
-            for (Article each : topic) {
-                BDEArticle tmp = mapped_articles.get(each.getSource());
+            for (Article eachArticle : topic) {
+                BDEArticle tmp = mapped_articles.get(eachArticle.getSource());
                 if (tmp != null) {
                     entities.addAll(tmp.getEntities());
                 }
