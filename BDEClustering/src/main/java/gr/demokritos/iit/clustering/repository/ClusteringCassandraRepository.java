@@ -905,18 +905,14 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
 	    // loop over articles assigned to that event
             for (Article eachArticle : topic) {
                 BDEArticle tmp = mapped_articles.get(eachArticle.getSource());
-                if (tmp != null) {
-		    
-		    Set<String> ents = tmp.getEntities();
-		    if(configuration.hasModifier(BaseConfiguration.Modifiers.VERBOSE.toString())){
-			System.out.println("Article ["+tmp.getSource()+"] | " + ents.toString());
-		    }
-		    entities.addAll(ents);
-                }
+            if (tmp != null) {
+                Set<String> ents = tmp.getEntities();
+                entities.addAll(ents);
+            }
 		    else{
-			if(configuration.hasModifier(BaseConfiguration.Modifiers.VERBOSE.toString()))
-			    System.out.println("article ["+eachArticle.getSource()+"] yielded a null BDEArticle object!");
-		    }
+                if(configuration.hasModifier(BaseConfiguration.Modifiers.VERBOSE.toString()))
+                    System.out.println("article ["+eachArticle.getSource()+"] yielded a null BDEArticle object!");
+                }
             }
             res.put(topic_id, entities);
         }
@@ -928,7 +924,7 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
         Map<String, BDEArticle> res = new HashMap();
         System.out.println("Mapping article urls to objects...");
         for (BDEArticle each : articles) {
-            System.out.println("Mapped url ["+each.getSource()+"] " + each.getEntities());
+//            System.out.println("Mapped url ["+each.getSource()+"] " + each.getEntities());
             res.put(each.getSource(), each);
         }
         return res;
