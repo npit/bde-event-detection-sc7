@@ -379,14 +379,21 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
             itemIndex++;
         }
 
+        if(configuration.hasModifier(ILocConf.Modifiers.VERBOSE.toString())){
+            System.out.println("Unfiltered articles with entities:"); int count=0;
+            for(BDEArticle art : articlesUnfiltered){
+                if(art.getEntities().isEmpty()) continue;
+                System.out.println(String.format("%s : %d entities", art.getSource(),art.getEntities().size())); count++;
+            }
+            System.out.println(String.format("%d articles with entities in total", count));
+        }
+
         // get at most maxNumber articles, the most recent
         System.out.print("\tLimiting article set to the " + maxNumber +  " most recently crawled articles...");
 
         ArrayList<Long> crawledDatesSorted = (ArrayList) crawledDates.clone();
 
-        Collections.sort(crawledDatesSorted);
-        Collections.reverse(crawledDatesSorted); // descending date
-
+        Collections.sort(crawledDatesSorted, Collections.<Long>reverseOrder());
 
         articles = new ArrayList<>();
 
@@ -919,7 +926,9 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
 
     private static Map<String, BDEArticle> getMappingPerSourceURL(List<BDEArticle> articles) {
         Map<String, BDEArticle> res = new HashMap();
+        System.out.println("Mapping article urls to objects...");
         for (BDEArticle each : articles) {
+            System.out.println("Mapped url ["+each.getSource()+"] " + each.getEntities());
             res.put(each.getSource(), each);
         }
         return res;

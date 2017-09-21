@@ -91,7 +91,7 @@ public class BaseCassandraRepository implements IBaseRepository {
 
     @Override
     public Collection<Map<String, Object>> loadAllArticles(int atmost) {
-        System.out.println("Loading articles idnependent of published date...");
+        System.out.println("Loading articles independent of published date...");
         Statement select;
         ResultSet results;
         Collection<Map<String, Object>> out = new ArrayList();
