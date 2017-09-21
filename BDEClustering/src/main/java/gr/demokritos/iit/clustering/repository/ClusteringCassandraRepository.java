@@ -379,7 +379,7 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
             itemIndex++;
         }
 
-        if(configuration.hasModifier(ILocConf.Modifiers.VERBOSE.toString())){
+        if(configuration.hasModifier(ILocConf.Modifiers.DEBUG.toString())){
             System.out.println("Unfiltered articles with entities:"); int count=0;
             for(BDEArticle art : articlesUnfiltered){
                 if(art.getEntities().isEmpty()) continue;
@@ -411,7 +411,7 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
             // get corresponding article, add it to the results
             articles.add(articlesUnfiltered.get(articleIndex));
         }
-        if(configuration.hasModifier(ILocConf.Modifiers.VERBOSE.toString())){
+        if(configuration.hasModifier(ILocConf.Modifiers.DEBUG.toString())){
             System.out.println("Articles with entities:"); int count=0;
             for(BDEArticle art : articles){
                 if(art.getEntities().isEmpty()) continue;

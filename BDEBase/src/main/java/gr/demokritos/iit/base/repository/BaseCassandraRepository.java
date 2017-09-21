@@ -109,36 +109,7 @@ public class BaseCassandraRepository implements IBaseRepository {
                     .from(session.getLoggedKeyspace(), Cassandra.RSS.Tables.NEWS_ARTICLES_PER_PUBLISHED_DATE.getTableName())
                     ;
         results = session.execute(select);
-        for (Row row : results) {
-            Map<String, Object> res = new HashMap();
-            String year_month_day_bucket = row.getString(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.getColumnName());
-            res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.getColumnName(), year_month_day_bucket);
-            long published = row.getLong(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PUBLISHED.getColumnName());
-            res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PUBLISHED.getColumnName(), published);
-            String entry_url = row.getString(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName());
-            res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName(), entry_url);
-            Set<String> place_literal = row.getSet(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PLACE_LITERAL.getColumnName(), String.class);
-            res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PLACE_LITERAL.getColumnName(), place_literal);
-            String feed_url = row.getString(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_FEED_URL.getColumnName());
-            res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_FEED_URL.getColumnName(), feed_url);
-            long crawl_id = row.getLong(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CRAWL_ID.getColumnName());
-            res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CRAWL_ID.getColumnName(), crawl_id);
-            String raw_text = row.getString(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_RAW_TEXT.getColumnName());
-            res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_RAW_TEXT.getColumnName(), raw_text);
-            String clean_text = row.getString(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CLEAN_TEXT.getColumnName());
-            res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CLEAN_TEXT.getColumnName(), clean_text);
-            long crawled = row.getLong(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CRAWLED.getColumnName());
-            res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CRAWLED.getColumnName(), crawled);
-            String lang = row.getString(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_LANGUAGE.getColumnName());
-            res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_LANGUAGE.getColumnName(), lang);
-            String title = row.getString(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_TITLE.getColumnName());
-            res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_TITLE.getColumnName(), title);
-            Set<String> entities = row.getSet(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTITY.getColumnName(),String.class);
-            res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTITY.getColumnName(), entities);
-            // append
-            //assert (published >= from) : String.format("query totally wrong: published=%d < from=%d", published, from);
-            out.add(res);
-        }
+        loadArticlesResultsToHashMap(results, out,-1l);
         // debug
         System.out.println(String.format("loaded %d articles", out.size()));
         // debug
@@ -223,41 +194,47 @@ public class BaseCassandraRepository implements IBaseRepository {
                 got_first = true;
             }
             results = session.execute(select);
-            for (Row row : results) {
-                Map<String, Object> res = new HashMap();
-                String year_month_day_bucket = row.getString(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.getColumnName());
-                res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.getColumnName(), year_month_day_bucket);
-                long published = row.getLong(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PUBLISHED.getColumnName());
-                res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PUBLISHED.getColumnName(), published);
-                String entry_url = row.getString(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName());
-                res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName(), entry_url);
-                Set<String> place_literal = row.getSet(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PLACE_LITERAL.getColumnName(), String.class);
-                res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PLACE_LITERAL.getColumnName(), place_literal);
-                String feed_url = row.getString(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_FEED_URL.getColumnName());
-                res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_FEED_URL.getColumnName(), feed_url);
-                long crawl_id = row.getLong(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CRAWL_ID.getColumnName());
-                res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CRAWL_ID.getColumnName(), crawl_id);
-                String raw_text = row.getString(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_RAW_TEXT.getColumnName());
-                res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_RAW_TEXT.getColumnName(), raw_text);
-                String clean_text = row.getString(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CLEAN_TEXT.getColumnName());
-                res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CLEAN_TEXT.getColumnName(), clean_text);
-                long crawled = row.getLong(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CRAWLED.getColumnName());
-                res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CRAWLED.getColumnName(), crawled);
-                String lang = row.getString(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_LANGUAGE.getColumnName());
-                res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_LANGUAGE.getColumnName(), lang);
-                String title = row.getString(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_TITLE.getColumnName());
-                res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_TITLE.getColumnName(), title);
-                // append
-                assert (published >= from) : String.format("query totally wrong: published=%d < from=%d", published, from);
-                out.add(res);
-            }
+            loadArticlesResultsToHashMap(results, out,from);
         }
         // debug
         System.out.println(String.format("Loaded %d articles from the database for the given timestamp.", out.size()));
         // debug
         return Collections.unmodifiableCollection(out);
     }
-
+    private void loadArticlesResultsToHashMap(ResultSet results, Collection<Map<String, Object>> out, long from){
+        for (Row row : results) {
+            Map<String, Object> res = new HashMap();
+            String year_month_day_bucket = row.getString(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.getColumnName());
+            res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_YEAR_MONTH_DAY_BUCKET.getColumnName(), year_month_day_bucket);
+            long published = row.getLong(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PUBLISHED.getColumnName());
+            res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PUBLISHED.getColumnName(), published);
+            String entry_url = row.getString(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName());
+            res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTRY_URL.getColumnName(), entry_url);
+            Set<String> place_literal = row.getSet(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PLACE_LITERAL.getColumnName(), String.class);
+            res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_PLACE_LITERAL.getColumnName(), place_literal);
+            String feed_url = row.getString(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_FEED_URL.getColumnName());
+            res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_FEED_URL.getColumnName(), feed_url);
+            long crawl_id = row.getLong(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CRAWL_ID.getColumnName());
+            res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CRAWL_ID.getColumnName(), crawl_id);
+            String raw_text = row.getString(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_RAW_TEXT.getColumnName());
+            res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_RAW_TEXT.getColumnName(), raw_text);
+            String clean_text = row.getString(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CLEAN_TEXT.getColumnName());
+            res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CLEAN_TEXT.getColumnName(), clean_text);
+            long crawled = row.getLong(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CRAWLED.getColumnName());
+            res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_CRAWLED.getColumnName(), crawled);
+            String lang = row.getString(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_LANGUAGE.getColumnName());
+            res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_LANGUAGE.getColumnName(), lang);
+            String title = row.getString(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_TITLE.getColumnName());
+            res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_TITLE.getColumnName(), title);
+            Set<String> entities = row.getSet(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTITY.getColumnName(),String.class);
+            res.put(Cassandra.RSS.TBL_ARTICLES_PER_DATE.FLD_ENTITY.getColumnName(), entities);
+            // append
+            if(from>0) {
+                assert (published >= from) : String.format("query totally wrong: published=%d < from=%d", published, from);
+            }
+            out.add(res);
+        }
+    }
     /**
      * a more generic way of loading data
      */
