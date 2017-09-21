@@ -885,7 +885,7 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
         return res;
     }
 
-    private static Map<String, Set<String>> getEntities(List<BDEArticle> articles, Map<String, Topic> clusters) {
+    private  Map<String, Set<String>> getEntities(List<BDEArticle> articles, Map<String, Topic> clusters) {
         // map article url to article object
         Map<String, BDEArticle> mapped_articles = getMappingPerSourceURL(articles);
 
@@ -895,12 +895,21 @@ public class ClusteringCassandraRepository extends LocationCassandraRepository i
             String topic_id = entry.getKey();
             Topic topic = entry.getValue();
             Set< String> entities = new HashSet();
-
+	    // loop over articles assigned to that event
             for (Article eachArticle : topic) {
                 BDEArticle tmp = mapped_articles.get(eachArticle.getSource());
                 if (tmp != null) {
-                    entities.addAll(tmp.getEntities());
+		    
+		    Set<String> ents = tmp.getEntities();
+		    if(configuration.hasModifier(BaseConfiguration.Modifiers.VERBOSE.toString())){
+			System.out.println("Article ["+tmp.getSource()+"] | " + ents.toString());
+		    }
+		    entities.addAll(ents);
                 }
+		    else{
+			if(configuration.hasModifier(BaseConfiguration.Modifiers.VERBOSE.toString()))
+			    System.out.println("article ["+eachArticle.getSource()+"] yielded a null BDEArticle object!");
+		    }
             }
             res.put(topic_id, entities);
         }

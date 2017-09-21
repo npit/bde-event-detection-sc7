@@ -66,7 +66,7 @@ public class ParameterizedBaseArticleClusterer extends BaseArticleClusterer {
             boolean bMatch = NVS > NVSThreshold && gs.SizeSimilarity > 0.1D;
             boolean TitleMatch = this.isPossiblySameSentence(aA.getTitle(), aB.getTitle());
 
-            if(IsVerbose) {
+	    //            if(IsVerbose) {
 
 //                System.out.printf("NVS: %2.9f VS: %2.9f CS: %2.9f SS: %2.9f",
 //                        NVS,
@@ -74,17 +74,17 @@ public class ParameterizedBaseArticleClusterer extends BaseArticleClusterer {
 //                        gs.ContainmentSimilarity,
 //                        gs.SizeSimilarity
 //                );
-                boolean b = bMatch || TitleMatch;
-                String msg;
-                if (b)
-                    msg = ("true  :");
-                else
-                    msg = ("false :");
-                msg += "x : "+ aA.getTitle() + " | " + aB.getTitle() + " | " + NVS + " " + gs.SizeSimilarity + " " + gs.ContainmentSimilarity + " " + gs.ValueSimilarity;
-                System.out.println(msg);
-
-
-            }
+	    //  boolean b = bMatch || TitleMatch;
+	    //  String msg;
+	    //  if (b)
+	    //      msg = ("true  :");
+	    //  else
+	    //      msg = ("false :");
+	    //  msg += "x : "+ aA.getTitle() + " | " + aB.getTitle() + " | " + NVS + " " + gs.SizeSimilarity + " " + gs.ContainmentSimilarity + " " + gs.ValueSimilarity;
+	    //  System.out.println(msg);
+	    //
+	    //
+            //}
 
             return bMatch || TitleMatch;
         }
