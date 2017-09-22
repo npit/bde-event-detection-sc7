@@ -202,13 +202,22 @@ public class Utils {
         catch(MalformedURLException exc)
         {
             System.err.println("Malformed event processing URL:\n\t" + address);
+            System.err.println("IO error during event processing connection initialization:\n");
+            System.err.println("excepction message : [" + exc.getMessage()+"]");
+            exc.printStackTrace();
             resp="";
         }
-        catch(IOException exc)
-        {
+        catch(IOException exc){
+            System.err.println("IOException @  URL:\n\t" + address);
             System.err.println("IO error during event processing connection initialization:\n");
-            System.err.println(exc.getMessage());
-            System.err.println(exc.toString());
+            System.err.println("exception message : [" + exc.getMessage()+"]");
+            exc.printStackTrace();
+            resp="";
+        }
+        catch (Exception exc){
+            System.err.println("generic Exception @  URL:\n\t" + address);
+            System.err.println("IO error during event processing connection initialization:\n");
+            System.err.println("exception message : [" + exc.getMessage()+"]");
             exc.printStackTrace();
             resp="";
         }
@@ -263,15 +272,23 @@ public class Utils {
         }
         catch(MalformedURLException exc)
         {
-            System.err.println("Malformed event processing URL:\n\t" + address);
+            System.err.println("MalformedURLException @  URL:\n\t" + address);
+            System.err.println("exception message : [" + exc.getMessage()+"]");
             System.err.println("payload/address: ["+payload+"] , ["+address+"]");
-
+            exc.printStackTrace();
             resp="";
         }
         catch(IOException exc)
         {
-
-            System.err.println(exc.getMessage());
+            System.err.println("IOException @  URL:\n\t" + address);
+            System.err.println("exception message : [" + exc.getMessage()+"]");
+            System.err.println("payload/address: ["+payload+"] , ["+address+"]");
+            exc.printStackTrace();
+            resp="";
+        }
+        catch(Exception exc){
+            System.err.println("generic Exception @  URL:\n\t" + address);
+            System.err.println("exception message : [" + exc.getMessage()+"]");
             System.err.println("payload/address: ["+payload+"] , ["+address+"]");
             exc.printStackTrace();
             resp="";
