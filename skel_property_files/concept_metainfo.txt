@@ -1,0 +1,3 @@
+https://bde.poolparty.biz/PoolParty/api/thesaurus/1DF14B68-5ED2-0001-4069-1EF019D07D00/concept?concept=http://bde.poolparty.biz/People/502214&properties=all
+
+https://bde.poolparty.biz/PoolParty/api/thesaurus/THESAURUSID/concept?concept=CONCEPTURI&properties=all
